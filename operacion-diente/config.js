@@ -16,7 +16,7 @@ export const APP_CONFIG = {
   },
   defaultCenter: [-3.68845, 40.42016],
   defaultZoom: 12,
-  stageDurationSeconds: 105,
+  stageDurationSeconds: 190,
   // When original approved audio files exist, put their same-origin relative paths here.
   // Never impersonate the official voice using browser speech synthesis.
   narrationAudio: {
