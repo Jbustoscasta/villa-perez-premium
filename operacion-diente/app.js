@@ -221,7 +221,9 @@ function finishIntro(){
   },state.reducedMotion?80:1180);
 }
 function showIntro(){
-  state.director?.say('intro');
+  // Narration starts with the cinematic shot, not with the prior settings button.
+  state.director?.say('intro',true);
+  playChime('sparkle');
   const overlay=$('cinematic-intro');overlay.classList.remove('hidden','is-revealing');
   state.introTimer=setTimeout(finishIntro,state.reducedMotion?800:5700);
 }
@@ -505,7 +507,7 @@ async function toggleSound(){
   }
   $('sound-toggle').setAttribute('aria-label',state.soundOn?'Silenciar narración y efectos':'Activar narración y efectos de demostración');
   $('welcome-sound').textContent=state.soundOn?'♪ Voz de prueba activada · silenciar':'♫ Activar narración y sonidos';
-  if(state.soundOn)state.director?.say(state.screen==='welcome'?'intro':'depart',true);
+  if(state.soundOn && state.screen==='route')state.director?.say('depart',true);
 }
 /** Optional local souvenir only: no home address, coordinates, or route polyline are persisted. */
 function readSavedMorning(){
