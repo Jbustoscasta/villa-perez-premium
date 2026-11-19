@@ -1,4 +1,4 @@
-# Operación Diente Perdido — módulo Villa Pérez v0.4 · recorrido cinematográfico premium
+# Operación Diente Perdido — módulo Villa Pérez v0.5 · MAPA PREMIUM (calles legibles y luz dinámica)
 
 ## Demo pública para iPhone — 19 noviembre 2026
 
@@ -11,6 +11,19 @@ El botón «Probar recorrido de Madrid» selecciona dos lugares públicos (Puert
 **Límites de la demo:** la dirección real de Clínica del Doctor Abreu NO está configurada; los servicios comunitarios pueden limitar peticiones. La prueba en Safari físico y la accesibilidad de GitHub Pages deben comprobarse externamente. No es un servicio de producción.
 
 Módulo web independiente, **sin tocar el flujo de Foto con Pérez**. Diseñado para alojarse en `villa-perez-premium/operacion-diente/` y reutilizar `../perez.png` (máster oficial intacto) y `../villa-hero.webp` (fachada oficial existente). No se dibuja ni se sustituye el personaje.
+
+## Mejoras visibles de cartografía y efectos — v0.5
+
+- **BASE VECTORIAL CAMBIADA:** OpenFreeMap Liberty en vez de Dark Matter; se aplica después del evento de carga una paleta nocturna propia sobre los elementos geográficos REALES.
+- **CALLES Y NOMBRES:** vías principales en crema luminosa, secundarias en azul perla, caminos en verde azulado, calles y lugares con textos claros y halo oscuro para leerlos en el iPhone. Agua azul vivo y parques verde petróleo. Menor oscurecimiento por el degradado UI que tapaba calles.
+- **EDIFICIOS 3D REALES:** capas vectoriales `building` de OpenFreeMap con `render_height`, extrusión progresiva de z14.3 a z15.4, colores de edificio dependientes de altura y etiquetas dibujadas encima. La disponibilidad depende de la zona y la cartografía.
+- **RUTA LUMINOSA:** camino con línea central blanca crema de 6.2 px, segundo halo ámbar 17 px, resplandor difuminado de 34 px y sombra de alto contraste 24 px; diferencia claramente tramo pendiente y tramo recorrido.
+- **PARTÍCULAS EN PANTALLA:** capa Canvas independiente sobre el mapa con 24 destellos proyectados con MapLibre sobre la geometría REAL, estrellas y una pequeña onda viajera. Canvas a DPR máximo 1.7 con actualizaciones a ~22 FPS; desactivado si se solicita reducir movimiento.
+- **CÁMARA:** zoom dinámico próximo a 16.15 (antes 15.15) para ver mejor cada calle. La interfaz permite volver a ver la ruta completa.
+- **SIN INTERFERIR EN FOTO CON PÉREZ:** esta carpeta tiene `premium-map.mjs` como único motor nuevo, integrado en `app.js`, sin tocar `../index.html` ni assets oficiales.
+- **COMPROBACIÓN:** 17 pruebas de geometría, privacidad y estilo/effects, sintaxis JS y concordancia de controles. Sin afirmaciones de validación visual de iPhone/Safari, falta QA en dispositivo.
+
+**Acceso demo:** https://jbustoscasta.github.io/villa-perez-premium/operacion-diente/?demo=1&v=0.5.0
 
 ## Novedades v0.4 — experiencia premium
 
