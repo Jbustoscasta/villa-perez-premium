@@ -1,4 +1,4 @@
-# Operación Diente Perdido — módulo Villa Pérez v0.3 · demo HTTPS
+# Operación Diente Perdido — módulo Villa Pérez v0.4 · recorrido cinematográfico premium
 
 ## Demo pública para iPhone — 19 noviembre 2026
 
@@ -11,6 +11,21 @@ El botón «Probar recorrido de Madrid» selecciona dos lugares públicos (Puert
 **Límites de la demo:** la dirección real de Clínica del Doctor Abreu NO está configurada; los servicios comunitarios pueden limitar peticiones. La prueba en Safari físico y la accesibilidad de GitHub Pages deben comprobarse externamente. No es un servicio de producción.
 
 Módulo web independiente, **sin tocar el flujo de Foto con Pérez**. Diseñado para alojarse en `villa-perez-premium/operacion-diente/` y reutilizar `../perez.png` (máster oficial intacto) y `../villa-hero.webp` (fachada oficial existente). No se dibuja ni se sustituye el personaje.
+
+## Novedades v0.4 — experiencia premium
+
+- **Acto de salida:** superposición animada de la fachada **oficial** `../villa-hero.webp` y el personaje **original intacto** `../perez.png`. Opción «Saltar introducción».
+- **Ritmo cinematográfico:** interpolación de avance con ocho hitos de ritmo suave, frenadas y aceleraciones. Inversa de la curva para pausa, reanudación y cambios de duración sin saltos.
+- **Mapa nocturno premium:** tres capas de ruta dorada con halo, 18 partículas sincronizadas con la geometría real, edificios extruidos opcionales (si el proveedor aporta vector buildings), perspectiva dinámica y giros por rumbo verdadero. Botones de visión general y vista cinematográfica.
+- **Postal del camino:** parada visual que menciona **solamente** un punto público si la ruta pasa a menos de 120 m según coordenadas. En otros recorridos se muestra una sorpresa genérica, sin inventar monumentos. Las imágenes de Street View **no** forman parte de esta versión.
+- **Llegada:** escena nocturna de cierre que se activa a partir del 92 % del viaje.
+- **Privacidad reforzada:** en la misión personalizada, el mapa del niño reproduce solo las calles calculadas hasta unos 160 m antes del domicilio. La distancia total real se mantiene para la información de padres, y la postal usa únicamente un camino decorativo.
+- **Sonido:** dos tonos cortos originales y opcionales, desactivados por defecto; compatibles con silencio y preferencias de movimiento reducido.
+- **Pruebas:** 13 pruebas lógicas aprobadas en comprobación de código; sintaxis JS y correspondencia de IDs de controles verificadas. **No sustituye una QA física de Safari ni validación del servicio cartográfico.**
+
+### Street View
+
+**No integrado todavía.** Google Street View tiene condiciones específicas de visualización y combinación con mapas en el Espacio Económico Europeo; la aplicación está dirigida a niños. Antes de añadir panorámicas, evaluar un proveedor y contrato adecuado (con atribución, privacidad, derechos de uso y cobertura), y limitarlo a lugares públicos lejos de domicilios.
 
 ## Qué hace ya
 
@@ -60,13 +75,13 @@ Para usar el ZIP aislado crea una carpeta superior con `perez.png` y `villa-hero
 - Reusar archivos `../perez.png` y `../villa-hero.webp` sin procesarlos.
 - Mostrar la experiencia solo con suscripción activa o modo gratuito Ilusiono según reglas de negocio.
 - Capa opcional de mensajes de voz con asset ElevenLabs ya aprobado; no integrado aquí.
-- Próxima fase: completar postal PNG 1080×1350, biblioteca de frases narrativas, geocoding/routing de producción y pruebas Safari.
+- Próxima fase: versión PNG de postal, voces narrativas, geocoding/routing de producción, QA Safari y posible vista panorámica licenciada.
 
 ## Verificación
 
 `node --test ./tests/*.test.mjs`
 
-Las pruebas automáticas validan geometría, rumbo, partículas en ruta y no divulgación de geometría privada. No verifican que proveedores externos respondan ni Safari real. La conexión externa debe probarse en una web HTTPS desplegada.
+Las pruebas automáticas validan geometría, rumbo, partículas en ruta y no divulgación de geometría privada. No verifican que proveedores externos respondan ni Safari real. La conexión externa debe probarse en una web HTTPS desplegada. Los servicios de demo comunitarios pueden limitar las solicitudes.
 
 ## Licencias y atribución
 
