@@ -128,6 +128,14 @@ export class NativeFlightScene{
   }
   return true;
  }
+ setEffects(enabled){
+  this.muted=!enabled;
+  // Preserve model and Ratón; toggle only optional GPU overlays.
+  for(const el of [this.trace,...this.stars])try{
+    if(enabled&&!el.isConnected)this.map.append(el);
+    if(!enabled&&el.isConnected)el.remove();
+  }catch(e){console.warn('Unable to toggle flight particles',e)}
+ }
  hideNative(){
   for(const el of [this.model,this.mouse,this.trace,...this.stars])try{el?.remove()}catch(e){}
   this.model=null;this.mouse=null;this.trace=null;this.stars=[];
@@ -139,7 +147,7 @@ export class NativeFlightScene{
   this.model.position={...latLng,altitude:BALLOON_ALTITUDE};
   this.model.orientation={heading:bearing,tilt:0,roll:Math.sin(t/3000)*.75};
   if(this.mouse)this.mouse.position={...latLng,altitude:BALLOON_ALTITUDE+3.2+Math.sin(t/2100)*.25};
-  if(t-this.lastTrailAt>270){
+  if(!this.muted&&t-this.lastTrailAt>270){
    this.lastTrailAt=t;
    const last=this.pathTrail.at(-1);
    if(!last||geoDistance(last,latLng)>8){
@@ -148,7 +156,7 @@ export class NativeFlightScene{
    }
    if(this.trace&&this.pathTrail.length>1)this.trace.path=this.pathTrail;
   }
-  if(t-this.lastStarAt>190){
+  if(!this.muted&&t-this.lastStarAt>190){
    this.lastStarAt=t;
    for(let i=0;i<this.stars.length;i++){
     const lag=(i+1)*.003;
@@ -168,7 +176,7 @@ export class NativeFlightScene{
     lng:center.lng+radius*Math.sin(a)/(METERS*Math.max(phi,.15))
   };
   this.pose(p,bearing,1,()=>center,t);
-  if(this.stars.length){
+  if(!this.muted&&this.stars.length){
    for(let i=0;i<this.stars.length;i++){
     const angle=a+i*2*Math.PI/this.stars.length;
     this.stars[i].position={
