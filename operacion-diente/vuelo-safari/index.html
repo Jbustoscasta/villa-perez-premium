@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#081725">
+<title>Villa Pérez · Vuelo mágico — prueba Safari</title>
+<meta name="description" content="Laboratorio de vuelo sobre cartografía real de Madrid. Sin WebGL y sin librerías externas.">
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#071725;color:#f9eedb;--gold:#eacb91}
+*{box-sizing:border-box}html,body{height:100%;margin:0;overflow:hidden}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid #ffd884;outline-offset:2px}
+#sky{position:fixed;inset:0;background:#10243a;overflow:hidden;isolation:isolate}
+#terrain{position:absolute;inset:-8%;transform:perspective(1500px) rotateX(15deg) rotateZ(-6deg) scale(1.17);transform-origin:50% 50%;z-index:1;will-change:transform;overflow:hidden}
+#terrain:after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 115px 35px #071628}
+#tilePlane{position:absolute;left:50%;top:50%;width:1792px;height:1792px;will-change:transform}
+#tilePlane img{position:absolute;width:256px;height:256px;border:0;display:block;user-select:none;pointer-events:none}
+#flightCanvas{position:absolute;left:0;top:0;overflow:visible;pointer-events:none;filter:drop-shadow(0 0 8px #f9c77d)}
+#schematic{position:absolute;inset:0;z-index:-1;display:block;width:100%;height:100%;background:#122e3d}
+#skyGlow{position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(ellipse at 52% 48%,transparent 5%,rgba(6,18,31,.32) 54%,rgba(4,14,27,.86) 100%),linear-gradient(180deg,rgba(6,17,34,.55),transparent 30%,rgba(4,13,26,.42))}
+#balloonWrap{position:absolute;left:50%;top:46%;transform:translate(-50%,-75%);z-index:4;pointer-events:none;filter:drop-shadow(0 20px 18px rgba(0,0,0,.65))}
+#balloonWrap:before{content:"";position:absolute;width:100px;height:100px;background:radial-gradient(circle,rgba(254,191,96,.48),transparent 70%);top:18px;left:-12px;filter:blur(12px);z-index:-1}
+#balloonWrap svg{width:90px;height:134px;display:block;animation:sway 3s ease-in-out infinite alternate}
+@keyframes sway{from{transform:translateY(-7px) rotate(-3deg)}to{transform:translateY(7px) rotate(3deg)}}
+#twinkles{position:absolute;inset:0;pointer-events:none;z-index:3}
+#twinkles i{position:absolute;width:2px;height:2px;background:#fff4bf;border-radius:50%;box-shadow:0 0 9px 3px #f1c47c;opacity:.3;animation:tw 2s ease-in-out infinite alternate}
+@keyframes tw{to{opacity:1;transform:scale(1.8)}}
+.header{position:fixed;left:18px;top:max(17px,env(safe-area-inset-top));z-index:10;display:flex;align-items:center;gap:10px;text-shadow:0 1px 14px #061221}
+.crest{height:37px;width:37px;border-radius:12px;border:1px solid #be9f6c;background:rgba(8,31,44,.8);display:grid;place-items:center;color:#ffdda1;font-size:24px}
+.brand small{display:block;color:#f1c789;font-size:9px;letter-spacing:.18em;font-weight:700}
+.brand strong{display:block;color:#f7f1de;letter-spacing:.11em;font-size:14px}
+.topStatus{position:fixed;z-index:10;right:15px;top:max(20px,env(safe-area-inset-top));padding:8px 11px;border-radius:40px;background:rgba(6,22,33,.8);border:1px solid rgba(251,218,167,.26);font-size:10px;color:#e6ece7}
+.topStatus:before{content:"";width:7px;height:7px;display:inline-block;background:#90d9b6;border-radius:50%;margin-right:7px}
+#landing{position:fixed;z-index:15;bottom:0;left:16px;width:min(400px,calc(100% - 32px));background:linear-gradient(155deg,rgba(15,40,50,.97),rgba(8,20,34,.98));border:1px solid rgba(255,218,153,.32);border-radius:23px 23px 0 0;padding:23px 23px calc(24px + env(safe-area-inset-bottom));box-shadow:0 0 75px rgba(0,0,0,.45);max-height:82dvh;overflow:auto;transition:transform .45s,opacity .3s}
+#landing.off{transform:translateY(105%);opacity:0;pointer-events:none}
+.kicker{letter-spacing:.2em;color:#f4d093;font-size:10px;font-weight:700;text-transform:uppercase}
+h1,h2{font-family:Georgia,serif;font-weight:500;line-height:1.11}
+h1{font-size:clamp(29px,5vw,40px);margin:11px 0;color:#fff4da}
+h1 em{color:#f7d38e;font-style:normal}
+p{color:#d4e0df;font-size:13px;line-height:1.6}
+#origin{padding:13px 14px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(255,255,255,.06);margin:18px 0}
+#origin small{display:block;color:#bacbd0;font-size:10px;margin-bottom:5px}#origin strong{font-size:13px}
+label{display:block;margin:0 0 7px;font-size:10px;letter-spacing:.11em;color:#e8c88c;font-weight:700}
+input{border-radius:11px;padding:14px 13px;background:#1f3a48;color:#fff;border:1px solid rgba(245,216,157,.4);width:100%;font-size:14px}
+.exampleRow{display:flex;gap:7px;flex-wrap:wrap;margin:11px 0 15px}
+.exampleRow button{border:1px solid rgba(255,239,196,.26);border-radius:20px;background:rgba(255,255,255,.08);color:#f2e7d2;font-size:11px;padding:7px 10px}
+.mainBtn{background:linear-gradient(180deg,#ffe4a8,#dbb479);color:#2a231b;border:1px solid #ffeed1;font-weight:750;font-size:13px;border-radius:12px;padding:15px 20px;min-height:50px;width:100%}
+.footnote{font-size:10px;color:#b9c9ca;line-height:1.5;margin-top:11px}
+#error{display:none;padding:9px 0 0;color:#ffd1ad;font-size:11px}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:12;opacity:0;transition:opacity .3s}
+#hud.visible{opacity:1}
+#chapters{position:absolute;left:18px;top:max(91px,calc(env(safe-area-inset-top) + 80px));max-width:390px;padding-right:20px;text-shadow:0 2px 17px #001018}
+#chapters h2{font-size:clamp(31px,6vw,51px);color:#fff1cf;margin:9px 0}
+#chapters p{font-size:13px;color:#ebefdd;margin:0}
+#hudBottom{position:absolute;bottom:max(16px,env(safe-area-inset-bottom));left:12px;right:12px;max-width:550px;margin:0 auto;background:rgba(8,29,39,.92);border:1px solid rgba(247,211,145,.28);padding:16px;border-radius:17px;backdrop-filter:blur(15px);pointer-events:auto}
+#hudTop{display:flex;justify-content:space-between;color:#ffecd0;font-size:11px;font-weight:700;margin-bottom:11px}
+#barBase{height:5px;background:#3f5360;border-radius:6px;overflow:hidden}
+#bar{height:100%;width:0;background:linear-gradient(90deg,#e7b56e,#fff0bb);box-shadow:0 0 10px #e7bd79}
+.actions{display:flex;justify-content:space-between;gap:10px;margin-top:13px}
+.actions button{background:rgba(246,220,161,.14);border:1px solid rgba(255,234,182,.22);border-radius:9px;color:#fdf1d9;padding:10px;font-size:11px;flex:1}
+#arrived{position:fixed;inset:0;background:radial-gradient(ellipse at center,#204153,#071426);z-index:21;display:none;align-items:center;justify-content:center;text-align:center;padding:30px}
+#arrived.visible{display:flex}
+#arrived h2{font-size:42px;color:#ffdfa7;margin:18px 0 12px}
+#arrived p{max-width:420px}
+#arrived button{max-width:300px;margin-top:15px}
+.attribution{position:fixed;right:10px;bottom:7px;z-index:6;pointer-events:none;color:#e7e7df;font-size:9px;text-shadow:0 1px 8px #000}
+#warning{position:fixed;z-index:11;top:80px;right:12px;max-width:220px;background:rgba(5,24,35,.8);border:1px solid rgba(249,206,141,.2);border-radius:9px;font-size:10px;line-height:1.3;padding:10px;color:#f5e8d4;display:none}
+#debugBtn{position:fixed;z-index:10;right:12px;bottom:18px;border:1px solid rgba(245,215,145,.32);background:rgba(6,25,35,.78);color:#e4dbce;border-radius:10px;font-size:10px;padding:9px;display:none}
+@media(max-width:640px){
+#terrain{inset:-12%;transform:perspective(800px) rotateX(14deg) rotateZ(-7deg) scale(1.12)}
+#balloonWrap svg{width:77px;height:117px}
+#landing{left:0;width:100%;padding:18px 23px calc(16px + env(safe-area-inset-bottom));max-height:78dvh}
+h1{font-size:31px;margin:7px 0}#landing p{font-size:12px;margin:7px 0}
+#origin{margin:10px 0;padding:10px 13px}input{padding:12px}
+#chapters{top:90px}#chapters h2{font-size:34px}#chapters p{font-size:12px}
+#warning{top:175px}
+}
+@media(prefers-reduced-motion:reduce){#balloonWrap svg,#twinkles i{animation:none}}
+</style>
+</head>
+<body>
+<div id="sky">
+ <div id="terrain">
+  <svg id="schematic" viewBox="0 0 1000 1200" preserveAspectRatio="xMidYMid slice" aria-label="Mapa de respaldo ilustrativo, no geográfico">
+   <defs><pattern id="blocks" width="190" height="145" patternUnits="userSpaceOnUse" patternTransform="rotate(-11)"><path d="M0 0 H190 V145 H0Z" fill="#193849" stroke="#96a5ac" stroke-width="14"/><path d="M35 15H80V63H35ZM105 15H170V60H105ZM27 83H88V125H27ZM104 88H167V128H104Z" fill="#274f59" stroke="#d4baa1" stroke-opacity=".2" stroke-width="2"/></pattern></defs>
+   <rect width="1000" height="1200" fill="url(#blocks)"/><path d="M-40 1140 Q380 690 1040 50" stroke="#d8c6a3" stroke-width="30" opacity=".65" fill="none"/><path d="M-30 1130 Q470 780 1020 20" stroke="#3d5b69" stroke-width="17" fill="none"/>
+  </svg>
+  <div id="tilePlane"><svg id="flightCanvas" width="1792" height="1792" viewBox="0 0 1792 1792"><polyline id="pathAhead" points="" fill="none" stroke="#d4cfb3" stroke-dasharray="5 10" stroke-width="2" stroke-opacity=".75" stroke-linecap="round" stroke-linejoin="round"/><polyline id="pathDone" points="" fill="none" stroke="#ffe5a2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+ </div>
+ <div id="skyGlow"></div><div id="twinkles"></div>
+ <div id="balloonWrap" aria-hidden="true">
+  <svg viewBox="0 0 104 153" xmlns="http://www.w3.org/2000/svg">
+   <defs><linearGradient id="shell" x1="0" x2="1"><stop stop-color="#b65e3f"/><stop offset=".5" stop-color="#ffe3a1"/><stop offset="1" stop-color="#b65e3f"/></linearGradient><linearGradient id="turquoise" x1="0" x2="1"><stop stop-color="#1f636e"/><stop offset=".5" stop-color="#83aa9e"/><stop offset="1" stop-color="#1b596b"/></linearGradient></defs>
+   <path d="M52 8C16 8 6 34 10 62C14 90 40 100 44 114H60C65 100 94 84 95 59C99 28 80 8 52 8" fill="url(#shell)" stroke="#f8e2b4" stroke-width="2"/>
+   <path d="M52 8C35 11 23 37 29 65C33 91 45 104 44 114H60C68 90 77 65 75 47C72 23 63 10 52 8" fill="url(#turquoise)"/>
+   <path d="M52 8C46 12 38 32 40 57C42 89 48 106 46 114H57C61 91 65 65 64 45C62 19 58 9 52 8" fill="#f2ca80"/>
+   <path d="M45 114L40 135M59 114L65 135" fill="none" stroke="#e7caa1" stroke-width="2"/>
+   <path d="M37 130H68L63 150H42Z" fill="#90583f" stroke="#f1d8aa" stroke-width="2"/>
+   <path d="M43 135H62M45 144H61" stroke="#d6bb8d" stroke-width="2"/>
+   <path d="M52 39L55 49L64 52L55 55L52 64L49 55L40 52L49 49Z" fill="#fff9dd"/>
+  </svg>
+ </div>
+</div>
+<div class="header"><span class="crest">✦</span><div class="brand"><small>EXPERIMENTO REAL · SAFARI</small><strong>VILLA PÉREZ</strong></div></div>
+<div class="topStatus" id="topStatus">MOTOR SIN WEBGL</div>
+<div id="warning" aria-live="polite"></div>
+<section id="landing" aria-label="Preparar vuelo de prueba">
+ <span class="kicker">Laboratorio de vuelo · gratuito</span>
+ <h1>Sobrevuela las <em>calles de Madrid</em></h1>
+ <p>Esta versión no necesita Google Maps, WebGL ni librerías externas. La cartografía real se descarga como imágenes individuales; si no llegan, el vuelo continúa sobre un plano de respaldo claramente identificado.</p>
+ <div id="origin"><small>PUNTO DE SALIDA DE PRUEBA, NO ES UNA CLÍNICA REAL</small><strong>Puerta de Alcalá, Madrid</strong></div>
+ <label for="destination">DESTINO DEL VUELO</label>
+ <input id="destination" value="Plaza Mayor, Madrid" autocomplete="off" placeholder="Calle y número, municipio">
+ <div class="exampleRow"><button data-choice="mayor">Plaza Mayor</button><button data-choice="bernabeu">Bernabéu</button><button data-choice="fresno">Arroyo Fresno</button></div>
+ <button class="mainBtn" id="launch">✦ Iniciar vuelo automático</button>
+ <div id="error" role="alert"></div>
+ <div class="footnote">En destinos personalizados la dirección se consulta a Photon/Komoot; en las tres demostraciones no se envía ninguna dirección. La ruta aérea es ficticia y no sigue necesariamente las calles.</div>
+</section>
+<div id="hud" aria-live="polite"><div id="chapters"><span class="kicker" id="chapterNumber">CAPÍTULO 1</span><h2 id="chapterTitle">Madrid desde las nubes</h2><p id="chapterCopy">La luz mágica comienza a recorrer los tejados.</p></div>
+ <div id="hudBottom"><div id="hudTop"><span>✦ VUELO MÁGICO</span><span id="progressText">0 %</span></div><div id="barBase"><div id="bar"></div></div><div class="actions"><button id="pause">⏸ Pausar</button><button id="view">☀ Vista clara</button><button id="restart">↻ Reiniciar</button></div></div>
+</div>
+<div class="attribution" id="attribution">Cartografía © OpenStreetMap · © CARTO</div>
+<button id="debugBtn">Diagnóstico del mapa</button>
+<div id="arrived"><div><span class="kicker">VILLA PÉREZ · MISIÓN COMPLETADA</span><h2>¡Hemos llegado!</h2><p>El globo ha cruzado la ciudad. Para conseguir una experiencia como HELLO, el siguiente paso es probar edificios fotorrealistas con Google Maps 3D.</p><button class="mainBtn" id="again">Volver a empezar</button></div></div>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const presets={
+ mayor:{name:'Plaza Mayor, Madrid',end:[-3.70737,40.41536],stops:[[-3.69265,40.41932],[-3.69819,40.41837],[-3.70399,40.41825]]},
+ bernabeu:{name:'Estadio Santiago Bernabéu, Madrid',end:[-3.68832,40.45306],stops:[[-3.68918,40.42612],[-3.68922,40.43656],[-3.68934,40.4471]]},
+ fresno:{name:'Arroyo Fresno, Madrid',end:[-3.7347,40.4787],stops:[[-3.69478,40.4316],[-3.71148,40.4495],[-3.72774,40.4634]]}
+};
+const START=[-3.68845,40.42016], ZOOM=15, GRID=7, TILESZ=256, WORLD=Math.pow(2,ZOOM);
+let selected='mayor',target=presets.mayor,route=[],images=new Map(),baseX=0,baseY=0,tileGood=0,tileBad=0,chosenMode='dark';
+let current=[...START],running=false,paused=false,clock=0,pausedAt=0,elapsed=0,frame=0,progress=0,lastScene=-1;
+const duration=47000;
+const scenes=[
+ {title:'Madrid desde las nubes',desc:'La luz mágica comienza a recorrer los tejados.',at:0},
+ {title:'La ciudad iluminada',desc:'Sobrevolamos calles que existen de verdad. Fíjate en las plazas.',at:.22},
+ {title:'El camino dorado',desc:'Una estela de luz marca el vuelo mágico del Ratón Pérez.',at:.49},
+ {title:'Casi en casa',desc:'¿Reconoces tu barrio? Nos acercamos a los últimos edificios.',at:.75},
+ {title:'Un secreto mágico',desc:'El último tramo hasta la puerta será invisible para los curiosos.',at:.93}
+];
+for(let n=0;n<35;n++){
+ const sp=document.createElement('i');sp.style.left=((n*29+7)%100)+'%';sp.style.top=((n*43+11)%92)+'%';
+ sp.style.animationDelay=(-.37*n)+'s';$('twinkles').appendChild(sp);
+}
+function project([lon,lat]){const sin=Math.sin(lat*Math.PI/180);return {x:(lon+180)/360*WORLD*TILESZ,y:(.5-Math.log((1+sin)/(1-sin))/(4*Math.PI))*WORLD*TILESZ}}
+function interp(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]}
+function prepare(){
+ const stops=[START,...(target.stops||[]),target.end],all=[];
+ for(let k=0;k<stops.length-1;k++)for(let j=0;j<40;j++)all.push(interp(stops[k],stops[k+1],j/40));
+ all.push(target.end);route=all;updateMap(START,true);drawPath(0);
+}
+function tileSrc(x,y,provider){
+ if(provider===0){const letter=['a','b','c','d'][((x+y)%4+4)%4];return 'https://'+letter+'.basemaps.cartocdn.com/'+(chosenMode==='dark'?'dark_all':'voyager')+'/'+ZOOM+'/'+x+'/'+y+'.png';}
+ if(provider===1)return 'https://tile.openstreetmap.org/'+ZOOM+'/'+x+'/'+y+'.png';
+ return '';
+}
+function tileLoad(img,x,y){
+ let next=0;
+ img.onload=function(){if(img.dataset.ok)return;img.dataset.ok='1';tileGood++;updateAvailability()};
+ img.onerror=function(){if(next++===0){img.src=tileSrc(x,y,1);}
+ else{tileBad++;updateAvailability();img.style.visibility='hidden';}};
+ img.referrerPolicy='no-referrer';
+ img.src=tileSrc(x,y,0);
+}
+function redrawGrid(cx,cy){
+ const midX=Math.floor(cx/TILESZ),midY=Math.floor(cy/TILESZ),n=Math.floor(GRID/2);
+ const newBaseX=midX-n,newBaseY=midY-n;
+ if(baseX===newBaseX&&baseY===newBaseY&&images.size)return;
+ baseX=newBaseX;baseY=newBaseY;
+ const root=$('tilePlane'),needed=new Set();
+ for(let dy=0;dy<GRID;dy++)for(let dx=0;dx<GRID;dx++){
+  const x=baseX+dx,y=baseY+dy,key=x+':'+y+':'+chosenMode;
+  needed.add(key);
+  let img=images.get(key);
+  if(!img){img=document.createElement('img');img.alt='';img.decoding='async';img.style.background='#183142';img.dataset.ok='';root.insertBefore(img,$('flightCanvas'));images.set(key,img);tileLoad(img,x,y);}
+  img.style.left=(dx*TILESZ)+'px';img.style.top=(dy*TILESZ)+'px';
+ }
+ for(let [key,img] of [...images])if(!needed.has(key)){img.remove();images.delete(key);}
+ drawPath(progress);
+}
+function updateMap(pos,reset){
+ const m=project(pos);
+ redrawGrid(m.x,m.y);
+ const tx=baseX*TILESZ-m.x,ty=baseY*TILESZ-m.y;
+ $('tilePlane').style.transform='translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px)';
+ current=pos;
+ if(reset)updateAvailability();
+}
+function drawPath(percent){
+ if(!route.length)return;
+ const path=route.map(p=>{const v=project(p);return (v.x-baseX*TILESZ).toFixed(1)+','+(v.y-baseY*TILESZ).toFixed(1)});
+ $('pathAhead').setAttribute('points',path.join(' '));
+ const last=Math.max(1,Math.floor(percent*(path.length-1)));
+ $('pathDone').setAttribute('points',path.slice(0,last+1).join(' '));
+}
+function updateAvailability(){
+ if(tileGood>0){$('topStatus').textContent='CALLES REALES · OSM';$('warning').style.display='none';$('attribution').textContent='© OpenStreetMap contributors · © CARTO';}
+ else{$('topStatus').textContent='COMPROBANDO MAPAS';}
+}
+setTimeout(()=>{
+ if(!tileGood){$('topStatus').textContent='PLANO ILUSTRATIVO';$('warning').style.display='block';$('warning').textContent='No han cargado las imágenes cartográficas. El vuelo funciona sobre un esquema ilustrativo, no sobre calles reales. Puedes repetirlo con Wi-Fi.';$('attribution').textContent='Plano de respaldo ilustrativo (no cartografía real)';}
+},14000);
+function choose(k){selected=k;target=presets[k];$('destination').value=target.name;$('error').style.display='none';prepare();}
+document.querySelectorAll('[data-choice]').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.choice)));
+async function findPlace(q){
+ const ctrl=new AbortController(),wait=setTimeout(()=>ctrl.abort(),8500);
+ try{
+  const r=await fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(q)+'&limit=8&lat=40.42&lon=-3.7',{signal:ctrl.signal});
+  if(!r.ok)throw Error('Servicio de direcciones no disponible.');
+  const j=await r.json(),p=(j.features||[]).find(f=>f.properties?.countrycode==='ES'&&f.geometry?.coordinates?.length===2);
+  if(!p)throw Error('No se ha localizado esa dirección española.');
+  return p.geometry.coordinates;
+ }finally{clearTimeout(wait);}
+}
+function chooseCustom(endpoint,name){
+ const delta=[endpoint[0]-START[0],endpoint[1]-START[1]];
+ target={name,end:endpoint,stops:[interp(START,endpoint,.24),interp(START,endpoint,.5),interp(START,endpoint,.77)]};
+ selected='custom';prepare();
+}
+function setError(s){$('error').textContent=s;$('error').style.display='block';$('launch').disabled=false;$('launch').textContent='✦ Iniciar vuelo automático';}
+async function launch(){
+ const name=$('destination').value.trim();
+ if(!name){setError('Escribe una dirección o elige un ejemplo.');return;}
+ $('launch').disabled=true;$('launch').textContent='Preparando el recorrido…';
+ if(selected!=='custom'&&name!==presets[selected].name || selected==='custom'&&name!==target.name){
+  try{const coords=await findPlace(name);chooseCustom(coords,name)}
+  catch(e){setError('No he podido localizar esa calle. Para ver el test, pulsa «Plaza Mayor» y vuelve a iniciar.');return;}
+ }
+ $('landing').classList.add('off');$('hud').classList.add('visible');$('launch').disabled=false;
+ $('launch').textContent='✦ Iniciar vuelo automático';$('arrived').classList.remove('visible');
+ running=true;paused=false;elapsed=0;progress=0;lastScene=-1;clock=performance.now();tick(clock);
+}
+function tick(now){
+ if(!running||paused)return;
+ const p=Math.max(0,Math.min(1,(now-clock)/duration));progress=p;
+ const idx=Math.min(route.length-1,Math.round((route.length-1)*p));updateMap(route[idx]);drawPath(p);
+ $('bar').style.width=(p*100).toFixed(1)+'%';$('progressText').textContent=Math.round(p*100)+' %';
+ let scene=0;for(let j=0;j<scenes.length;j++)if(p>=scenes[j].at)scene=j;
+ if(scene!==lastScene){lastScene=scene;$('chapterNumber').textContent='VUELO MÁGICO · CAPÍTULO '+(scene+1);$('chapterTitle').textContent=scenes[scene].title;$('chapterCopy').textContent=scenes[scene].desc;}
+ if(p>=1){running=false;$('hud').classList.remove('visible');$('arrived').classList.add('visible');return;}
+ frame=requestAnimationFrame(tick);
+}
+function reset(){
+ running=false;paused=false;cancelAnimationFrame(frame);progress=0;
+ $('arrived').classList.remove('visible');$('hud').classList.remove('visible');$('landing').classList.remove('off');
+ updateMap(START);drawPath(0);
+}
+$('launch').addEventListener('click',launch);
+$('pause').addEventListener('click',()=>{
+ if(!running)return;
+ if(!paused){paused=true;elapsed=progress*duration;cancelAnimationFrame(frame);$('pause').textContent='▶ Continuar';}
+ else{paused=false;clock=performance.now()-elapsed;$('pause').textContent='⏸ Pausar';frame=requestAnimationFrame(tick);}
+});
+$('restart').addEventListener('click',reset);$('again').addEventListener('click',reset);
+$('view').addEventListener('click',()=>{
+ chosenMode=chosenMode==='dark'?'light':'dark';$('view').textContent=chosenMode==='dark'?'☀ Vista clara':'☾ Vista nocturna';
+ for(const img of images.values())img.remove();images.clear();tileGood=0;tileBad=0;
+ $('topStatus').textContent='COMPROBANDO MAPAS';updateMap(current,true);drawPath(progress);
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!paused){paused=true;elapsed=progress*duration;cancelAnimationFrame(frame);$('pause').textContent='▶ Continuar';}});
+prepare();
+})();
+</script>
+</body>
+</html>
