@@ -24,6 +24,10 @@
     @media(max-height:730px){.intro{align-items:start}.panel{margin:auto}.panel .headline{font-size:36px}.panel .lead{margin-bottom:16px}.panel .primary{margin-top:12px}.chapter{top:calc(84px + env(safe-area-inset-top,0px))}.chapter-sub{max-width:220px}}
     @media(prefers-reduced-motion:reduce){.balloon-marker{animation:none}*,*:before,*:after{scroll-behavior:auto!important;transition-duration:.001ms!important}}
 
+    .aerial-mode{margin:12px 0 0;display:flex;align-items:flex-start;gap:10px;border:1px solid rgba(182,222,243,.26);background:rgba(42,106,144,.13);padding:12px;border-radius:12px;color:#edf9ff;font-size:12px;line-height:1.45;cursor:pointer}.aerial-mode input{width:19px;height:19px;flex:none;margin:0;accent-color:#b5e3ff}.aerial-mode strong{color:#fff0ca}.aerial-mode small{color:#acc9db;display:block;margin-top:4px;line-height:1.35}
+    body.pnoa-active .sky-glow{background:linear-gradient(180deg,rgba(3,12,27,.21),transparent 36%,rgba(4,13,30,.39))}
+    body.pnoa-active .stars{opacity:.06}body.pnoa-active .vignette{box-shadow:inset 0 0 105px 30px rgba(1,7,18,.33)}
+    body.pnoa-active #map canvas{filter:brightness(.91) saturate(.81) contrast(1.10)}
     .realism-opt{margin-top:14px;border:1px solid rgba(245,203,122,.26);border-radius:13px;background:rgba(237,193,115,.045);padding:13px 15px}
     .realism-opt summary{list-style:none;cursor:pointer;font-size:13px;font-weight:750;color:#ffe3a2;display:flex;align-items:center;justify-content:space-between;gap:8px}
     .realism-opt summary::-webkit-details-marker{display:none}.realism-opt summary:after{content:"＋";font-size:17px;opacity:.9}.realism-opt[open] summary:after{content:"−"}
@@ -55,6 +59,7 @@
           <p class="hint" id="destination-hint">En esta prueba usamos un destino público de Madrid.</p>
         </label>
         <details class="test-config"><summary>Cambiar origen (opción de prueba)</summary><label class="field" for="origin"><div class="field-title">Salida desde la clínica</div><div class="textbox"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#edce8a" stroke-width="1.7"><path d="M4 21V6l8-4 8 4v15M4 9h16M9 14h6M12 9v12"/></svg><input id="origin" value="Puerta del Sol, Madrid" autocomplete="off" maxlength="150" required></div><p class="hint">En producción esta dirección vendrá configurada por cada clínica.</p></label></details>
+        <label class="aerial-mode" for="pnoa-enabled"><input id="pnoa-enabled" type="checkbox" checked><span><strong>Fotografía aérea real de España · Activada</strong><small>Ortofotos PNOA del IGN. Gratis y sin clave. Edificios 3D cartográficos y noche cinematográfica simulada.</small></span></label>
         <details class="realism-opt" id="realism-opt">
           <summary>✦ Más realismo: fotografía aérea 3D</summary>
           <label class="photo-switch" for="satellite-enabled"><input id="satellite-enabled" type="checkbox"><span>Usar imágenes reales de tejados y edificios con iluminación de noche simulada</span></label>
@@ -63,7 +68,7 @@
             <input id="mapbox-token" type="password" autocomplete="off" spellcheck="false" placeholder="pk.eyJ... (no uses tokens secretos)">
             <p>Requiere un token público <b>pk.</b> de Mapbox. No se guarda en el móvil ni en GitHub; para esta prueba se utiliza solo mientras esté abierta la página. Restringe el token al dominio de prueba en tu cuenta.</p>
           </div>
-          <p>Sin token, el modo cartográfico nocturno seguirá funcionando gratis. Con Mapbox se activan fotografía satélite y volúmenes 3D; no es una grabación nocturna real.</p>
+          <p>La vista aérea gratuita ya está activada. Mapbox ofrece otro motor 3D para comparar. Las imágenes de tejados son diurnas; la iluminación de noche es un efecto artístico.</p>
         </details>
         <p class="error" id="error" role="alert"></p>
         <button class="primary" id="start" type="submit">✦ &nbsp; COMENZAR EL VUELO</button>
@@ -96,6 +101,9 @@
     const DEFAULT_DESTINATION = { text: 'Plaza de España, Madrid', coord: [-3.71211,40.42309] };
     const DARK_STYLE = 'https://tiles.openfreemap.org/styles/dark';
     const CARTO_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+    // PNOA (IGN/CNIG) publishes a free-to-use TMS with attribution (CC BY 4.0).
+    // Official coverage is Spain. For TMS, MapLibre flips Y when scheme:'tms'.
+    const PNOA_TMS='https://tms-pnoa-ma.idee.es/1.0.0/pnoa-ma/{z}/{x}/{y}.jpeg';
     // MapLibre v6 is ESM-only. The old global maplibregl .js URL cannot work with v6.
     // Retry through a second CDN before showing a genuine error.
     let maplibregl = null;
@@ -186,7 +194,29 @@
     function pointAt(t){const target=Math.max(0,Math.min(1,t))*state.total;let lo=0,hi=state.cumulative.length-1;while(lo<hi){const mid=Math.floor((lo+hi)/2);if(state.cumulative[mid]<target)lo=mid+1;else hi=mid}const i=Math.max(1,lo),start=state.cumulative[i-1],end=state.cumulative[i],f=(target-start)/Math.max(1,end-start);return [lerp(state.coords[i-1][0],state.coords[i][0],f),lerp(state.coords[i-1][1],state.coords[i][1],f)]}
     function makeFeature(coords){return {type:'Feature',properties:{},geometry:{type:'LineString',coordinates:coords}}}
     function installGeoLayers(){const map=state.map;if(!map||!map.isStyleLoaded())return;
-      const st=map.getStyle();const roadSource=state.mapMode==='satellite'?null:(st.layers||[]).find(l=>l['source-layer']==='building')?.source || (state.mapMode==='satellite'?null:Object.entries(st.sources||{}).find(([,v])=>v.type==='vector')?.[0]);
+      const st=map.getStyle();
+      if(state.mapMode==='pnoa' && !map.getSource('pnoa-photo')){
+        try {
+          const firstLabel=(st.layers||[]).find(l=>l.type==='symbol')?.id;
+          map.addSource('pnoa-photo',{type:'raster',tiles:[PNOA_TMS],tileSize:256,scheme:'tms',minzoom:7,maxzoom:19,
+            attribution:'Ortofotografía PNOA © Instituto Geográfico Nacional (CC BY 4.0)'});
+          map.addLayer({id:'pnoa-photo-layer',type:'raster',source:'pnoa-photo',paint:{
+            'raster-opacity':.97,'raster-saturation':-.2,'raster-contrast':.15,
+            'raster-brightness-min':.015,'raster-brightness-max':.72}},firstLabel);
+          let failures=0;
+          map.on('error',event=>{
+            if(state.mapMode!=='pnoa')return;
+            const message=String(event?.error?.message||'');
+            if(/pnoa-ma|tms-pnoa-ma/i.test(message) && ++failures>=4 && map.getLayer('pnoa-photo-layer')){
+              map.setLayoutProperty('pnoa-photo-layer','visibility','none');
+              document.body.classList.remove('pnoa-active');
+              $('reality-chip').textContent='3D · FOTO NO DISPONIBLE';
+              $('credits').textContent='El IGN no ha respondido: seguimos con cartografía vectorial 3D. © OpenStreetMap / OpenFreeMap.';
+            }
+          });
+        }catch(err){console.warn('Ortofotografía IGN no disponible:',err);$('reality-chip').textContent='3D · CARTOGRAFÍA REAL'}
+      }
+      const roadSource=state.mapMode==='satellite'?null:(st.layers||[]).find(l=>l['source-layer']==='building')?.source || (state.mapMode==='satellite'?null:Object.entries(st.sources||{}).find(([,v])=>v.type==='vector')?.[0]);
       if(roadSource && !map.getLayer('magic-buildings')){const firstLabel=st.layers.find(l=>l.type==='symbol')?.id;
         try{map.addLayer({id:'magic-buildings',source:roadSource,'source-layer':'building',type:'fill-extrusion',minzoom:13,paint:{'fill-extrusion-color':['interpolate',['linear'],['zoom'],12,'#0b1728',16,'#33475a'],'fill-extrusion-height':['coalesce',['to-number',['get','render_height']],['to-number',['get','height']],11],'fill-extrusion-base':['coalesce',['to-number',['get','render_min_height']],0],'fill-extrusion-opacity':.9,'fill-extrusion-vertical-gradient':true}},firstLabel)}catch(e){console.warn('3D no compatible con esta capa:',e)}
       }
@@ -233,7 +263,7 @@
         try{await waitForMap(map,'Mapbox Satellite')}
         catch(err){try{map.remove()}catch(_){}throw err}
         state.map=map;state.mapReady=true;state.mapProvider='Mapbox Satellite 3D';state.mapMode='satellite';state.mapEngine=gl;
-        document.body.classList.add('satellite-active');$('reality-chip').textContent='FOTOGRAFÍA AÉREA · 3D';return map;
+        document.body.classList.add('satellite-active');document.body.classList.remove('pnoa-active');$('reality-chip').textContent='FOTOGRAFÍA AÉREA · 3D';return map;
       }
       await loadMapEngine();
       for(const styleURL of [DARK_STYLE,CARTO_STYLE]){
@@ -241,8 +271,9 @@
         try{
           map=new maplibregl.Map({container:'map',style:styleURL,center:DEFAULT_ORIGIN.coord,zoom:14.7,pitch:70,bearing:-28,antialias:true,attributionControl:true,interactive:false,fadeDuration:0,maxPitch:80});
           await waitForMap(map,'cartografía vectorial');
-          state.map=map;state.mapReady=true;state.mapProvider=styleURL===DARK_STYLE?'OpenFreeMap':'CARTO';state.mapMode='vector';state.mapEngine=maplibregl;
-          document.body.classList.remove('satellite-active');$('reality-chip').textContent='3D · CARTOGRAFÍA REAL';return map;
+          state.map=map;state.mapReady=true;state.mapProvider=mode==='pnoa'?'PNOA IGN + '+(styleURL===DARK_STYLE?'OpenFreeMap':'CARTO'):(styleURL===DARK_STYLE?'OpenFreeMap':'CARTO');state.mapMode=mode;state.mapEngine=maplibregl;
+          document.body.classList.remove('satellite-active');document.body.classList.toggle('pnoa-active',mode==='pnoa');
+          $('reality-chip').textContent=mode==='pnoa'?'PNOA · FOTO AÉREA REAL':'3D · CARTOGRAFÍA REAL';return map;
         }catch(err){console.warn('Proveedor vectorial alternativo:',err);try{map?.remove()}catch(_){}}
       }
       throw Error('Los dos proveedores cartográficos no responden. Inténtalo de nuevo desde Safari.');
@@ -250,14 +281,14 @@
     function chapterFor(p){if(p<.15)return ['Capítulo I · El despegue','La magia despega','Los tejados de la ciudad aparecen bajo el globo.'];if(p<.48)return ['Capítulo II · Sobre la ciudad','Luces bajo las estrellas','Cada calle nos acerca un poquito más al destino.'];if(p<.8)return ['Capítulo III · El camino','Un viaje entre tejados','¿Reconoces estas calles desde el cielo?'];return ['Capítulo IV · Ya casi estamos','¡Mira, estamos llegando!','El globo se prepara para su última parada.']}
     function render(progress){if(!state.map||!state.coords.length)return;
       const p=Math.max(0,Math.min(1,progress)),point=pointAt(p),ahead=pointAt(Math.min(1,p+Math.max(.01,75/Math.max(1,state.total)))),heading=bearing(point,ahead);
-      const photo=state.mapMode==='satellite';
-      const targetZoom=photo ? (p<.09?lerp(15.8,17.15,smoothstep(p/.09)):p>.90?lerp(17.15,17.8,smoothstep((p-.90)/.10)):17.15+.22*Math.sin(p*Math.PI*4)) : (p<.08?lerp(14.5,16.35,smoothstep(p/.08)):p>.9?lerp(16.35,17.15,smoothstep((p-.9)/.1)):16.35);
+      const photo=state.mapMode==='satellite', aerial=state.mapMode==='pnoa';
+      const targetZoom=photo ? (p<.09?lerp(15.8,17.15,smoothstep(p/.09)):p>.90?lerp(17.15,17.8,smoothstep((p-.90)/.10)):17.15+.22*Math.sin(p*Math.PI*4)) : (p<.08?lerp(14.5,16.35,smoothstep(p/.08)):p>.9?lerp(16.35,17.15,smoothstep((p-.9)/.1)):aerial?16.7:16.35);
       if(state.cameraBearing===null)state.cameraBearing=heading;
       let delta=((heading-state.cameraBearing+540)%360)-180;
       state.cameraBearing=(state.cameraBearing+delta*.16+360)%360;
       // Cinematic tracking: the globo remains behind a slightly leading point, and turns are smoothed.
       const lookAhead=pointAt(Math.min(1,p+(photo?32:18)/Math.max(1,state.total)));
-      state.map.jumpTo({center:lookAhead,zoom:targetZoom,pitch:photo?77:72,bearing:state.cameraBearing});
+      state.map.jumpTo({center:lookAhead,zoom:targetZoom,pitch:photo?77:aerial?73:70,bearing:state.cameraBearing});
       state.marker?.setLngLat(point);
       const stride=Math.max(1,Math.floor(state.coords.length/700));const target=p*state.total;let idx=state.cumulative.findIndex(d=>d>=target);if(idx===-1)idx=state.coords.length-1;const drawn=state.coords.slice(0,Math.max(1,idx)).filter((_,i)=>i%stride===0);drawn.push(point);state.map.getSource('magic-done')?.setData(makeFeature(drawn));
       $('progress-bar').style.width=`${Math.round(p*1000)/10}%`;$('progress').setAttribute('aria-valuenow',String(Math.round(p*100)));$('flight-value').textContent=`${Math.round(p*100)}% · ${Math.round(state.total*(1-p))} m restantes`;
@@ -276,15 +307,16 @@
         const [a,b]=await Promise.all([locate(orig,DEFAULT_ORIGIN),locate(dest,DEFAULT_DESTINATION)]);
         if(distance(a,b)<80)throw Error('El destino debe estar al menos a 80 metros de la salida.');
         state.origin=a;state.destination=b;
-        const photo=$('satellite-enabled').checked;const token=$('mapbox-token').value.trim();
+        const photo=$('satellite-enabled').checked;const aerial=$('pnoa-enabled').checked;const token=$('mapbox-token').value.trim();
         if(photo && !/^pk\.[A-Za-z0-9._-]{15,}$/.test(token))throw Error('Para la vista fotográfica debes introducir tu token público de Mapbox (pk.). O desactiva esa opción para volar gratis.');
-        const [coords]=await Promise.all([computeRoadRoute(a,b),ensureMap(photo?'satellite':'vector',token)]);
+        const [coords]=await Promise.all([computeRoadRoute(a,b),ensureMap(photo?'satellite':aerial?'pnoa':'vector',token)]);
         if(!coords.length)throw Error('No se ha podido preparar el recorrido.');
         clearGeoLayers();buildDistances(coords);installGeoLayers();state.map.resize();state.speed=1;$('speed').textContent='Velocidad ×1';
         $('credits').textContent=`© OpenStreetMap contributors · ${state.mapProvider||'OpenFreeMap'} · ${state.preferredMode==='road'?'Ruta aproximada por vías OSRM':'Trayectoria aérea directa (respaldo)'} · Recreación artística, no vuelo real.`;
         $('intro').classList.add('closed');$('cinematic').classList.add('visible');restart();
       }catch(err){console.error(err);showError(err.message||'No se ha podido iniciar el vuelo. Comprueba la conexión.')}finally{setBusy(false)}
     }
+    $('pnoa-enabled').addEventListener('change',ev=>{$('pnoa-enabled').closest('label').querySelector('strong').textContent=ev.target.checked?'Fotografía aérea real de España · Activada':'Fotografía aérea real de España · Desactivada'});
     $('satellite-enabled').addEventListener('change',ev=>{
       $('photo-token').classList.toggle('hidden',!ev.target.checked);
       if(ev.target.checked)$('realism-opt').open=true;
