@@ -1105,15 +1105,14 @@ function renderExport(){
  const w=769,h=740;
  g.transform((916-147)/w,(58-107)/w,(188-147)/h,(846-107)/h,147,107);
  // Fondo desenfocado y retrato completo: conserva manos, caras y al Ratón Pérez.
- const aspect=photo.width/photo.height,frameAspect=w/h;
- const sx=aspect>frameAspect?(photo.width-photo.height*frameAspect)/2:0;
- const sy=aspect<frameAspect?(photo.height-photo.width/frameAspect)/2:0;
- const sw=photo.width-2*sx,sh=photo.height-2*sy;
- g.save();g.filter='blur(28px) brightness(.76)';
- g.drawImage(photo,sx,sy,sw,sh,-35,-35,w+80,h+100);g.restore();
- const scale=Math.min((w+6)/photo.width,(h+4)/photo.height);
- const fw=photo.width*scale,fh=photo.height*scale;
- g.drawImage(photo,(w-fw)/2,(h-fh)/2,fw,fh);
+ // Se dibuja UNA sola imagen, con 'cover' dentro de la abertura trapezoidal.
+ // El método anterior usaba una segunda foto desenfocada de fondo: duplicaba
+ // partes de la escena al adaptar un retrato vertical al marco horizontal.
+ const scale=Math.max(w/photo.width,h/photo.height);
+ const sw=w/scale,sh=h/scale;
+ const sx=Math.max(0,(photo.width-sw)*.5);
+ const sy=Math.max(0,(photo.height-sh)*.38);
+ g.drawImage(photo,sx,sy,sw,sh,0,0,w,h);
  g.restore();
  // Marco, cielo, chispas y fachada intactos.
  g.drawImage(recuerdoFrame,0,0,out.width,out.height);
