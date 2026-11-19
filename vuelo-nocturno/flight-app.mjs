@@ -173,7 +173,8 @@ async function startFlight(dest,isDemo){
   }
   state.route=route;state.childPath=isDemo?route:shortenForHome(route,180);state.flyTo=dest;
   const map=await ensureMap();installRoute();
-  hide('setup');hide('arrival');show('flight-ui');show('balloon');
+  hide('setup');hide('arrival');show('flight-ui');
+  if(state.balloon3D)hide('balloon');else show('balloon');
   $('route-indicator').textContent=state.approximate?'Trazado de muestra · NO ruta calculada':'Calles reales · globo animado';
   $('distance').textContent=displayDistance(route.length);$('flight-status').textContent=isDemo?'Madrid · recorrido público de prueba':'Últimos metros del domicilio ocultos';
   $('flight-caption').textContent=state.approximate?'Vuelo de muestra sobre Madrid':'¡El globo está sobrevolando tu ruta!';
@@ -185,7 +186,15 @@ async function startFlight(dest,isDemo){
 }
 function renderBalloon(){
  if(!state.childPath||!state.mapReady)return;
- const p=along(state.childPath,state.progress),screen=state.map.project(p);
+ const p=along(state.childPath,state.progress);
+ if(state.balloon3D){
+   hide('balloon');
+   state.balloon3D.setPose({coordinates:p,bearing:heading(state.childPath,state.progress),altitude:85+Math.sin(state.progress*Math.PI)*35,progress:state.progress});
+   return;
+ }
+ if($('flight-ui').classList.contains('hidden'))return;
+ show('balloon');
+ const screen=state.map.project(p);
  const el=$('balloon');el.style.left=screen.x+'px';el.style.top=(screen.y-38)+'px';
  const tilt=Math.sin((heading(state.childPath,state.progress)-state.map.getBearing())*Math.PI/180)*4;
  el.style.rotate=tilt+'deg';
@@ -221,7 +230,9 @@ function updateCamera(t,force=false){
  state.lastCamera=t;
  const path=state.childPath,f=state.progress;
  const coord=along(path,Math.min(.995,f+.005));const base=colorNight(f);
- const settings=state.view==='globe'?{zoom:base.zoom+1,pitch:Math.min(78,base.pitch+3),offset:[0,105]}:{zoom:Math.max(14.7,base.zoom-1.1),pitch:55,offset:[0,0]};
+ const settings=state.view==='globe'?
+   {zoom:state.provider==='mapbox'?17.15:base.zoom+1.1,pitch:Math.min(77,base.pitch+2),offset:[0,105]}:
+   {zoom:state.provider==='mapbox'?15.4:Math.max(14.7,base.zoom-1.1),pitch:57,offset:[0,0]};
  state.map.easeTo({center:coord,bearing:heading(path,Math.min(.995,f+.006)),duration:1850,essential:false,...settings});
 }
 function renderFrame(timestamp,force=false){
@@ -242,14 +253,19 @@ function animate(t){if(!state.playing)return;state.progress=easing((t-state.star
  if(state.progress>=1){pause();showArrival();return;}
  state.raf=requestAnimationFrame(animate);
 }
-function play(){if(!state.childPath||!state.mapReady)return;if(state.progress>=1)state.progress=0;state.playing=true;state.startTime=performance.now()-inverseEasing(state.progress)*state.durationMs;state.lastCamera=0;updateCamera(performance.now(),true);$('pause').innerHTML='Pausar <span>Ⅱ</span>';state.raf=requestAnimationFrame(animate);}
+function play(){if(!state.childPath||!state.mapReady)return;if(state.progress>=1)state.progress=0;state.playing=true;state.balloon3D?.setActive(true);state.startTime=performance.now()-inverseEasing(state.progress)*state.durationMs;state.lastCamera=0;updateCamera(performance.now(),true);$('pause').innerHTML='Pausar <span>Ⅱ</span>';state.raf=requestAnimationFrame(animate);}
 function inverseEasing(value){let l=0,h=1;for(let i=0;i<27;i++){const m=(l+h)/2;if(easing(m)<value)l=m;else h=m;}return(l+h)/2;}
-function pause(){if(state.playing){const phase=Math.min(1,(performance.now()-state.startTime)/state.durationMs);state.progress=easing(phase)}state.playing=false;cancelAnimationFrame(state.raf);$('pause').innerHTML='Continuar <span>▶</span>';}
+function pause(){if(state.playing){const phase=Math.min(1,(performance.now()-state.startTime)/state.durationMs);state.progress=easing(phase)}state.playing=false;state.balloon3D?.setActive(false);cancelAnimationFrame(state.raf);$('pause').innerHTML='Continuar <span>▶</span>';}
 function showArrival(){pause();hide('flight-ui');hide('balloon');show('arrival');}
 function backToStart(){pause();hide('arrival');hide('flight-ui');hide('balloon');show('setup');state.childPath=null;state.route=null;state.progress=0;state.isDemo=false;state.approximate=false;state.selection=null;$('address').value='';$('fly').disabled=true;if(state.mapReady)state.map.flyTo({center:START.coordinates,zoom:16.2,pitch:68,bearing:-13,duration:950});}
 async function activateMapbox(){const token=$('mapbox-key').value.trim();if(!/^pk\.[A-Za-z0-9._-]{20,}$/.test(token)){$('provider-info').textContent='Introduce un token público válido de Mapbox, que empieza por pk.';return;}
  const previous=state.provider;state.provider='mapbox';state.token=token;loading(true,'Activando satélite 3D…','Comprobando tu token Mapbox');
- try{if(state.mapPromise)await state.mapPromise.catch(()=>{});await createMap();loading(false);$('provider-info').textContent='Mapbox Satellite 3D activo; la fotografía aérea es diurna y la iluminación se representa de noche.';}
+ try{
+    if(state.mapPromise)await state.mapPromise.catch(()=>{});
+    await createMap();loading(false);
+    $('provider-info').textContent='Satélite real activo. Globo '+(state.balloon3D?'3D real sobre el mapa.':'SVG de reserva. La fotografía aérea sigue activada.');
+    hide('mapbox-settings-hint');
+  }
  catch(e){console.warn(e);state.provider=previous;state.token='';loading(false);$('provider-info').textContent=e.message+' Volviendo a mapa libre.';try{await createMap()}catch(fail){notify(fail.message)}}
 }
 function setup(){
@@ -257,6 +273,14 @@ function setup(){
  $('fly').addEventListener('click',()=>startFlight(state.selection,false));
  $('quick-demo').addEventListener('click',()=>startFlight(DEMO_END,true));
  $('apply-provider').addEventListener('click',activateMapbox);
+ $('night-toggle').addEventListener('click',()=>{
+   state.nightPreset=state.nightPreset==='night'?'dusk':'night';
+   document.body.classList.toggle('dusk-mode',state.nightPreset==='dusk');
+   $('night-toggle').textContent=state.nightPreset==='night'?'☾ NOCHE':'☀ CREPÚSCULO';
+   if(state.provider==='mapbox'&&state.map){
+     try{state.map.setConfigProperty('basemap','lightPreset',state.nightPreset)}catch(e){console.warn('No disponible el cambio de iluminación',e)}
+   }
+ });
  $('pause').addEventListener('click',()=>state.playing?pause():play());
  $('back').addEventListener('click',backToStart);$('again').addEventListener('click',backToStart);
  $('restart').addEventListener('click',()=>{pause();state.progress=0;renderFrame(performance.now(),true);play()});
