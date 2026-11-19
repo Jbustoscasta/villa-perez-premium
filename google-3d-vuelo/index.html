@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#091927">
+<meta name="description" content="Prueba de vuelo cinematográfico sobre Google Maps 3D fotorrealista para Villa Pérez.">
+<title>Google 3D · Vuelo del Ratón Pérez · Villa Pérez</title>
+<link rel="stylesheet" href="./styles.css?v=1.0.0">
+<script type="module" src="./app.mjs?v=1.0.0"></script>
+</head>
+<body>
+<div class="app">
+ <div class="map-host" id="mapHost" aria-label="Google Maps 3D fotorrealista de Madrid">
+  <div class="unloaded-map" id="beforeMap" aria-hidden="true"><div class="unloaded-orbit"></div><div class="unloaded-star">✦</div><div class="unloaded-text">EL CIELO DE MADRID NOS ESPERA</div></div>
+ </div>
+ <div class="cinema-grade" id="cinemaGrade" aria-hidden="true"></div>
+ <div class="dust-layer" id="dustLayer" aria-hidden="true"></div>
+ <header class="topline">
+  <div class="logo"><div class="logo-mark">✦</div><div><span>VILLA PÉREZ · LABORATORIO</span><strong>El vuelo imposible</strong></div></div>
+  <div class="live-indicator"><i></i><span id="mapState">PREPARADO PARA GOOGLE 3D</span></div>
+ </header>
+ <section class="setup" id="setup" aria-label="Configuración de Google Maps y ruta">
+  <span class="eyebrow">PRUEBA TÉCNICA · FOTORREALISMO</span>
+  <h1>Esta vez, <em>Madrid de verdad.</em></h1>
+  <p class="lead">Fotografía aérea y edificios 3D reales. Sobrevolaremos las calles con cámara cinematográfica y el globo de Villa Pérez.</p>
+  <div class="key-group" id="keyGroup">
+   <div class="section-head"><span class="round">01</span><div><b>Conectar Google Maps 3D</b><small>Solo una vez por pestaña · clave restringida</small></div></div>
+   <label for="apiKey">Clave web de Google Maps Platform</label>
+   <div class="input-outer"><input id="apiKey" type="password" placeholder="AIza…" autocomplete="off" spellcheck="false" autocapitalize="off"><button id="showKey" type="button" aria-label="Mostrar clave" aria-pressed="false">VER</button></div>
+   <button class="cta" id="connect" type="button">Activar cartografía 3D <span>→</span></button>
+   <div class="help"><a href="https://console.cloud.google.com/google/maps-apis/credentials" target="_blank" rel="noopener noreferrer">Crear clave en Google Cloud</a><span> · </span><a href="./GUIA-GOOGLE-MAPS.md" target="_blank" rel="noopener noreferrer">Instrucciones</a></div>
+   <p class="small-note">La clave no se sube a GitHub ni se envía a nuestro servidor. Solo se usa para cargar Google Maps en tu navegador. Debe estar restringida por dominio y API.</p>
+  </div>
+  <div class="route-group">
+   <div class="section-head"><span class="round">02</span><div><b>Elegir destino</b><small>Origen de demostración: Puerta de Alcalá</small></div></div>
+   <div class="destination-chips"><button class="chip active" data-route="plaza" type="button">Plaza Mayor</button><button class="chip" data-route="bernabeu" type="button">Bernabéu</button><button class="chip" data-route="arroyofresno" type="button">Arroyo Fresno</button></div>
+   <label for="address">O indica una dirección (opcional)</label>
+   <input id="address" autocomplete="street-address" placeholder="Calle, número, municipio" maxlength="220">
+   <p class="micro">Para direcciones propias también hay que activar Geocoding API. La demo usa lugares públicos sin consultar domicilios.</p>
+   <p class="form-error" id="error" role="alert" hidden></p>
+   <button class="cta gold" id="launch" type="button" disabled>✦ Despegar sobre Madrid</button>
+  </div>
+  <p class="setup-tail">Prototipo independiente. No usa la dirección real de la clínica. La fotogrametría depende de la cobertura de Google y el rendimiento del iPhone.</p>
+ </section>
+ <div id="balloon" class="balloon" aria-label="Globo mágico de Villa Pérez" role="img" hidden>
+  <svg viewBox="0 0 164 228" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+   <defs>
+    <radialGradient id="env" cx=".3" cy=".28"><stop stop-color="#ffecd0"/><stop offset=".42" stop-color="#dbb77a"/><stop offset=".8" stop-color="#689994"/><stop offset="1" stop-color="#23495a"/></radialGradient>
+    <linearGradient id="basket" x1="0" x2="1"><stop stop-color="#7c4c2a"/><stop offset=".55" stop-color="#c89d60"/><stop offset="1" stop-color="#7c4c2a"/></linearGradient>
+   </defs>
+   <path d="M82 5C36 5 13 43 16 89C18 118 48 146 64 167L100 167C117 145 146 114 148 89C151 43 128 5 82 5" fill="url(#env)" stroke="#f8db98" stroke-width="2"/>
+   <path d="M82 5C63 12 49 44 54 88C59 125 69 151 68 167M82 5C101 12 115 44 110 88C105 125 95 151 96 167" fill="none" stroke="#fff1bb" stroke-width="3" opacity=".8"/>
+   <path d="M19 81C47 96 116 104 145 81M26 112C50 129 116 136 139 112" fill="none" stroke="#e4bd7a" stroke-width="6" opacity=".7"/>
+   <path d="M67 167L59 197M98 167L106 197" fill="none" stroke="#d9b47c" stroke-width="3"/>
+   <path d="M50 192L114 192L106 224L59 224Z" fill="url(#basket)" stroke="#fce3a4" stroke-width="3"/>
+   <path d="M56 205C72 212 94 212 110 205M60 216C72 222 94 222 106 216" fill="none" stroke="#5a3a24" opacity=".6" stroke-width="2"/>
+   <circle cx="82" cy="98" r="22" fill="#1b4d56" stroke="#f6d58f" stroke-width="5"/>
+   <path d="M73 88L82 91L91 88L89 102L82 109L75 102Z" fill="#fff6d4"/>
+  </svg>
+  <img class="official" src="../perez.png" alt="">
+  <div class="balloon-flare"></div>
+ </div>
+ <div class="flight-overlay" id="flightUI" hidden>
+  <div class="chapter"><span class="eyebrow" id="chapterEyebrow">TRANSMISIÓN MÁGICA · CAPÍTULO 1</span><h2 id="chapterTitle">Sobre los tejados</h2><p id="chapterDescription">Madrid comienza a aparecer bajo el globo…</p></div>
+  <div class="flight-bar">
+   <div class="bar-top"><span id="travelLabel">PUERTA DE ALCALÁ → PLAZA MAYOR</span><span id="progressLabel">0%</span></div>
+   <div class="bar-track"><div id="progressFill"></div></div>
+   <div class="flight-buttons">
+    <button id="pause" type="button">⏸ Pausar</button>
+    <button id="twilight" type="button">☾ Atardecer</button>
+    <button id="restart" type="button">↺ Reiniciar</button>
+   </div>
+  </div>
+  <p class="flight-warning">Vuelo de fantasía por puntos geográficos reales. No es navegación ni seguimiento GPS.</p>
+ </div>
+ <div id="arrival" class="arrival" hidden><div class="arrival-card"><span>✦ LA MAGIA HA LLEGADO ✦</span><h2>¡El Ratón Pérez está muy cerca!</h2><p>La cámara ha recorrido la ciudad real. Los últimos metros hasta casa serán siempre un secreto.</p><button class="cta gold" id="again">Repetir el vuelo</button></div></div>
+ <div id="systemMessage" class="system-message" role="status" aria-live="polite" hidden></div>
+</div>
+</body></html>
