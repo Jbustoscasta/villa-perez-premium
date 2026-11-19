@@ -38,15 +38,15 @@ export async function installBalloon3D(map,mapboxgl,{imageUrl='../perez.png'}={}
         const mesh=add(g,colors[i],0,21,0);
         mesh.scale.set(8.4,9.8,8.4);
       }
+      // Optimized ribs: 12 curves instead of 240 individual cylinder draw calls.
       for(let i=0;i<12;i++){
         const rad=i*Math.PI/6+.002;
-        for(let j=0;j<20;j++){
-          const a=Math.PI*(j/20),b=Math.PI*((j+1)/20);
-          const v1=new THREE.Vector3(8.45*Math.sin(a)*Math.sin(rad),21+9.85*Math.cos(a),8.45*Math.sin(a)*Math.cos(rad));
-          const v2=new THREE.Vector3(8.45*Math.sin(b)*Math.sin(rad),21+9.85*Math.cos(b),8.45*Math.sin(b)*Math.cos(rad));
-          const d=new THREE.Vector3().subVectors(v2,v1),edge=add(new THREE.CylinderGeometry(.065,.065,d.length(),6),gold,...new THREE.Vector3().addVectors(v1,v2).multiplyScalar(.5).toArray());
-          edge.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());
+        const pts=[];
+        for(let j=0;j<=20;j++){
+          const a=Math.PI*(j/20);
+          pts.push(new THREE.Vector3(8.45*Math.sin(a)*Math.sin(rad),21+9.85*Math.cos(a),8.45*Math.sin(a)*Math.cos(rad)));
         }
+        add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),24,.07,5,false),gold,0,0,0);
       }
       for(const h of [13,19,25]){
         const a=Math.acos((h-21)/9.8),radius=8.46*Math.sin(a);
