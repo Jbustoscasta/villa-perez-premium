@@ -218,7 +218,7 @@
       }
       const roadSource=state.mapMode==='satellite'?null:(st.layers||[]).find(l=>l['source-layer']==='building')?.source || (state.mapMode==='satellite'?null:Object.entries(st.sources||{}).find(([,v])=>v.type==='vector')?.[0]);
       if(roadSource && !map.getLayer('magic-buildings')){const firstLabel=st.layers.find(l=>l.type==='symbol')?.id;
-        try{map.addLayer({id:'magic-buildings',source:roadSource,'source-layer':'building',type:'fill-extrusion',minzoom:13,paint:{'fill-extrusion-color':['interpolate',['linear'],['zoom'],12,'#0b1728',16,'#33475a'],'fill-extrusion-height':['coalesce',['to-number',['get','render_height']],['to-number',['get','height']],11],'fill-extrusion-base':['coalesce',['to-number',['get','render_min_height']],0],'fill-extrusion-opacity':.9,'fill-extrusion-vertical-gradient':true}},firstLabel)}catch(e){console.warn('3D no compatible con esta capa:',e)}
+        try{map.addLayer({id:'magic-buildings',source:roadSource,'source-layer':'building',type:'fill-extrusion',minzoom:13,paint:{'fill-extrusion-color':['interpolate',['linear'],['zoom'],12,'#0b1728',16,'#33475a'],'fill-extrusion-height':['coalesce',['to-number',['get','render_height']],['to-number',['get','height']],11],'fill-extrusion-base':['coalesce',['to-number',['get','render_min_height']],0],'fill-extrusion-opacity':state.mapMode==='pnoa'?.48:.9,'fill-extrusion-vertical-gradient':true}},firstLabel)}catch(e){console.warn('3D no compatible con esta capa:',e)}
       }
       map.addSource('magic-full',{type:'geojson',data:makeFeature(state.coords)});
       map.addSource('magic-done',{type:'geojson',data:makeFeature([state.coords[0],state.coords[0]])});
