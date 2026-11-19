@@ -456,6 +456,27 @@ async function sharePostcard(){
     }
   }catch(e){postcardNotice(e);}
 }
+async function toggleSound(){
+  state.soundOn=!state.soundOn;
+  if(state.soundOn){
+    try{
+      const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+      if(!AudioContextClass)throw new Error('Sin audio WebAudio');
+      state.audioCtx??=new AudioContextClass();
+      await state.audioCtx.resume();
+      playChime('sparkle');
+    }catch(e){state.soundOn=false;console.warn('Sin audio:',e);}
+  }
+  state.director?.setAudio(state.soundOn,state.audioCtx);
+  state.director?.setAmbient(state.playing);
+  for(const control of [$('sound-toggle'),$('welcome-sound')]){
+    control.setAttribute('aria-pressed',String(state.soundOn));
+    control.classList.toggle('is-selected',state.soundOn);
+  }
+  $('sound-toggle').setAttribute('aria-label',state.soundOn?'Silenciar narración y efectos':'Activar narración y efectos de demostración');
+  $('welcome-sound').textContent=state.soundOn?'♪ Narración activada · toca para silenciar':'♫ Activar voz y sonidos mágicos';
+  if(state.soundOn)state.director?.say(state.screen==='welcome'?'intro':'depart',true);
+}
 function setup(){
   updateConfig();
   state.director=new MagicAdventure({
@@ -477,25 +498,8 @@ function setup(){
   $('close-landmark').addEventListener('click',()=>{
     clearTimeout(state.landmarkTimer);$('landmark-panel').classList.add('hidden');
   });
-  $('sound-toggle').addEventListener('click',async()=>{
-    state.soundOn=!state.soundOn;
-    const toggle=$('sound-toggle');
-    if(state.soundOn){
-      try{
-        const Audio=window.AudioContext||window.webkitAudioContext;
-        if(!Audio)throw Error('El navegador no permite audio');
-        state.audioCtx??=new Audio();
-        await state.audioCtx.resume();
-        playChime('sparkle');
-      }catch(e){state.soundOn=false;console.warn('Sin sonido',e);}
-    }
-    state.director?.setAudio(state.soundOn,state.audioCtx);
-    state.director?.setAmbient(state.playing);
-    if(state.soundOn)state.director?.say('depart',true);
-    toggle.setAttribute('aria-pressed',String(state.soundOn));
-    toggle.classList.toggle('is-selected',state.soundOn);
-    toggle.setAttribute('aria-label',state.soundOn?'Silenciar narración y efectos':'Activar narración y efectos de demostración');
-  });
+  $('sound-toggle').addEventListener('click',toggleSound);
+  $('welcome-sound').addEventListener('click',toggleSound);
   $('try-demo').addEventListener('click',startMadridDemo);
   // Deep link for testing directly on a phone without storing a home address.
   if(new URLSearchParams(location.search).get('demo')==='1')setTimeout(startMadridDemo,450);
