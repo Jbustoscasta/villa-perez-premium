@@ -7,7 +7,7 @@
   <meta name="description" content="Operación Diente Perdido: acompaña el viaje mágico del Ratón Pérez desde tu clínica dental hasta casa, sobre un mapa real."/>
   <title>Operación Diente Perdido · Villa Pérez</title>
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css"/>
-  <link rel="stylesheet" href="./styles.css?v=0.4.0"/>
+  <link rel="stylesheet" href="./styles.css?v=0.5.0"/>
 </head>
 <body>
   <div class="app-shell" id="app">
@@ -78,7 +78,9 @@
 
       <section id="screen-route" class="screen screen--route" aria-labelledby="route-title">
         <div class="map-stage">
-          <div id="map" role="application" aria-label="Mapa interactivo con ruta real desde la clínica hasta un área cercana al destino, sin revelar el portal"></div>
+          <div id="map" role="application" aria-label="Mapa vectorial de alta definición con calles reales y viaje mágico, hasta un área cercana al domicilio"></div>
+          <canvas id="route-fx" class="route-fx" aria-hidden="true"></canvas>
+          <div id="map-signature" class="map-signature" aria-hidden="true"><span class="premium-dot"></span> VILLA PÉREZ <small>· mapa nocturno premium</small></div>
           <div id="cinematic-intro" class="cinematic-intro hidden" aria-live="polite" role="status">
             <div class="intro-light"></div>
             <div class="cinematic-illustration">
@@ -143,6 +145,6 @@
     </main>
     <footer class="site-footer"><span>Una experiencia de <b>Ilusiono</b></span><span id="site-mode">DEMO HTTPS · NO PUBLICAR DATOS DE MENORES</span></footer>
   </div>
-  <script type="module" src="./app.js?v=0.4.0"></script>
+  <script type="module" src="./app.js?v=0.5.0"></script>
 </body>
 </html>
