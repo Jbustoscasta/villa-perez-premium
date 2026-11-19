@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" width="200" height="280" aria-label="Frente de cesta de mimbre en relieve">
+<defs>
+ <linearGradient id="wickerFront" x1="5%" y1="3%" x2="93%" y2="100%"><stop stop-color="#f1c888"/><stop offset=".13" stop-color="#b9824d"/><stop offset=".32" stop-color="#d29a59"/><stop offset=".5" stop-color="#8b542f"/><stop offset=".79" stop-color="#6e4127"/><stop offset="1" stop-color="#3b241b"/></linearGradient>
+ <linearGradient id="metal" x1="0%" y1="0%" x2="100%" y2="30%"><stop stop-color="#704329"/><stop offset=".17" stop-color="#ffd28a"/><stop offset=".34" stop-color="#fff2c3"/><stop offset=".53" stop-color="#b78144"/><stop offset=".75" stop-color="#f0c786"/><stop offset="1" stop-color="#573522"/></linearGradient>
+ <linearGradient id="rimHighlight" x1="0%" y1="0%" x2="0%" y2="100%"><stop stop-color="#f9e3b2"/><stop offset=".42" stop-color="#9d6635"/><stop offset=".85" stop-color="#6a402b"/><stop offset="1" stop-color="#34241e"/></linearGradient>
+ <clipPath id="basketClip"><path d="M60 242Q100 250 140 242L135 270Q100 283 65 270Z"/></clipPath>
+ <filter id="weaveNoise"><feTurbulence type="fractalNoise" baseFrequency=".31" numOctaves="2" seed="12"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".10"/></feComponentTransfer></filter>
+</defs>
+<!-- A real foreground basket lip occludes only the mouse's lower body. -->
+<path d="M59 242Q100 250 141 242L135 270Q100 283 65 270Z" fill="url(#wickerFront)" stroke="#e9c58a" stroke-width="2.4"/>
+<g clip-path="url(#basketClip)">
+ <path d="M60 244H140V282H60Z" fill="#8c572f" opacity=".15"/>
+ <!-- Over-under rattan strands. -->
+ <g fill="none" stroke-linecap="round"><path d="M63.0 240L73.0 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M73.0 240L63.0 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/><path d="M68.3 240L78.3 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M78.3 240L68.3 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/><path d="M73.5 240L83.5 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M83.5 240L73.5 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/><path d="M78.8 240L88.8 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M88.8 240L78.8 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/><path d="M84.0 240L94.0 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M94.0 240L84.0 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/><path d="M89.3 240L99.3 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M99.3 240L89.3 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/><path d="M94.5 240L104.5 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M104.5 240L94.5 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/><path d="M99.8 240L109.8 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M109.8 240L99.8 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/><path d="M105.0 240L115.0 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M115.0 240L105.0 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/><path d="M110.3 240L120.3 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M120.3 240L110.3 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/><path d="M115.5 240L125.5 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M125.5 240L115.5 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/><path d="M120.8 240L130.8 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M130.8 240L120.8 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/><path d="M126.0 240L136.0 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M136.0 240L126.0 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/><path d="M131.3 240L141.3 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M141.3 240L131.3 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/><path d="M136.5 240L146.5 279" stroke="#643b24" stroke-width="2.05" opacity=".68"/><path d="M146.5 240L136.5 279" stroke="#eab777" stroke-width="1.5" opacity=".82"/></g>
+ <g fill="none" stroke-linecap="round"><path d="M60.0 240.0 Q100 246.0 140.0 240.0" stroke="#e9b36b" stroke-width="1.4" fill="none" opacity=".86"/><path d="M60.6 242.8 Q100 248.8 139.4 242.8" stroke="#734528" stroke-width="1.7" fill="none" opacity=".86"/><path d="M61.2 245.6 Q100 251.6 138.8 245.6" stroke="#e9b36b" stroke-width="2.0" fill="none" opacity=".86"/><path d="M61.7 248.4 Q100 254.4 138.3 248.4" stroke="#e9b36b" stroke-width="1.5" fill="none" opacity=".86"/><path d="M62.3 251.2 Q100 257.2 137.7 251.2" stroke="#734528" stroke-width="1.8" fill="none" opacity=".86"/><path d="M62.9 254.0 Q100 260.0 137.1 254.0" stroke="#e9b36b" stroke-width="1.4" fill="none" opacity=".86"/><path d="M63.5 256.8 Q100 262.8 136.5 256.8" stroke="#734528" stroke-width="1.7" fill="none" opacity=".86"/><path d="M64.1 259.6 Q100 265.6 135.9 259.6" stroke="#e9b36b" stroke-width="2.0" fill="none" opacity=".86"/><path d="M64.6 262.4 Q100 268.4 135.4 262.4" stroke="#e9b36b" stroke-width="1.5" fill="none" opacity=".86"/><path d="M65.2 265.2 Q100 271.2 134.8 265.2" stroke="#734528" stroke-width="1.8" fill="none" opacity=".86"/><path d="M65.8 268.0 Q100 274.0 134.2 268.0" stroke="#e9b36b" stroke-width="1.4" fill="none" opacity=".86"/></g>
+ <rect x="59" y="241" width="82" height="40" fill="#e2b984" opacity=".37" filter="url(#weaveNoise)"/>
+ <path d="M61 248Q101 255 139 248M63 259Q101 269 137 259M65 268Q101 279 135 268" fill="none" stroke="#f7ddaa" opacity=".39" stroke-width="1.1"/>
+ <path d="M61 246Q99 254 139 246" fill="none" stroke="#60361e" opacity=".49" stroke-width="3"/>
+</g>
+<!-- Rolled leather and brass rim; basket remains open to display the official mouse. -->
+<path d="M59 241Q100 250 141 241" stroke="#36251c" stroke-width="10.5" fill="none" stroke-linecap="round"/>
+<path d="M59 238.6Q100 247.7 141 238.6" stroke="url(#rimHighlight)" stroke-width="7" fill="none" stroke-linecap="round"/>
+<path d="M60 237.7Q100 246.2 140 237.7" stroke="#fff0ba" stroke-width="1.6" opacity=".68" fill="none" stroke-linecap="round"/>
+<path d="M60 241Q100 250 141 241" stroke="url(#metal)" stroke-width="2.25" fill="none"/>
+<!-- Corner leather brackets, period metal buckles -->
+<path d="M62 240L65 268L75 274L72 243Z" fill="#704125" opacity=".67" stroke="#dba86a" stroke-width="1.25"/>
+<path d="M138 240L135 268L125 274L128 243Z" fill="#694027" opacity=".68" stroke="#dba86a" stroke-width="1.25"/>
+<path d="M67 243L69 268M133 243L131 268" stroke="#f7d4a2" stroke-width="1.1" opacity=".73"/>
+<g fill="url(#metal)" stroke="#774c2b" stroke-width=".7">
+ <circle cx="60" cy="239" r="4.2"/><circle cx="140" cy="239" r="4.2"/>
+ <circle cx="67" cy="269" r="2.25"/><circle cx="133" cy="269" r="2.25"/>
+ <circle cx="69" cy="247" r="1.9"/><circle cx="131" cy="247" r="1.9"/>
+</g>
+<path d="M72 271Q100 281 128 271" fill="none" stroke="url(#metal)" stroke-width="2.4" opacity=".89"/>
+<!-- Engraved little crest on the wicker: no mouse is generated in the asset. -->
+<path d="M95 261Q100 258 105 261L104 270Q100 274 96 270Z" fill="#6f462a" stroke="#ffdba1" stroke-width="1.2"/>
+<path d="M98 264Q97 261 100 263Q103 261 102 264L101 268Q100 270 99 268Z" fill="#f2d397"/>
+</svg>
