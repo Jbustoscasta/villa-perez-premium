@@ -129,6 +129,7 @@ async function connectGoogle(){
    state.loaded=true;
    try{sessionStorage.setItem('vp_google3d_trial_key',key)}catch(e){}
    $('keyGroup').classList.add('connected');
+   $('setup').classList.add('ready');
    $('connect').textContent='✓ Google Maps 3D conectado';
    $('launch').disabled=false;
    status('GOOGLE MAPS · FOTOGRAFÍA 3D');
