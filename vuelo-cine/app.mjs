@@ -330,10 +330,19 @@ async function getPositions(){
  const clinicAddress=$('clinicAddress').value.trim();
  const clinicName=$('clinicName').value.trim()||'Clínica del Doctor Abreu';
  if(clinicAddress){
-  ctx.origin=await lookupAddress(clinicAddress);
-  ctx.originLabel=clinicName;
-  $('clinicSummary').textContent=clinicName;
-  try{localStorage.setItem('vp_cinema_clinic',JSON.stringify({name:clinicName,address:clinicAddress}))}catch(e){}
+  try{
+   ctx.origin=await lookupAddress(clinicAddress);
+   ctx.originLabel=clinicName;
+   $('clinicSummary').textContent=clinicName;
+   try{localStorage.setItem('vp_cinema_clinic',JSON.stringify({name:clinicName,address:clinicAddress}))}catch(e){}
+  }catch(e){
+   // A saved clinic must NEVER be silently placed at a false address.
+   // In demo mode, make the flight work with an explicitly labelled trial origin.
+   ctx.origin=[START.lng,START.lat];
+   ctx.originLabel='Origen de prueba · Puerta de Alcalá';
+   $('clinicSummary').textContent='Puerta de Alcalá · prueba';
+   toast('No he localizado la clínica. Para esta prueba salimos de Puerta de Alcalá.',5500);
+  }
  }else{
   ctx.origin=[START.lng,START.lat];
   ctx.originLabel='Origen de prueba · Puerta de Alcalá';
