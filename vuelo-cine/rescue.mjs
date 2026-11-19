@@ -113,6 +113,84 @@ export class RescueMap{
   const features=this.sources[sourceId]?.data?.features;
   return features?.[0]?.geometry?.coordinates||[];
  }
+ drawStorybookBuildings(c){
+  // Canvas pseudo-3D only for WebGL-unavailable Safari devices.
+  // Inspired by cinema set design; no claim the added houses are real.
+  const z=this.zoom;
+  if(z<12.8)return;
+  const pxMet=256*(2**z)/(40075016.685*Math.cos(this.center[1]*DEG));
+  if(pxMet<.4)return;
+  const grid=85,lat=this.center[1],cos=Math.cos(lat*DEG);
+  const cellLon=grid/(111320*cos),cellLat=grid/111320;
+  const i0=Math.round(this.center[0]/cellLon),j0=Math.round(this.center[1]/cellLat);
+  const path=this.coordinates('vp-route').map(p=>this.project(p));
+  const tooClose=(x,y)=>{
+   for(let k=1;k<path.length;k++){
+    const a=path[k-1],b=path[k],dx=b[0]-a[0],dy=b[1]-a[1];
+    const t=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/Math.max(1,dx*dx+dy*dy)));
+    if(Math.hypot(x-(a[0]+t*dx),y-(a[1]+t*dy))<32)return true;
+   }
+   return false;
+  };
+  const objects=[];
+  for(let j=-7;j<=7;j++)for(let i=-7;i<=7;i++){
+   const seed=Math.abs(Math.sin((i0+i)*12.9898+(j0+j)*78.233)*43758.5453)%1;
+   if(seed<.22)continue;
+   const lng=(i0+i+(seed-.5)*.32)*cellLon,lati=(j0+j+(seed-.5)*.32)*cellLat;
+   const [x,y]=this.project([lng,lati]);
+   if(x< -80||x>this.w+80||y< -110||y>this.h+110||tooClose(x,y))continue;
+   const w=Math.min(82,Math.max(9,pxMet*(16+22*seed)));
+   const d=Math.min(63,Math.max(7,pxMet*(15+15*(1-seed))));
+   const hh=Math.min(118,Math.max(13,pxMet*(14+24*seed)));
+   objects.push({x,y,w,d,hh,seed});
+  }
+  // Buildings farthest from the viewer first, so roofs and walls overlap naturally.
+  objects.sort((a,b)=>a.y-b.y);
+  const polys=(pts,color)=>{
+   c.beginPath();pts.forEach(([x,y],k)=>k?c.lineTo(x,y):c.moveTo(x,y));c.closePath();
+   c.fillStyle=color;c.fill();
+  };
+  for(const b of objects){
+   const {x,y,w,d,hh,seed}=b,h=hh,roof=5+14*seed;
+   const A=[x-w/2,y-d/2-h],B=[x+w/2,y-d/2-h],
+      C=[x+w/2,y+d/2-h],D=[x-w/2,y+d/2-h];
+   const E=[x-w/2,y-d/2],F=[x+w/2,y-d/2],
+      G=[x+w/2,y+d/2],H=[x-w/2,y+d/2];
+   const palette=seed>.72?['#4d3540','#3a2c40','#7a4550']:
+    seed>.42?['#384c56','#263947','#355c65']:['#414c62','#2b3c54','#48607b'];
+   const daytime=this.day;
+   c.save();
+   c.shadowColor=daytime?'rgba(0,0,0,.35)':'rgba(0,0,0,.7)';
+   c.shadowBlur=10;
+   polys([D,C,G,H],daytime?'#a0aaa7':palette[0]);
+   c.shadowBlur=0;
+   polys([B,C,G,F],daytime?'#87938f':palette[1]);
+   polys([A,B,F,E],daytime?'#9ba39a':'#22364a');
+   // Four sloping planes make a genuine pitched-looking silhouette.
+   const tip=[x,y-h-roof];
+   polys([A,B,tip],daytime?'#966759':palette[2]);
+   polys([B,C,tip],daytime?'#783e45':'#34475e');
+   polys([C,D,tip],daytime?'#a87762':palette[2]);
+   polys([D,A,tip],daytime?'#915d4e':'#25445c');
+   // Windows are drawn ON the facades, not as 2D dots on the street map.
+   if(w>22&&h>25){
+    const rows=Math.min(4,Math.floor(h/16));
+    const cols=Math.min(4,Math.floor(w/16));
+    const wx=Math.max(2,w/(cols+1)*.28),wy=3.1;
+    for(let row=1;row<=rows;row++)for(let col=1;col<=cols;col++){
+     const spark=Math.abs(Math.sin(seed*23+row*11.9+col*7.4));
+     if(spark<.39)continue;
+     const lx=x-w/2+(col/(cols+1))*w;
+     const ly=y+d/2-h+(row/(rows+1))*h;
+     c.fillStyle=daytime?'#80a7ba':spark>.79?'#fff0b0':'#f3ad5c';
+     c.shadowBlur=daytime?0:5;c.shadowColor='#ffd38a';
+     c.fillRect(lx-wx/2,ly-wy/2,wx,wy);
+    }
+    c.shadowBlur=0;
+   }
+   c.restore();
+  }
+ }
  draw(){
   this.drawTiles();
   const c=this.ctx;if(!c)return;
@@ -124,6 +202,7 @@ export class RescueMap{
    for(let y=0;y<this.h+80;y+=78){c.beginPath();c.moveTo(0,y);c.lineTo(this.w,y+30);c.stroke()}
    c.restore();
   }
+  this.drawStorybookBuildings(c);
   const lineData=this.coordinates('vp-route'),prog=this.coordinates('vp-progress');
   const plot=(pts,color,width,blur=0)=>{
    if(pts.length<2)return;
