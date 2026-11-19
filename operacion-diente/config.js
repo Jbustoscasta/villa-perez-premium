@@ -10,7 +10,7 @@ export const APP_CONFIG = {
   },
   // Exclusivamente servicios públicos de prueba, sin garantías; deben sustituirse antes de vender.
   services: {
-    mapStyle: 'https://tiles.openfreemap.org/styles/liberty' // High-detail vector base, restyled on load in premium-map.mjs,
+    mapStyle: 'https://tiles.openfreemap.org/styles/liberty', // High-detail vector base, restyled on load in premium-map.mjs
     geocoder: 'https://photon.komoot.io/api/',
     router: 'https://routing.openstreetmap.de/routed-foot/route/v1/driving/'
   },
