@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#051326">
+<meta name="description" content="Villa Pérez: vuelo mágico cinematográfico sobre las calles reales de Madrid.">
+<title>Villa Pérez · Noche de cine</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="./styles.css?v=1.0.0">
+</head>
+<body>
+<main class="app" id="app">
+ <div id="map" class="map" aria-label="Mapa nocturno con las calles reales y edificios tridimensionales de Madrid"></div>
+ <div class="starscape" aria-hidden="true"></div>
+ <div class="mood-haze" aria-hidden="true"></div>
+ <div class="topbar">
+  <div class="branding"><span class="brand-crest">✦</span><div><span>VILLA PÉREZ</span><strong>El vuelo de los sueños</strong></div></div>
+  <span id="mapStatus" class="map-status">PREPARANDO CIUDAD</span>
+ </div>
+ <section class="setup" id="setup" aria-label="Preparar vuelo">
+  <div class="eyebrow"><span class="star">✦</span> EN BUSCA DEL DIENTE PERDIDO</div>
+  <h1>Esta noche volamos <em>sobre tus calles.</em></h1>
+  <p>Una ciudad de película construida sobre el callejero real. Elige destino y sigue el globo del Ratón Pérez.</p>
+  <details class="clinic-settings" id="clinicSettings">
+   <summary><span>🏥 Origen: <strong id="clinicSummary">Puerta de Alcalá · prueba</strong></span><span class="edit-label">Configurar clínica</span></summary>
+   <label for="clinicName">Nombre de la clínica</label>
+   <input id="clinicName" value="Clínica del Doctor Abreu" maxlength="100" autocomplete="organization">
+   <label for="clinicAddress">Dirección real de la clínica</label>
+   <input id="clinicAddress" placeholder="Calle y número, Madrid" maxlength="200">
+   <small>Guarda la dirección en este navegador. Si está vacía, saldremos de un punto de prueba claramente identificado.</small>
+  </details>
+  <label for="address">¿Adónde volará el Ratón Pérez?</label>
+  <div class="suggestions" id="choices">
+   <button class="choice active" data-dest="plaza" type="button">Plaza Mayor</button>
+   <button class="choice" data-dest="bernabeu" type="button">Bernabéu</button>
+   <button class="choice" data-dest="arroyofresno" type="button">Arroyo Fresno</button>
+  </div>
+  <input id="address" placeholder="O escribe calle, número y ciudad" maxlength="220" autocomplete="street-address">
+  <button id="start" class="primary-button" type="button" disabled><span>✦</span> Comenzar vuelo mágico <span>→</span></button>
+  <div id="setupError" class="error" role="alert" hidden></div>
+  <div class="setup-footer">Calles de OpenStreetMap · edificios 3D recreados · noche artística, no fotografía nocturna</div>
+ </section>
+ <div class="flight-interface" id="flightInterface" hidden>
+  <div class="journey-head">
+   <div class="journey-copy"><span>EN BUSCA DEL DIENTE</span><strong id="chapterTitle">Despegamos</strong></div>
+   <button id="overview" type="button" class="overview-button"><span>◉</span> Ver ruta completa</button>
+  </div>
+  <div class="journey-foot">
+   <div class="journey-points">
+    <span id="fromLabel">ORIGEN DE PRUEBA</span><span id="progressLabel">0%</span>
+   </div>
+   <div class="progress-track"><div id="progressFill"></div></div>
+   <div class="journey-buttons">
+    <button id="pause" type="button"><span>Ⅱ</span> Pausar</button>
+    <button id="night" type="button"><span>☾</span> Noche cine</button>
+    <button id="magic" type="button"><span>✧</span> Magia ON</button>
+    <button id="restart" type="button"><span>↻</span> Reiniciar</button>
+   </div>
+   <div class="subline"><span id="routeType">CALLES REALES · RECORRIDO</span><span id="phaseLabel">Vista general</span></div>
+  </div>
+ </div>
+ <section id="arrival" class="arrival" hidden>
+  <span>✦ MISIÓN COMPLETADA ✦</span>
+  <h2>¡El Ratón Pérez está cerca!</h2>
+  <p>Hemos sobrevolado las calles y reconocido el barrio. Los últimos metros hasta casa siguen siendo un secreto.</p>
+  <button id="flyAgain" class="primary-button" type="button">↻ Repetir el vuelo</button>
+ </section>
+ <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+ <template id="balloonTemplate">
+  <div class="balloon" aria-label="Globo mágico con el Ratón Pérez oficial">
+   <div class="balloon-halo"></div>
+   <img class="balloon-shell" src="./assets/globo-premium.svg" width="160" height="224" alt="" draggable="false">
+   <img class="official-mouse" src="../perez.png" width="34" height="44" alt="" draggable="false">
+   <img class="basket-front" src="./assets/cesta-delantera.svg" width="160" height="224" alt="" draggable="false">
+   <div class="balloon-spark"><i></i><i></i><i></i></div>
+  </div>
+ </template>
+</main>
+<script src="https://unpkg.com/maplibre-gl@5.7.1/dist/maplibre-gl.js"></script>
+<script type="module" src="./app.mjs?v=1.0.0"></script>
+</body>
+</html>
