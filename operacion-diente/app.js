@@ -116,10 +116,17 @@ async function calculateRoute(){
     const found=(await fetchJson(url.toString(),10500)).features||[];
     const places=found.map(sanitizePhoton).filter(Boolean);
     if(!places.length)throw new Error('No encontramos esa calle. Añade el municipio y prueba de nuevo.');
+    const norm=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
     const requestedNumber=(typed.match(/(?:^|[ ,])([0-9]{1,4})(?:[ ,]|$)/)||[])[1];
-    const strong=found.find(feature=>String(feature?.properties?.housenumber||'')===requestedNumber);
-    const top=strong?sanitizePhoton(strong):(places.length===1?places[0]:null);
-    if(!top)throw new Error('Para evitar una dirección equivocada, elige tu domicilio en las sugerencias.');
+    const parts=typed.split(',').map(p=>p.trim()).filter(Boolean);
+    const cityHint=parts.length>1&&!/^\d/.test(parts.at(-1))?norm(parts.at(-1)):'';
+    const matching=found.filter(feature=>{
+      const p=feature?.properties||{},road=norm(p.street),city=norm(p.city||p.town||p.village||p.municipality);
+      const numbers=String(p.housenumber||'').split(/[,;/-]/).map(x=>x.trim());
+      return Boolean(requestedNumber&&road&&norm(typed).includes(road)&&numbers.includes(requestedNumber)&&(!cityHint||city===cityHint));
+    });
+    const top=matching.length===1?sanitizePhoton(matching[0]):null;
+    if(!top)throw new Error('Comprueba que has indicado calle, número y localidad, y elige tu domicilio exacto entre las sugerencias. No queremos recorrer una calle equivocada.');
     state.destination=top;
   }
   return routeBetween(state.origin.coordinate,state.destination.coordinate);
