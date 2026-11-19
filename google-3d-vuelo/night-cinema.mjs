@@ -56,13 +56,17 @@ const FRAG=[
 '}'
 ].join('\n');
 export class CinemaNight {
- constructor(canvas){
-  this.canvas=canvas;this.gl=null;this.program=null;
+ constructor(canvas,fallback=null){
+  this.canvas=canvas;this.fallback=fallback;this.gl=null;this.program=null;
   this.level=0;this.target=0;this.phase=0;this.raf=0;
   this.last=0;this.lastDraw=0;this.disabled=false;this.resizeBound=this.resize.bind(this);
   this.frameBound=this.frame.bind(this);
   this.contextLost=e=>{e.preventDefault();this.disabled=true;this.stop();this.useFallback()};
-  this.contextRestored=()=>{this.disabled=false;this.gl=null;this.program=null;this.init();this.setNight(this.target>.01)};
+  this.contextRestored=()=>{
+   this.disabled=false;this.gl=null;this.program=null;
+   try{this.fallback?.(false)}catch(e){}
+   this.init();this.setNight(this.target>.01)
+  };
   canvas.addEventListener('webglcontextlost',this.contextLost);
   canvas.addEventListener('webglcontextrestored',this.contextRestored);
   window.addEventListener('resize',this.resizeBound,{passive:true});
@@ -110,7 +114,15 @@ export class CinemaNight {
  }
  useFallback(){
   this.canvas.hidden=true;
-  document.documentElement.classList.toggle('night-css-fallback',this.target>.01);
+  const night=this.target>.01;
+  if(typeof this.fallback==='function'){
+   try{
+    this.fallback(night);
+    document.documentElement.classList.remove('night-css-fallback');
+    return;
+   }catch(e){console.warn('Google 3D dark map unavailable; using CSS blue hour',e)}
+  }
+  document.documentElement.classList.toggle('night-css-fallback',night);
  }
  resize(){
   if(!this.gl)return;
