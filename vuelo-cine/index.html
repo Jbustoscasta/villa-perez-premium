@@ -7,7 +7,7 @@
 <meta name="description" content="Villa Pérez: vuelo mágico cinematográfico sobre las calles reales de Madrid.">
 <title>Villa Pérez · Noche de cine</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.7.0/dist/maplibre-gl.css">
-<link rel="stylesheet" href="./styles.css?v=2.0.0">
+<link rel="stylesheet" href="./styles.css?v=2.1.0">
 </head>
 <body>
 <main class="app" id="app">
@@ -20,8 +20,12 @@
  </div>
  <section class="setup" id="setup" aria-label="Preparar vuelo">
   <div class="eyebrow"><span class="star">✦</span> EN BUSCA DEL DIENTE PERDIDO</div>
-  <h1>Esta noche volamos <em>sobre tus calles.</em></h1>
-  <p>Calles que puedes reconocer, edificios con volumen, tejados de cuento y ventanas iluminadas. Una ciudad de película alrededor del vuelo.</p>
+  <h1>Tu barrio, <em>de verdad.</em></h1>
+  <p>Para ver fachadas, balcones y tejados reconocibles, prueba el vuelo sobre edificios fotográficos reales. El mapa de esta pantalla queda como alternativa nocturna ilustrada.</p>
+  <a class="real-3d-cta" href="../google-3d-vuelo/?v=4.0.0">
+    <span class="real-3d-icon">✦</span><span><strong>Volar entre edificios reales</strong><small>Google 3D fotorrealista · mismo globo y recorrido</small></span><span>→</span>
+  </a>
+  <p class="real-3d-footnote">La vista real necesita tu clave de Google Maps 3D si no está conectada ya. Su versión nocturna es estilizada; las fotografías auténticas son de día.</p>
   <details class="clinic-settings" id="clinicSettings">
    <summary><span>🏥 Origen: <strong id="clinicSummary">Puerta de Alcalá · prueba</strong></span><span class="edit-label">Configurar clínica</span></summary>
    <label for="clinicName">Nombre de la clínica</label>
@@ -39,8 +43,8 @@
   <input id="address" placeholder="O escribe calle, número y ciudad" maxlength="220" autocomplete="street-address">
   <button id="start" class="primary-button" type="button" aria-describedby="setupError"><span>✦</span> Comenzar vuelo mágico <span>→</span></button>
   <div id="setupError" class="error" role="alert" hidden></div>
-  <div id="cityStatus" class="city-status" aria-live="polite">Preparando arquitectura de cuento en 3D…</div>
-  <div class="setup-footer">Callejero real · arquitectura parcialmente recreada · noche de fantasía</div>
+  <div id="cityStatus" class="city-status" aria-live="polite">Mapa nocturno ilustrado · edificios simplificados</div>
+  <div class="setup-footer">Los trazados de las calles son reales. Los edificios de esta vista son representaciones simplificadas; utiliza «Volar entre edificios reales» para ver fotogrametría.</div>
  </section>
  <div class="flight-interface" id="flightInterface" hidden>
   <div class="journey-head">
@@ -79,6 +83,6 @@
  </template>
 </main>
 <script defer src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.7.0/dist/maplibre-gl.js" onerror="(function(){var f=document.createElement('script');f.src='https://unpkg.com/maplibre-gl@5.7.0/dist/maplibre-gl.js';document.head.appendChild(f)})()"></script>
-<script type="module" src="./app.mjs?v=2.0.0"></script>
+<script type="module" src="./app.mjs?v=2.1.0"></script>
 </body>
 </html>
