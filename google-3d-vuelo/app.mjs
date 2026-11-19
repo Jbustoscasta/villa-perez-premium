@@ -87,9 +87,10 @@ function loadGoogle(key){
    const cb='__villaGoogleMapsLoaded';
    let done=false,tag,timeout;
    const finish=(err)=>{
-    if(done)return;done=true;clearTimeout(timeout);delete window[cb];if(err)reject(err);else resolve();
+    if(done)return;done=true;clearTimeout(timeout);delete window[cb];delete window.gm_authFailure;if(err)reject(err);else resolve();
    };
    window[cb]=()=>finish();
+   window.gm_authFailure=()=>finish(new Error('Google ha rechazado la clave: comprueba la autorización, las restricciones y la facturación.'));
    timeout=setTimeout(()=>finish(new Error('Google no ha respondido a la carga de Maps JS. Revisa conexión, restricciones y facturación.')),25000);
    tag=document.createElement('script');
    tag.async=true;
@@ -126,6 +127,14 @@ async function connectGoogle(){
    });
    $('mapHost').appendChild(map);
    $('beforeMap').hidden=true;
+   let rendered3d=false;
+   map.addEventListener('gmp-steadychange',event=>{
+     if(event.isSteady){rendered3d=true;status('GOOGLE 3D · ESCENA CARGADA');}
+   });
+   setTimeout(()=>{
+     if(state.loaded&&!rendered3d&&!state.playing)
+       info('La cartografía 3D sigue cargando. Si la pantalla permanece vacía, revisa la cobertura y permisos de Google Cloud.');
+   },25000);
    state.loaded=true;
    try{sessionStorage.setItem('vp_google3d_trial_key',key)}catch(e){}
    $('keyGroup').classList.add('connected');
