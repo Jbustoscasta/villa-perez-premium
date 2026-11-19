@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" width="200" height="280">
+<defs>
+ <radialGradient id="silk" cx=".27" cy=".18" r=".83"><stop stop-color="#ffedc8"/><stop offset=".25" stop-color="#f7d4a9"/><stop offset=".70" stop-color="#d39e65"/><stop offset="1" stop-color="#603323"/></radialGradient>
+ <linearGradient id="wine" x1=".18" y1=".08" x2=".83" y2=".91"><stop stop-color="#db6e6c"/><stop offset=".33" stop-color="#92384b"/><stop offset=".72" stop-color="#592338"/><stop offset="1" stop-color="#321c2d"/></linearGradient>
+ <linearGradient id="cream" x1="0" y1=".1" x2=".8" y2=".9"><stop stop-color="#fff5d5"/><stop offset=".48" stop-color="#edcda0"/><stop offset="1" stop-color="#bc815c"/></linearGradient>
+ <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff6b3"/><stop offset=".20" stop-color="#e1b45e"/><stop offset=".5" stop-color="#9c6237"/><stop offset=".78" stop-color="#f9dca0"/><stop offset="1" stop-color="#80512c"/></linearGradient>
+ <linearGradient id="wicker" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#ad7139"/><stop offset=".38" stop-color="#e9bb77"/><stop offset=".68" stop-color="#a56838"/><stop offset="1" stop-color="#583522"/></linearGradient>
+ <radialGradient id="flame"><stop stop-color="#fffcd0"/><stop offset=".24" stop-color="#ffda83"/><stop offset=".64" stop-color="#fda645" stop-opacity=".62"/><stop offset="1" stop-color="#ed6827" stop-opacity="0"/></radialGradient>
+ <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3"/></filter>
+ <clipPath id="canopy"><path d="M100 10C58 10 21 38 18 91C14 131 28 164 56 189Q77 212 100 219Q123 212 144 189C172 164 186 131 182 91C179 38 142 10 100 10Z"/></clipPath>
+</defs>
+<!-- diffuse rim lighting -->
+<ellipse cx="105" cy="112" rx="82" ry="101" fill="#151a2e" opacity=".26" filter="url(#shadow)"/>
+<g clip-path="url(#canopy)">
+ <path d="M5 1H195V224H5Z" fill="url(#silk)"/>
+ <path d="M93 -4C70 8 43 42 43 90C43 143 59 193 100 222C75 217 45 202 27 164C1 90 32 7 93 -4Z" fill="url(#wine)"/>
+ <path d="M106 -4C132 8 153 41 155 90C158 150 137 194 100 222C131 211 159 188 175 151C198 81 168 8 106 -4Z" fill="url(#wine)"/>
+ <path d="M97 -3C82 23 73 49 70 88C66 146 78 193 100 222C88 190 83 145 85 89C87 46 92 18 97 -3Z" fill="url(#cream)"/>
+ <path d="M103 -3C119 24 128 51 130 89C134 145 121 194 100 222C114 194 119 146 116 90C115 42 109 16 103 -3Z" fill="url(#cream)"/>
+ <path d="M18 95C51 105 148 105 182 95M25 130C54 139 147 139 175 130M43 174Q99 189 157 174" fill="none" stroke="#a75c35" stroke-width="5" opacity=".72"/>
+ <path d="M17 91Q100 119 183 91M25 129Q100 151 175 129" fill="none" stroke="#f8dd98" stroke-width="2.8" opacity=".85"/>
+ <path d="M101 7C101 70 100 166 100 220M49 19C56 64 64 159 100 220M151 19C143 65 136 160 100 220" fill="none" stroke="url(#brass)" stroke-width="3.2"/>
+ <path d="M18 99Q100 114 182 99" fill="none" stroke="#fff5d2" stroke-width="1.8" opacity=".8"/>
+ <path d="M16 8L16 185" stroke="#fff3c5" opacity=".11" stroke-width="18"/>
+</g>
+<path d="M100 10C58 10 21 38 18 91C14 131 28 164 56 189Q77 212 100 219Q123 212 144 189C172 164 186 131 182 91C179 38 142 10 100 10Z" fill="none" stroke="#f6d49b" stroke-width="3"/>
+<!-- filigree and insignia -->
+<path d="M72 69Q77 51 100 54Q123 51 128 69L126 91L100 112L74 91Z" fill="#712d3e" stroke="url(#brass)" stroke-width="4"/>
+<path d="M98 65L98 82M90 73H106" stroke="#fff1bf" stroke-linecap="round" stroke-width="6"/>
+<circle cx="100" cy="10" r="7" fill="url(#brass)" stroke="#fff5c5" stroke-width="2"/>
+<g stroke="url(#brass)" stroke-width="2.3" fill="none" stroke-linecap="round">
+ <path d="M57 192L65 239M143 192L135 239M85 214L82 236M115 214L118 236"/>
+</g>
+<g stroke="#ffe2ab" stroke-width="1.1" fill="none" opacity=".75">
+ <path d="M54 192L65 239M146 192L135 239"/>
+</g>
+<!-- burner emits a small warm halo -->
+<circle cx="100" cy="226" r="30" fill="url(#flame)" opacity=".85"/>
+<path d="M92 226Q87 218 95 209Q96 216 100 217Q109 206 106 199Q122 219 106 228Z" fill="#fff0b2" opacity=".95"/>
+<path d="M92 235H108L111 241H89Z" fill="url(#brass)"/>
+<!-- rear basket behind the official PNG -->
+<path d="M60 237Q100 231 140 237L133 266Q102 273 68 266Z" fill="#714726" stroke="url(#brass)" stroke-width="3"/>
+<path d="M62 236Q99 231 138 236" fill="none" stroke="#fce0aa" stroke-width="4"/>
+<path d="M69 260L132 260M69 253L133 253" stroke="#d6a66a" stroke-width="1.3" opacity=".5"/>
+<circle cx="65" cy="234" r="4" fill="url(#brass)"/><circle cx="135" cy="234" r="4" fill="url(#brass)"/>
+<!-- fairy tale flying scarf: no mouse is painted here -->
+<path d="M71 233Q46 222 21 237Q36 234 24 248Q58 248 72 238Z" fill="#8e2b43" stroke="#e8a780" stroke-width="1.3"/>
+</svg>
