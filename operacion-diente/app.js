@@ -88,19 +88,62 @@ function setupAutocomplete(field,box,key) {
   document.addEventListener('click',e=>{if(!input.contains(e.target)&&!dropdown.contains(e.target)) dropdown.classList.add('hidden');});
 }
 
+async function routeBetween(start,end){
+  if(Math.abs(start[0]-end[0])<.00001 && Math.abs(start[1]-end[1])<.00001) throw new Error('Elige una dirección distinta de la clínica.');
+  const coords=`${start[0].toFixed(6)},${start[1].toFixed(6)};${end[0].toFixed(6)},${end[1].toFixed(6)}`;
+  const url=CFG.services.router+coords+'?overview=full&geometries=geojson&steps=false&alternatives=false';
+  const json=await fetchJson(url,13000);
+  const first=json?.routes?.[0];
+  if(json.code!=='Ok'||!first?.geometry?.coordinates?.length) throw new Error('No se ha encontrado una ruta real a pie entre ambos lugares.');
+  const path=createPath(first.geometry.coordinates);
+  return {path,serviceMeters:first.distance,serviceSeconds:first.duration,demoFallback:false};
+}
 async function calculateRoute(){
   if(!$('adult-confirm').checked) throw new Error('Esta función requiere que un adulto marque la confirmación.');
   if(!validCoordinate(state.origin.coordinate)) throw new Error('Elige la dirección de la clínica en las sugerencias.');
   if(!validCoordinate(state.destination.coordinate)) throw new Error('Elige la dirección de casa en las sugerencias.');
-  const [start,end]=[state.origin.coordinate,state.destination.coordinate];
-  if(Math.abs(start[0]-end[0])<.00001 && Math.abs(start[1]-end[1])<.00001) throw new Error('Elige una dirección distinta de la clínica.');
-  const coords=`${start[0].toFixed(6)},${start[1].toFixed(6)};${end[0].toFixed(6)},${end[1].toFixed(6)}`;
-  const url=CFG.services.router+coords+'?overview=full&geometries=geojson&steps=false&alternatives=false';
-  const json=await fetchJson(url,16000);
-  const first=json?.routes?.[0];
-  if(json.code!=='Ok'||!first?.geometry?.coordinates?.length) throw new Error('No se ha encontrado una ruta real a pie entre ambos lugares.');
-  const path=createPath(first.geometry.coordinates);
-  return {path,serviceMeters:first.distance,serviceSeconds:first.duration};
+  return routeBetween(state.origin.coordinate,state.destination.coordinate);
+}
+/** Public demonstration between two known Madrid landmarks; no user's address is needed. */
+async function startMadridDemo(){
+  const button=$('try-demo');
+  if(button.disabled)return;
+  button.disabled=true;button.textContent='Preparando mapa de Madrid…';
+  $('demo-error').classList.add('hidden');
+  const origin=CFG.clinic.origin.slice();
+  const end=[-3.70736,40.41540]; // Plaza Mayor, Madrid (landmark only)
+  state.origin={label:CFG.clinic.originLabel,coordinate:origin};
+  state.destination={label:'Plaza Mayor, Madrid · DESTINO DE PRUEBA',coordinate:end};
+  try{
+    try{
+      state.route=await routeBetween(origin,end);
+    }catch(e){
+      // Resilient visual preview when the community routing server throttles requests.
+      // This is an ILLUSTRATIVE polyline, NOT an OSRM-verified walking route.
+      const demoPoints=[
+        origin,[-3.68947,40.41975],[-3.69093,40.41947],[-3.69300,40.41935],
+        [-3.69605,40.41874],[-3.69896,40.41802],[-3.70172,40.41705],
+        [-3.70326,40.41692],[-3.70511,40.41606],end
+      ];
+      const path=createPath(demoPoints);
+      state.route={path,serviceMeters:path.total,serviceSeconds:null,demoFallback:true};
+    }
+    state.path=state.route.path;
+    state.progress=0;state.lastStage=-1;
+    $('distance').textContent=formatDistance(state.route.serviceMeters);
+    $('route-mode-label').textContent=state.route.demoFallback?'Trazado ilustrativo · no validado en calles':'Ruta a pie real · simulación mágica';
+    $('route-legal-note').textContent=state.route.demoFallback?
+      'Modo demostración: el servicio de rutas no respondió, por lo que el recorrido dibujado es ilustrativo, no calculado por calles. No es seguimiento GPS.':
+      'Ruta calculada sobre calles reales entre dos puntos turísticos de prueba. El movimiento del Ratón es una animación ficticia, no un GPS.';
+    showScreen('route');
+    await ensureMap();
+  }catch(e){
+    showScreen('welcome');
+    $('demo-error').textContent='No se ha podido cargar el mapa. Comprueba tu conexión y vuelve a probar: '+(e?.message||'error');
+    $('demo-error').classList.remove('hidden');
+  }finally{
+    button.disabled=false;button.textContent='▶ Probar recorrido de Madrid';
+  }
 }
 function line(coords){return {type:'Feature',properties:{},geometry:{type:'LineString',coordinates:coords}};}
 function pin(text,home=false){const e=document.createElement('div');e.className='place-pin'+(home?' place-pin--home':'');e.textContent=text;return e;}
@@ -232,6 +275,9 @@ function downloadPostcard(){
 function setup(){
   updateConfig();
   $('start').addEventListener('click',()=>showScreen('address'));
+  $('try-demo').addEventListener('click',startMadridDemo);
+  // Deep link for testing directly on a phone without storing a home address.
+  if(new URLSearchParams(location.search).get('demo')==='1')setTimeout(startMadridDemo,450);
   $('back-welcome').addEventListener('click',()=>showScreen('welcome'));
   $('restart').addEventListener('click',reset);
   $('new-trip').addEventListener('click',reset);
@@ -243,6 +289,8 @@ function setup(){
     try {
       state.route=await calculateRoute();state.path=state.route.path;state.progress=0;state.lastStage=-1;
       $('distance').textContent=formatDistance(state.route.serviceMeters);
+      $('route-mode-label').textContent='Ruta a pie real · simulación mágica';
+      $('route-legal-note').textContent='El recorrido sigue calles reales; el movimiento del Ratón es ficticio, no GPS. Solo un adulto confirma la llegada.';
       showScreen('route');
       await ensureMap();
     }catch(err){console.warn(err);showScreen('address');errorMessage(err.message||'No se pudo calcular la ruta.');}
