@@ -72,8 +72,8 @@ function templateWith(el){
  const template=document.createElement('template');template.content.append(el);return template;
 }
 export class NativeFlightScene{
- constructor(map,lib){
-  this.map=map;this.lib=lib;this.model=null;this.mouse=null;this.trace=null;
+ constructor(map,lib,onError=null){
+  this.map=map;this.lib=lib;this.onError=onError;this.model=null;this.mouse=null;this.trace=null;
   this.stars=[];this.lastTrailAt=0;this.lastStarAt=0;this.points=[];this.active=false;
   this.modelActive=false;this.pathTrail=[];this.muted=false;this.modelLoadError=false;
  }
@@ -88,7 +88,13 @@ export class NativeFlightScene{
      src:MODEL_SRC,position:p,orientation:{heading:0,tilt:0,roll:0},
      scale:1,altitudeMode:'RELATIVE_TO_GROUND'
    });
-   this.model.addEventListener('error',()=>{this.modelLoadError=true});
+   const reportModelError=event=>{
+     this.modelLoadError=true;
+     console.warn('Native GLB scene problem:',event);
+     try{this.onError?.(event)}catch(e){console.warn('Unable to switch to fallback',e)}
+   };
+   this.model.addEventListener('error',reportModelError);
+   this.model.addEventListener('gmp-error',reportModelError);
    this.map.append(this.model);
    this.modelActive=true;
   }catch(e){this.modelActive=false;this.modelLoadError=true;throw e}
