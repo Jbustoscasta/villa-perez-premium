@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" width="200" height="280" role="img" aria-label="Globo de seda, cobre y mimbre, visto en perspectiva">
+<defs>
+ <path id="envelope" d="M100 10 C63 10 28 31 19 73 C5 126 30 173 58 198 C76 215 92 220 100 223 C108 220 124 215 142 198 C170 173 195 126 181 73 C172 31 137 10 100 10Z"/>
+ <clipPath id="balloon-clipping"><use href="#envelope"/></clipPath>
+ <radialGradient id="silk" cx="33%" cy="22%" r="79%"><stop stop-color="#fff8e4"/><stop offset=".19" stop-color="#f4dcb4"/><stop offset=".49" stop-color="#cca16e"/><stop offset=".76" stop-color="#83563a"/><stop offset="1" stop-color="#3b2430"/></radialGradient>
+ <linearGradient id="wine" x1="12%" y1="5%" x2="92%" y2="75%"><stop stop-color="#f2a6a0"/><stop offset=".19" stop-color="#b35961"/><stop offset=".47" stop-color="#712e43"/><stop offset=".71" stop-color="#6b3140"/><stop offset="1" stop-color="#2b192e"/></linearGradient>
+ <linearGradient id="teal" x1="0%" y1="0%" x2="100%" y2="75%"><stop stop-color="#9dcec0"/><stop offset=".13" stop-color="#4b8888"/><stop offset=".43" stop-color="#20515b"/><stop offset=".75" stop-color="#153943"/><stop offset="1" stop-color="#102c35"/></linearGradient>
+ <linearGradient id="cream" x1="0%" y1="5%" x2="100%" y2="100%"><stop stop-color="#fffbed"/><stop offset=".32" stop-color="#f0d6a8"/><stop offset=".57" stop-color="#c8a078"/><stop offset=".88" stop-color="#846044"/><stop offset="1" stop-color="#4a3028"/></linearGradient>
+ <linearGradient id="rim" x1="0%" y1="0%" x2="100%" y2="55%"><stop stop-color="#754425"/><stop offset=".18" stop-color="#e2ae65"/><stop offset=".34" stop-color="#fff1c2"/><stop offset=".49" stop-color="#a66a38"/><stop offset=".68" stop-color="#ffe5a8"/><stop offset="1" stop-color="#5c321e"/></linearGradient>
+ <linearGradient id="rope" x1="0%" y1="0%" x2="80%" y2="80%"><stop stop-color="#ffdfaa"/><stop offset=".46" stop-color="#ba8a54"/><stop offset="1" stop-color="#61402e"/></linearGradient>
+ <linearGradient id="basketback" x1="0%" y1="0%" x2="100%" y2="95%"><stop stop-color="#d19a59"/><stop offset=".29" stop-color="#a16b3a"/><stop offset=".66" stop-color="#734525"/><stop offset="1" stop-color="#38251c"/></linearGradient>
+ <linearGradient id="totalShade" x1="0%" y1="0%" x2="100%" y2="0%"><stop stop-color="#15192b" stop-opacity=".66"/><stop offset=".21" stop-color="#1b2533" stop-opacity=".15"/><stop offset=".37" stop-color="#fffde7" stop-opacity=".3"/><stop offset=".57" stop-color="#ffedc4" stop-opacity="0"/><stop offset=".84" stop-color="#231523" stop-opacity=".27"/><stop offset="1" stop-color="#1b1522" stop-opacity=".72"/></linearGradient>
+ <radialGradient id="fire"><stop stop-color="#ffffef"/><stop offset=".17" stop-color="#ffedb2"/><stop offset=".39" stop-color="#ffc578" stop-opacity=".9"/><stop offset=".68" stop-color="#ff7c2f" stop-opacity=".36"/><stop offset="1" stop-color="#ff7c2f" stop-opacity="0"/></radialGradient>
+ <radialGradient id="spec"><stop stop-color="#ffffeb" stop-opacity=".7"/><stop offset=".48" stop-color="#fff1cf" stop-opacity=".22"/><stop offset="1" stop-color="#fff4d7" stop-opacity="0"/></radialGradient>
+ <filter id="cloth-grain" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".23" numOctaves="2" seed="9" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".09"/></feComponentTransfer></filter>
+ <filter id="soft-shadow" x="-30%" y="-20%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.8"/></filter>
+ <filter id="fire-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="4"/></filter>
+ <pattern id="stitch" patternUnits="userSpaceOnUse" width="8" height="8"><path d="M0 6 L2 4" stroke="#ffebcb" stroke-width=".75" opacity=".62"/><circle cx="6.8" cy="1.9" r=".5" fill="#5b3228" opacity=".5"/></pattern>
+</defs>
+<ellipse cx="109" cy="116" rx="75" ry="99" fill="#172337" opacity=".25" filter="url(#soft-shadow)"/>
+<g clip-path="url(#balloon-clipping)">
+ <use href="#envelope" fill="url(#silk)"/>
+ <!-- Panelled silk envelope: asymmetric soft gradations avoid uniform flat stripes. -->
+ <path d="M97 8C71 16 44 44 39 88C36 136 51 183 100 223C68 213 36 188 24 158C4 107 17 31 97 8Z" fill="url(#wine)"/>
+ <path d="M103 8C132 16 157 44 162 88C166 136 151 183 100 223C136 213 170 183 177 154C196 105 181 30 103 8Z" fill="url(#teal)"/>
+ <path d="M92 9C74 30 63 63 60 100C58 152 78 203 100 223C87 192 79 149 80 102C80 57 86 29 92 9Z" fill="url(#cream)"/>
+ <path d="M108 9C129 32 140 65 142 101C144 149 124 202 100 223C114 185 121 150 121 101C121 55 116 24 108 9Z" fill="url(#cream)"/>
+ <path d="M100 8 C89 36 84 66 84 102C83 155 91 201 100 223C110 194 117 154 116 102C116 68 108 30 100 8Z" fill="url(#teal)"/>
+ <path d="M90 10 Q99 48 96 106Q94 180 100 222Q102 152 105 102Q106 43 110 11Z" fill="#ffedc0" opacity=".23"/>
+ <path d="M28 52Q19 114 45 164Q61 194 84 210" fill="none" stroke="#ffe6bc" stroke-width="12" opacity=".1"/>
+ <path d="M176 46Q188 118 162 169Q145 202 122 210" fill="none" stroke="#0c182c" stroke-width="14" opacity=".18"/>
+ <!-- Fine raised seams define each individual gores, each with a shadow edge. -->
+ <g fill="none" stroke-linecap="round">
+  <path d="M100 10 C72 28 55 77 58 117 C59 166 82 206 100 223 M100 10 C128 28 145 77 142 117C141 166 118 206 100 223" stroke="#362639" opacity=".4" stroke-width="4.1"/>
+  <path d="M100 10 C72 28 55 77 58 117 C59 166 82 206 100 223 M100 10 C128 28 145 77 142 117C141 166 118 206 100 223" stroke="url(#rim)" opacity=".93" stroke-width="1.8"/>
+  <path d="M100 10 C81 35 75 77 80 111C82 165 92 207 100 223 M100 10 C119 35 125 77 121 111C118 165 109 207 100 223" stroke="#372631" opacity=".48" stroke-width="3.4"/>
+  <path d="M100 10 C81 35 75 77 80 111C82 165 92 207 100 223 M100 10 C119 35 125 77 121 111C118 165 109 207 100 223" stroke="#f4d8ad" opacity=".76" stroke-width="1.4"/>
+  <path d="M100 9 C45 17 22 62 22 111Q26 179 100 223 M100 9 C155 17 178 62 178 111Q174 179 100 223" stroke="#d69e5b" opacity=".56" stroke-width="1.2"/>
+  <path d="M100 11 L100 221" stroke="#edc986" opacity=".78" stroke-width="1.75"/>
+ </g>
+ <!-- Three softly embossed antique brass belts. -->
+ <path d="M19 93Q100 111 181 93M26 137Q100 159 174 137M52 186Q100 201 148 186" fill="none" stroke="#5a342b" stroke-width="6" opacity=".35"/>
+ <path d="M19 91Q100 109 181 91M26 135Q100 157 174 135M52 184Q100 199 148 184" fill="none" stroke="url(#rim)" stroke-width="3.2" opacity=".92"/>
+ <path d="M20 89Q100 107 180 89M29 133Q100 154 171 133" fill="none" stroke="#fff2c5" stroke-width=".8" opacity=".7"/>
+ <!-- Special thread flecks and realistic tactile satin grain. -->
+ <rect x="10" y="10" width="180" height="214" fill="#e6cfad" filter="url(#cloth-grain)" opacity=".65"/>
+ <use href="#envelope" fill="url(#totalShade)"/>
+ <ellipse cx="69" cy="67" rx="44" ry="89" fill="url(#spec)" opacity=".36" transform="rotate(-18 69 67)"/>
+ <path d="M51 48Q42 83 48 121" fill="none" stroke="#fff5df" stroke-width="4" opacity=".13" stroke-linecap="round"/>
+</g>
+<!-- stitched leather edging along silhouette -->
+<use href="#envelope" fill="none" stroke="#573428" stroke-width="5" opacity=".4"/>
+<use href="#envelope" fill="none" stroke="#eed19a" stroke-width="1.75"/>
+<use href="#envelope" fill="none" stroke="#fff8e7" stroke-width=".52" opacity=".59" transform="translate(-.5 -.5)"/>
+<!-- Gold-riveted decorated bands -->
+<g><circle cx="30" cy="72.2" r="2.3" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="29.6" cy="71.7" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="50" cy="73.3" r="1.8" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="49.5" cy="72.8" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="76" cy="74.7" r="1.8" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="75.5" cy="74.2" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="100" cy="76.0" r="2.3" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="99.5" cy="75.5" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="124" cy="74.7" r="1.8" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="123.5" cy="74.2" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="150" cy="73.3" r="1.8" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="149.6" cy="72.8" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="170" cy="72.2" r="2.3" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="169.6" cy="71.7" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="25" cy="131.1" r="2.3" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="24.6" cy="130.6" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="44" cy="130.1" r="1.8" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="43.5" cy="129.6" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="65" cy="128.9" r="1.8" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="64.5" cy="128.4" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="85" cy="127.8" r="2.3" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="84.5" cy="127.3" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="115" cy="127.8" r="1.8" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="114.5" cy="127.3" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="136" cy="129.0" r="1.8" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="135.6" cy="128.5" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="155" cy="130.0" r="2.3" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="154.6" cy="129.5" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="175" cy="131.1" r="1.8" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="174.6" cy="130.6" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="43" cy="173.1" r="2.3" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="42.5" cy="172.7" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="63" cy="172.0" r="1.8" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="62.5" cy="171.6" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="80" cy="171.1" r="1.8" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="79.5" cy="170.6" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="100" cy="170.0" r="2.3" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="99.5" cy="169.5" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="120" cy="171.1" r="1.8" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="119.5" cy="170.6" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="140" cy="172.2" r="1.8" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="139.6" cy="171.7" r=".6" fill="#fff6cf" opacity=".8"/><circle cx="158" cy="173.2" r="2.3" fill="url(#brass)" stroke="#744727" stroke-width=".6"/><circle cx="157.6" cy="172.7" r=".6" fill="#fff6cf" opacity=".8"/></g>
+<!-- Vintage guild medallion, hand-engraved and embossed. -->
+<path d="M100 53 Q123 53 131 65 L128 92 Q115 110 100 114 Q85 110 72 92 L69 65 Q77 53 100 53Z" fill="#382536" opacity=".57" transform="translate(1 2)"/>
+<path d="M100 50 Q123 50 131 63 L128 92 Q115 108 100 113 Q85 108 72 92 L69 63 Q77 50 100 50Z" fill="url(#wine)" stroke="url(#rim)" stroke-width="4"/>
+<path d="M100 57Q118 57 124 67L121 88Q110 100 100 104Q90 100 79 88L76 67Q82 57 100 57Z" fill="none" stroke="#ffe9b2" stroke-width=".8" opacity=".75"/>
+<path d="M94 70 C91 64 84 65 85 75 Q87 84 93 87 Q95 95 100 94 Q105 95 107 87 Q113 84 115 75 C116 65 109 64 106 70Q100 67 94 70Z" fill="url(#rim)" stroke="#704525" stroke-width="1.3"/>
+<path d="M96 74Q100 78 104 74" fill="none" stroke="#fff8d8" stroke-width="1.3" opacity=".75"/>
+<g fill="#fae7b6"><circle cx="100" cy="59" r="1.15"/><circle cx="100" cy="105" r="1.15"/><circle cx="80" cy="80" r="1.1"/><circle cx="120" cy="80" r="1.1"/></g>
+<!-- crown cap, engraved metal and safety stitching -->
+<path d="M91 12Q100 3 109 12L107 19Q100 24 93 19Z" fill="url(#rim)" stroke="#643d2e" stroke-width="2"/>
+<ellipse cx="100" cy="10" rx="6.8" ry="4.5" fill="#fff2bc" opacity=".75"/>
+<circle cx="100" cy="7" r="2" fill="#fffbe2"/>
+<!-- braided suspension cables from the canopy to the gondola -->
+<g fill="none" stroke-linecap="round">
+ <path d="M53 193L61 243M146 193L139 243M81 215L80 241M119 215L120 241" stroke="#503a30" stroke-width="4.2" opacity=".9"/>
+ <path d="M53 193L61 243M146 193L139 243M81 215L80 241M119 215L120 241" stroke="url(#rope)" stroke-width="2.4"/>
+ <path d="M50 193L59 242M150 193L141 242" stroke="#ffe8ba" opacity=".56" stroke-width=".7" stroke-dasharray="1.4 3.2"/>
+ <path d="M59 218 Q70 228 82 220 M141 218Q128 228 119 220" stroke="#af7138" stroke-width="1.8"/>
+</g>
+<!-- Lower leather collar and copper rings -->
+<path d="M88 212Q100 220 112 212L108 225Q100 229 92 225Z" fill="#492e2f" stroke="url(#rim)" stroke-width="2.5"/>
+<ellipse cx="100" cy="224" rx="10" ry="3.5" fill="#8e5a30" stroke="#f1cf8e" stroke-width="1.3"/>
+<!-- Gas burner, faint authentic glow; deliberately below canopy -->
+<circle cx="100" cy="228" r="24" fill="url(#fire)" opacity=".85" filter="url(#fire-blur)"/>
+<path d="M97 229Q88 219 97 210Q98 216 102 217Q109 208 108 204Q118 220 105 230Z" fill="#fff3b1" stroke="#ed994d" stroke-width=".8"/>
+<path d="M93 232H107L110 239H90Z" fill="url(#rim)" stroke="#64402b" stroke-width="1.2"/>
+<circle cx="92" cy="235" r="2" fill="#f4c977"/><circle cx="108" cy="235" r="2" fill="#f4c977"/>
+<!-- Rear of the actual wicker basket, behind Ratón's original PNG -->
+<path d="M60 239Q100 233 140 239L136 266Q100 278 64 266Z" fill="url(#basketback)" stroke="#e1b87c" stroke-width="3"/>
+<path d="M61 238Q100 230 139 238" fill="none" stroke="#36241b" stroke-width="7"/>
+<path d="M61 235Q100 228 139 235" fill="none" stroke="url(#rim)" stroke-width="4"/>
+<path d="M63 245Q100 250 137 245M64 256Q100 265 136 256" fill="none" stroke="#f5cf8d" opacity=".48" stroke-width="1.6"/>
+<circle cx="61" cy="238" r="4.2" fill="url(#rim)"/><circle cx="139" cy="238" r="4.2" fill="url(#rim)"/>
+<!-- loose banner adds parallax and small-scale motion without repainting Pérez -->
+<path d="M64 233Q48 229 37 235Q22 233 12 247Q27 240 30 249Q51 249 67 239Z" fill="#713046" stroke="#cf8c7f" stroke-width="1.5"/>
+<path d="M36 239Q46 235 61 235" fill="none" stroke="#ffd4b2" stroke-width=".85" opacity=".65"/>
+</svg>
