@@ -1,5 +1,5 @@
-import {NativeFlightScene,calculateStreetRoute,interpolate as geoLerp} from './flight-native.mjs?v=2.0.0';
-import {CinemaNight} from './night-cinema.mjs?v=3.0.0';
+import {NativeFlightScene,calculateStreetRoute,interpolate as geoLerp} from './flight-native.mjs?v=3.1.2';
+import {CinemaNight} from './night-cinema.mjs?v=3.1.2';
 /*
  * Villa Pérez Google 3D experiment.
  * Google Maps JS API 3D / Map3DElement / native Model3DElement.
