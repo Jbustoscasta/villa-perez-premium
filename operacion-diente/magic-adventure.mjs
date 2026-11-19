@@ -45,7 +45,7 @@ export class MagicAdventure {
     this.onSound=onSound;this.getAudioUrls=getAudioUrls;
     this.done=new Set();this.earned=new Set();this.active=null;this.sound=false;
     this.voiceIds=new Set();this.spoken=new Set();this.timeouts=[];this.markers=[];
-    this.hops=0;this.gathered=new Set();this.voiceAudio=null;this.lastUpdate=0;this.completing=false;
+    this.hops=0;this.gathered=new Set();this.voiceAudio=null;this.lastUpdate=0;this.completing=false;this.ambience=null;
     this.onMove=()=>this.positionMarkers();
     $('quest-close').addEventListener('click',()=>this.finish(false));
     $('quest-skip').addEventListener('click',()=>this.finish(false));
@@ -71,14 +71,38 @@ export class MagicAdventure {
     for(const id of this.timeouts)clearTimeout(id);this.timeouts=[];
     this.active=null;this.completing=false;this.done.clear();this.earned.clear();this.spoken.clear();this.gathered.clear();
     this.hops=0;this.lastUpdate=0;this.cancelSpeech();
-    this.removeMarkers();this.hideChallenge();this.updateHud();
+    this.removeMarkers();this.hideChallenge();this.stopAmbience();this.updateHud();
     this.attachMap(null);
   }
   setAudio(enabled,context){
     if(context)this.audioContext=context;
     this.sound=Boolean(enabled);this.onSound?.(this.sound);
-    if(!this.sound)this.cancelSpeech();
+    if(!this.sound){this.cancelSpeech();this.stopAmbience();}
     $('voice-status').textContent=this.sound?'Narración de demostración activa':'Activa la voz de demostración ♪';
+  }
+  setAmbient(playing){
+    if(!playing||!this.sound||!this.audioContext||this.active){
+      this.stopAmbience();return;
+    }
+    if(this.ambience)return;
+    try{
+      const ctx=this.audioContext;
+      const gain=ctx.createGain();gain.gain.value=.00001;
+      gain.connect(ctx.destination);
+      const a=ctx.createOscillator(),b=ctx.createOscillator();
+      a.type='sine';b.type='sine';a.frequency.value=164.81;b.frequency.value=246.94;
+      a.connect(gain);b.connect(gain);a.start();b.start();
+      gain.gain.exponentialRampToValueAtTime(.007,ctx.currentTime+1.2);
+      this.ambience={a,b,gain,ctx};
+    }catch(e){this.ambience=null}
+  }
+  stopAmbience(){
+    const am=this.ambience;if(!am)return;
+    this.ambience=null;
+    try{
+      am.gain.gain.setTargetAtTime(.0001,am.ctx.currentTime,.12);
+      setTimeout(()=>{try{am.a.stop();am.b.stop();am.a.disconnect();am.b.disconnect();am.gain.disconnect();}catch{}},650);
+    }catch{}
   }
   cancelSpeech(){
     if(this.voiceAudio){this.voiceAudio.pause();this.voiceAudio.currentTime=0;this.voiceAudio=null;}
@@ -143,6 +167,7 @@ export class MagicAdventure {
   }
   start(mission){
     this.onPause?.();
+    this.stopAmbience();
     this.active=mission;this.completing=false;this.gathered.clear();this.hops=0;
     const map=this.getMap(),path=this.getPath();
     $('quest-brow').textContent='DESAFÍO MÁGICO · '+(this.done.size+1)+' DE 3';
