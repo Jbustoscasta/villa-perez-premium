@@ -5,9 +5,10 @@
  * Mouse identity: official ../perez.png as image marker, never redrawn.
  */
 const METERS=111320;
-export const BALLOON_ALTITUDE=72; // above natural ground, not sea level
+export const BALLOON_ALTITUDE=58; // above natural ground, not sea level
 const MODEL_SRC=new URL('./assets/globo-villa-perez-3d.glb?v=2',import.meta.url).href;
-const MOUSE_SRC=new URL('../perez.png',import.meta.url).href;
+// The official mouse is intentionally NOT rendered as a map marker: Safari
+// could magnify it to building size. Its untouched PNG appears in the HUD.
 export const geoDistance=(a,b)=>{
  const r=Math.PI/180,x=(b.lng-a.lng)*Math.cos((a.lat+b.lat)*r/2),y=b.lat-a.lat;
  return Math.hypot(x,y)*METERS;
@@ -72,8 +73,8 @@ function templateWith(el){
  const template=document.createElement('template');template.content.append(el);return template;
 }
 export class NativeFlightScene{
- constructor(map,lib,onError=null){
-  this.map=map;this.lib=lib;this.onError=onError;this.model=null;this.mouse=null;this.trace=null;
+ constructor(map,lib,onError=null,origin={lat:40.42016,lng:-3.68845}){
+  this.map=map;this.lib=lib;this.origin=origin;this.onError=onError;this.model=null;this.trace=null;
   this.stars=[];this.lastTrailAt=0;this.lastStarAt=0;this.points=[];this.active=false;
   this.modelActive=false;this.pathTrail=[];this.muted=false;this.modelLoadError=false;
  }
@@ -82,11 +83,11 @@ export class NativeFlightScene{
   this.active=true;
   const {Model3DElement,Marker3DElement,Polyline3DElement}=this.lib;
   if(!Model3DElement)throw Error('Esta versión de Google Maps no admite GLB');
-  const p={lat:40.42016,lng:-3.68845,altitude:BALLOON_ALTITUDE};
+  const p={lat:this.origin.lat,lng:this.origin.lng,altitude:BALLOON_ALTITUDE};
   try{
    this.model=new Model3DElement({
      src:MODEL_SRC,position:p,orientation:{heading:0,tilt:0,roll:0},
-     scale:1,altitudeMode:'RELATIVE_TO_GROUND'
+     scale:2.75,altitudeMode:'RELATIVE_TO_GROUND'
    });
    const reportModelError=event=>{
      this.modelLoadError=true;
@@ -98,19 +99,8 @@ export class NativeFlightScene{
    this.map.append(this.model);
    this.modelActive=true;
   }catch(e){this.modelActive=false;this.modelLoadError=true;throw e}
-  // Original Ratón PNG rendered in the native 3D space. Occluded by buildings.
-  // Note: Google rasterizes 2D PNG in a 3D marker; it is NOT a 3D rig.
-  if(Marker3DElement){
-   try{
-    const img=document.createElement('img');img.src=MOUSE_SRC;
-    img.width=45;img.height=60;img.alt='Ratón Pérez oficial';img.draggable=false;
-    this.mouse=new Marker3DElement({
-      position:{...p,altitude:BALLOON_ALTITUDE+3.2},altitudeMode:'RELATIVE_TO_GROUND',
-      drawsWhenOccluded:false,extruded:false,sizePreserved:false
-    });
-    this.mouse.append(templateWith(img));this.map.append(this.mouse);
-   }catch(e){console.warn('Ratón 3D marker unavailable:',e);this.mouse=null}
-  }
+  // Do not add a photo of Ratón as Marker3DElement: on mobile the
+  // original PNG could be displayed at enormous and incorrect scale.
   if(Polyline3DElement){
    try{
     this.trace=new Polyline3DElement({
@@ -126,7 +116,7 @@ export class NativeFlightScene{
     const m=new Marker3DElement({
       position:{...p,altitude:BALLOON_ALTITUDE+1},
       altitudeMode:'RELATIVE_TO_GROUND',drawsWhenOccluded:false,
-      sizePreserved:false,collisionBehavior:'REQUIRED'
+      sizePreserved:true,collisionBehavior:'REQUIRED'
     });
     m.append(templateWith(makeStarSvg(i%2?'#f7bd66':'#ffedb5',i%3?28:38)));
     this.map.append(m);this.stars.push(m);
@@ -143,8 +133,8 @@ export class NativeFlightScene{
   }catch(e){console.warn('Unable to toggle flight particles',e)}
  }
  hideNative(){
-  for(const el of [this.model,this.mouse,this.trace,...this.stars])try{el?.remove()}catch(e){}
-  this.model=null;this.mouse=null;this.trace=null;this.stars=[];
+  for(const el of [this.model,this.trace,...this.stars])try{el?.remove()}catch(e){}
+  this.model=null;this.trace=null;this.stars=[];
   this.modelActive=false;this.active=false;
  }
  pose(coord,bearing,progress,pointAt,t=performance.now()){
@@ -152,7 +142,6 @@ export class NativeFlightScene{
   const latLng={lat:coord.lat,lng:coord.lng};
   this.model.position={...latLng,altitude:BALLOON_ALTITUDE};
   this.model.orientation={heading:bearing,tilt:0,roll:Math.sin(t/3000)*.75};
-  if(this.mouse)this.mouse.position={...latLng,altitude:BALLOON_ALTITUDE+3.2+Math.sin(t/2100)*.25};
   if(!this.muted&&t-this.lastTrailAt>270){
    this.lastTrailAt=t;
    const last=this.pathTrail.at(-1);
