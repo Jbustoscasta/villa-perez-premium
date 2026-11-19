@@ -10,7 +10,7 @@ const state = {
   origin:{label:CFG.clinic.originLabel,coordinate:CFG.clinic.origin?.slice()||null},
   destination:{label:'',coordinate:null},
   map:null,ml:null,mouseMarker:null,originMarker:null,homeMarker:null,director:null,ratView:false,
-  route:null,path:null,mapPath:null,isDemo:false,landmark:null,landmarkShown:false,landmarkTimer:0,introTimer:0,arrivalShown:false,
+  route:null,path:null,mapPath:null,isDemo:false,landmark:null,landmarkShown:false,landmarkTimer:0,introTimer:0,arrivalShown:false,scenicUntil:0,
   soundOn:false,audioCtx:null,durationMs:CFG.stageDurationSeconds*1000,progress:0,
   playing:false,startTime:0,frame:0,follow:true,cinematic:true,lastPaint:0,lastFx:0,lastStage:-1,lastCamera:0,
   reducedMotion:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches??false
@@ -195,6 +195,12 @@ function showLandmark(){
   $('landmark-title').textContent=state.landmark.name;
   $('landmark-copy').textContent=state.landmark.message;
   $('landmark-panel').classList.remove('hidden');
+  // Public landmark only: cinematic close look at real map coordinates, never the family destination.
+  if(validCoordinate(state.landmark.coordinate)&&state.map&&!state.director?.active){
+    state.scenicUntil=performance.now()+3600;
+    state.map.easeTo({center:state.landmark.coordinate,zoom:17.1,pitch:60,
+      bearing:24,duration:1100,essential:false});
+  }
   state.director?.say('scenic');
   playChime('landmark');
   clearTimeout(state.landmarkTimer);
@@ -307,7 +313,7 @@ function paintProgress(progress,force=false){
   const partial=along.partial.length===1?[along.partial[0],along.partial[0]]:along.partial;
   state.map.getSource('journey-completed')?.setData(line(partial));
   if(!state.reducedMotion)state.map.getSource('journey-sparks')?.setData(trailParticles(state.mapPath,state.progress,18,.0028));
-  if(state.follow && state.playing && !state.reducedMotion && (force||now-state.lastCamera>1350) && state.progress<.92){
+  if(state.follow && state.playing && !state.reducedMotion && (force||now-state.lastCamera>1350) && state.progress<.92 && now>=state.scenicUntil){
     state.lastCamera=now;
     const lookAhead=pointAt(state.mapPath,Math.min(.99,state.progress+.012)).coordinate;
     const options={center:lookAhead,zoom:state.ratView?17.25:state.cinematic?16.15:Math.max(14.1,Math.min(16.1,state.map.getZoom())),
@@ -340,7 +346,7 @@ function paintProgress(progress,force=false){
   }
 }
 function stopAnimation(){
-  cancelAnimationFrame(state.frame);state.frame=0;state.playing=false;
+  cancelAnimationFrame(state.frame);state.frame=0;state.playing=false;state.director?.setAmbient(false);
   $('play-pause').textContent=state.progress>=1?'Ver sorpresa final →':state.progress>0?'Continuar viaje ▶':'Comenzar el viaje ▶';
 }
 function finishAnimation(){
@@ -363,7 +369,7 @@ function playPause(){
     stopAnimation();return;
   }
   if(state.progress>=1){finishMission();return;}
-  state.playing=true;
+  state.playing=true;state.director?.setAmbient(true);
   state.startTime=performance.now()-cinematicPhase(state.progress)*state.durationMs;
   $('play-pause').textContent='Pausar viaje ❚❚';
   $('skip').textContent='Terminar misión';
@@ -387,7 +393,7 @@ function reset(){
   state.director?.reset();
   stopAnimation();state.map?.remove();state.map=null;state.mouseMarker=null;state.originMarker=null;state.homeMarker=null;state.path=null;state.mapPath=null;state.route=null;state.landmark=null;state.landmarkShown=false;state.arrivalShown=false;state.isDemo=false;
   $('cinematic-intro').classList.add('hidden');$('landmark-panel').classList.add('hidden');$('final-curtain').classList.add('hidden');
-  state.progress=0;state.lastStage=-1;state.lastPaint=0;state.lastFx=0;state.lastCamera=0;const fx=$('route-fx');fx?.getContext('2d')?.clearRect(0,0,fx.width,fx.height);state.destination={label:'',coordinate:null};
+  state.progress=0;state.scenicUntil=0;state.lastStage=-1;state.lastPaint=0;state.lastFx=0;state.lastCamera=0;const fx=$('route-fx');fx?.getContext('2d')?.clearRect(0,0,fx.width,fx.height);state.destination={label:'',coordinate:null};
   $('destination-address').value='';$('adult-confirm').checked=false;
   $('route-message').textContent='¡Mi mochila está lista! Voy a salir de la clínica.';$('play-pause').textContent='Comenzar el viaje ▶';$('skip').textContent='Terminar misión';
   $('map-fallback').classList.add('hidden');$('follow-map').classList.add('is-selected');$('follow-map').setAttribute('aria-pressed','true');state.follow=true;
@@ -435,6 +441,7 @@ function setup(){
       }catch(e){state.soundOn=false;console.warn('Sin sonido',e);}
     }
     state.director?.setAudio(state.soundOn,state.audioCtx);
+    state.director?.setAmbient(state.playing);
     if(state.soundOn)state.director?.say('depart',true);
     toggle.setAttribute('aria-pressed',String(state.soundOn));
     toggle.classList.toggle('is-selected',state.soundOn);
