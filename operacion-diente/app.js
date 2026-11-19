@@ -491,6 +491,21 @@ function setup(){
       if(state.screen==='route'&&state.mapPath&&!state.playing&&state.progress<1)playPause();
     },
     onSound:()=>{},
+    onReward:(key)=>{
+      const map=state.map;
+      if(!map)return;
+      try{
+        map.setPaintProperty('route-gold','line-width',11);
+        map.setPaintProperty('route-glow','line-opacity',.95);
+        map.setPaintProperty('route-halo','line-width',27);
+        const node=$('route-message');
+        node.textContent='¡La magia ha iluminado las calles!';
+        setTimeout(()=>{
+          if(state.map!==map)return;
+          premiumRoutePaint(map);
+        },1500);
+      }catch(e){console.warn('Destello no disponible',e)}
+    },
     getAudioUrls:()=>CFG.narrationAudio||{}
   });
   $('start').addEventListener('click',()=>showScreen('address'));
