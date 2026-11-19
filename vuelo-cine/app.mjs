@@ -34,7 +34,7 @@ const bearing=(a,b)=>{
 };
 const deltaBearing=(a,b)=>((b-a+540)%360)-180;
 const ctx={
- map:null,ready:false,selected:'plaza',custom:false,
+ map:null,ready:false,starting:false,loadError:'',selected:'plaza',custom:false,
  clinic:null,clinicAddress:'',originLabel:'Origen de prueba · Puerta de Alcalá',
  origin:[START.lng,START.lat],destination:null,destinationLabel:'',
  route:[],prefix:[],cumulative:[],total:0,routeType:'panorámica',
@@ -51,8 +51,11 @@ function toast(message,ms=3900){
  clearTimeout(ctx.toasts);ctx.toasts=setTimeout(()=>$('toast').hidden=true,ms);
 }
 function fail(message){
- $('setupError').hidden=false;$('setupError').textContent=message;
+ const msg=String(message||'No se ha podido preparar el vuelo.');
+ $('setupError').hidden=false;$('setupError').textContent=msg;
  $('start').disabled=false;$('start').textContent='✦ Intentar de nuevo';
+ status('REVISAR CONEXIÓN');
+ toast(msg,6300);
 }
 function status(text){$('mapStatus').textContent=text}
 function fmt(num){return Math.round(clamp(num,0,1)*100)+'%'}
@@ -241,22 +244,68 @@ function scheduleWindows(){
  },420);
 }
 function loadMap(){
- if(!window.maplibregl){fail('No se ha podido cargar MapLibre. Comprueba la conexión a Internet.');status('ERROR MOTOR MAPAS');return}
- if(!maplibregl.supported()){fail('Este dispositivo no admite WebGL para el mapa 3D.');status('WEBGL NO DISPONIBLE');return}
- const map=new maplibregl.Map({
-  container:'map',style:STYLE.dark,center:[START.lng,START.lat],
-  zoom:14.5,pitch:61,bearing:-28,antialias:true,
-  attributionControl:true,cooperativeGestures:false,
-  preserveDrawingBuffer:false,maxPitch:73
- });
+ $('start').disabled=false;
+ status('CARGANDO CIUDAD NOCTURNA');
+ if(!window.maplibregl){
+  ctx.loadError='No se ha descargado el motor de mapas. Revisa tu conexión.';
+  fail(ctx.loadError);return;
+ }
+ if(!maplibregl.supported()){
+  ctx.loadError='Safari no permite iniciar el mapa WebGL en este dispositivo.';
+  fail(ctx.loadError);return;
+ }
+ let map;
+ try{
+  map=new maplibregl.Map({
+   container:'map',style:STYLE.dark,center:[START.lng,START.lat],
+   zoom:14.5,pitch:61,bearing:-28,antialias:true,
+   attributionControl:true,cooperativeGestures:false,
+   preserveDrawingBuffer:false,maxPitch:73
+  });
+ }catch(e){
+  ctx.loadError='No se pudo inicializar el mapa: '+(e.message||'error gráfico');
+  fail(ctx.loadError);return;
+ }
  ctx.map=map;
- map.on('load',()=>{ctx.ready=true;$('start').disabled=false;status('NOCHE DE CINE · CALLES REALES');mapLayerSetup();resetPins();});
- map.on('style.load',()=>{ctx.effectsReady=false;mapLayerSetup();});
+ function ready(){
+  if(ctx.ready)return;
+  ctx.ready=true;ctx.loadError='';
+  status('NOCHE DE CINE · CALLES REALES');
+  $('setupError').hidden=true;$('start').disabled=false;
+  try{mapLayerSetup();resetPins()}catch(e){console.warn('Optional map layers unavailable:',e)}
+ }
+ map.on('load',ready);
+ map.on('style.load',()=>{
+  if(!ctx.ready)ready();
+  ctx.effectsReady=false;
+  try{mapLayerSetup()}catch(e){console.warn('Night visual layers unavailable:',e)}
+ });
+ map.on('idle',()=>{if(!ctx.ready&&map.isStyleLoaded())ready()});
  map.on('moveend',scheduleWindows);
  map.on('error',e=>{
-  console.warn('MapLibre source or rendering error',e.error);
-  if(!ctx.ready)status('PROBLEMA AL CARGAR CARTOGRAFÍA');
+  console.warn('MapLibre map or tile error:',e.error);
+  if(!ctx.ready){ctx.loadError='El proveedor de mapas no ha terminado de cargar.';status('CARTOGRAFÍA NO DISPONIBLE')}
  });
+ setTimeout(()=>{
+  if(ctx.ready||!ctx.map)return;
+  status('REINTENTANDO CARTOGRAFÍA');
+  try{ctx.map.setStyle('https://tiles.openfreemap.org/styles/liberty')}
+  catch(e){console.warn('Fallback map style unavailable:',e)}
+ },6000);
+ setTimeout(()=>{
+  if(!ctx.ready){
+   ctx.loadError='El mapa no ha cargado. Comprueba Internet y vuelve a abrir la página.';
+   fail(ctx.loadError);
+  }
+ },12000);
+}
+async function waitForMap(maxWait=5300){
+ if(ctx.ready&&ctx.map)return;
+ if(!ctx.map)throw new Error(ctx.loadError||'No se ha cargado el motor del mapa.');
+ const start=Date.now();
+ while(!ctx.ready&&Date.now()-start<maxWait)
+  await new Promise(resolve=>setTimeout(resolve,180));
+ if(!ctx.ready)throw new Error(ctx.loadError||'El mapa todavía no está disponible; revisa la conexión y reintenta.');
 }
 async function requestJson(url,timeout=9500){
  const ctl=new AbortController(),tid=setTimeout(()=>ctl.abort(),timeout);
@@ -269,7 +318,7 @@ async function requestJson(url,timeout=9500){
 async function lookupAddress(query){
  const text=query.trim();if(!text)throw new Error('Introduce una dirección');
  const url='https://photon.komoot.io/api/?q='+encodeURIComponent(text)+'&limit=4&lat=40.42&lon=-3.69';
- const json=await requestJson(url,10000);
+ const json=await requestJson(url,4700);
  const f=json.features?.find(x=>x.geometry?.coordinates?.length===2&&x.properties?.countrycode?.toUpperCase()==='ES')
   ||json.features?.[0];
  if(!f||!f.geometry||f.geometry.coordinates.length!==2)throw new Error('No se ha encontrado la dirección. Añade calle, número y municipio.');
@@ -320,7 +369,7 @@ async function computeRoute(){
   ctx.origin.join(',')+';'+ctx.destination.join(',')+
   '?geometries=geojson&overview=full&steps=false';
  try{
-  const data=await requestJson(u,10000);
+  const data=await requestJson(u,2800);
   const coords=data.routes?.[0]?.geometry?.coordinates;
   if(!Array.isArray(coords)||coords.length<2)throw new Error('Empty route');
   ctx.route=coords.filter(c=>c.length===2&&c.every(Number.isFinite));
@@ -460,24 +509,33 @@ function startFlight(){
  ctx.frame=requestAnimationFrame(tick);
 }
 async function start(){
- if(!ctx.ready){toast('Esperando a que cargue el mapa…');return}
- if(ctx.phase!=='idle')return;
- $('setupError').hidden=true;$('start').disabled=true;
- $('start').textContent='Calculando las calles…';
- ctx.token++;
+ if(ctx.phase!=='idle'||ctx.starting)return;
+ ctx.starting=true;ctx.token++;
+ const btn=$('start');btn.disabled=true;btn.textContent='Preparando el vuelo…';
+ $('setupError').hidden=true;
  try{
-  await getPositions();await computeRoute();
+  await waitForMap(5300);
+  btn.textContent='Localizando origen y destino…';
+  await getPositions();
+  btn.textContent='Dibujando las calles…';
+  await computeRoute();
+  btn.textContent='Despegando…';
   balloonAsset();resetPins();
   $('setup').classList.add('leaving');$('flightInterface').hidden=false;
   $('arrival').hidden=true;
   $('fromLabel').textContent=safeText(ctx.originLabel).toUpperCase();
   $('routeType').textContent=ctx.routeType==='callejero real'
-     ?'CALLES REALES · OSM + OSRM':'RUTA APROXIMADA · NO NAVEGACIÓN';
+   ?'CALLES REALES · OSM + OSRM':'RUTA APROXIMADA · NO NAVEGACIÓN';
   status(ctx.day?'RECORRIDO REAL · DÍA':'NOCHE DE CINE · CALLES REALES');
   ctx.phase='preview';ctx.playing=true;
   progress(0);setOverview(true);
- }catch(e){fail(e?.message||'No se ha podido preparar la ruta')}
- finally{$('start').disabled=false;if(ctx.phase==='idle')$('start').textContent='✦ Comenzar vuelo mágico'}
+ }catch(e){
+  console.warn('Cannot start Villa Pérez flight',e);
+  fail(e?.message||'No se ha podido preparar la ruta');
+ }finally{
+  ctx.starting=false;btn.disabled=false;
+  if(ctx.phase==='idle'&&$('setupError').hidden)btn.textContent='✦ Comenzar vuelo mágico';
+ }
 }
 function pause(){
  if(!ctx.playing||ctx.overview)return;
