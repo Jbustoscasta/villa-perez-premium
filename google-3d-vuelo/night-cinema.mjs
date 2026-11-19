@@ -136,7 +136,7 @@ export class CinemaNight {
   this.raf=0;if(document.hidden)return;
   const dt=this.last?Math.min(90,now-this.last):16;
   this.last=now;
-  const amount=dt/5500;
+  const amount=dt/2500; // perceptible blue-hour transition on mobile
   if(this.target>this.level)this.level=Math.min(this.target,this.level+amount);
   else if(this.target<this.level)this.level=Math.max(this.target,this.level-amount);
   if(this.level<.0001&&this.target===0){this.canvas.hidden=true;return}
