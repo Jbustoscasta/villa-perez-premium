@@ -172,7 +172,7 @@ function mapLayerSetup(){
  const firstLabel=map.getStyle().layers?.find(l=>l.type==='symbol')?.id;
  const dark=!ctx.day;
  if(source){
-  const textured=makeFacadePattern(map,!dark);
+  const textured=false; // avoid identical procedural window patterns on every facade
   const buildings={
    id:'vp-buildings',type:'fill-extrusion',source,'source-layer':'building',minzoom:12,
    paint:{
@@ -230,7 +230,11 @@ function mapLayerSetup(){
   addLayerSafe({id:'vp-window-point',type:'circle',source:'vp-windows',
    paint:{'circle-color':'#ffe1a2','circle-radius':1.1,'circle-opacity':.72}});
  }
- enableCinemaBuildings(map,source,firstLabel);
+ // Disabled the geometric fantasy city: repetitive fabricated buildings were
+ // misleading and looked like identical box houses. Real 3D imagery is
+ // available as a separate Google photogrammetry experience.
+ ctx.city3d=null;
+ if($('cityStatus'))$('cityStatus').textContent='Mapa nocturno · edificios simplificados';
  try{map.setLight?.({anchor:'viewport',color:dark?'#b1c5ef':'#fff0dd',intensity:dark?.68:.8,position:[1.5,205,40]})}catch(e){}
  try{map.setSky?.(dark?{'sky-color':'#08172c','horizon-color':'#344665','fog-color':'#26334d','sky-horizon-blend':.5,'horizon-fog-blend':.3,'fog-ground-blend':.1}:undefined)}catch(e){}
  ctx.effectsReady=true;
@@ -311,7 +315,7 @@ function activateRescue(reason=''){
   $('start').disabled=false;
   $('setupError').hidden=true;
   status('CIUDAD DE CUENTO 2,5D · DESPEGUE DISPONIBLE');
-  if($('cityStatus'))$('cityStatus').textContent='Casas de cuento 2,5D · modo compatible';
+  if($('cityStatus'))$('cityStatus').textContent='Mapa de apoyo 2D · abre la vista fotográfica 3D para edificios reales';
   toast('Mapa compatible activado. Puedes comenzar el vuelo; las calles reales se cargarán si hay conexión.',4700);
  }catch(e){
   console.error('Emergency map renderer unavailable:',e);
@@ -617,8 +621,8 @@ async function start(){
   $('arrival').hidden=true;
   $('fromLabel').textContent=safeText(ctx.originLabel).toUpperCase();
   $('routeType').textContent=ctx.rescue
-   ?(ctx.routeType==='callejero real'?'CALLES REALES · CIUDAD DE CUENTO 2,5D':'RECORRIDO APROXIMADO · CIUDAD DE CUENTO 2,5D')
-   :(ctx.routeType==='callejero real'?'CALLES REALES · ARQUITECTURA 3D':'RUTA APROXIMADA · ARQUITECTURA 3D');
+   ?(ctx.routeType==='callejero real'?'CALLES REALES · MAPA COMPATIBLE':'RUTA APROXIMADA · MAPA COMPATIBLE')
+   :(ctx.routeType==='callejero real'?'CALLES REALES · EDIFICIOS SIMPLIFICADOS':'RUTA APROXIMADA · MAPA ILUSTRADO');
   status(ctx.rescue?'MODO COMPATIBLE · RUTA ANIMADA':(ctx.day?'RECORRIDO REAL · DÍA':'NOCHE DE CINE · CALLES REALES'));
   ctx.phase='preview';ctx.playing=true;
   progress(0);setOverview(true);
