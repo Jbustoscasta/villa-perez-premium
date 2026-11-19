@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#051326">
 <meta name="description" content="Villa Pérez: vuelo mágico cinematográfico sobre las calles reales de Madrid.">
 <title>Villa Pérez · Noche de cine</title>
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.7.0/dist/maplibre-gl.css">
-<link rel="stylesheet" href="./styles.css?v=1.0.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.7.0/dist/maplibre-gl.css">
+<link rel="stylesheet" href="./styles.css?v=1.1.0">
 </head>
 <body>
 <main class="app" id="app">
@@ -37,7 +37,7 @@
    <button class="choice" data-dest="arroyofresno" type="button">Arroyo Fresno</button>
   </div>
   <input id="address" placeholder="O escribe calle, número y ciudad" maxlength="220" autocomplete="street-address">
-  <button id="start" class="primary-button" type="button" disabled><span>✦</span> Comenzar vuelo mágico <span>→</span></button>
+  <button id="start" class="primary-button" type="button" aria-describedby="setupError"><span>✦</span> Comenzar vuelo mágico <span>→</span></button>
   <div id="setupError" class="error" role="alert" hidden></div>
   <div class="setup-footer">Calles de OpenStreetMap · edificios 3D recreados · noche artística, no fotografía nocturna</div>
  </section>
@@ -77,7 +77,7 @@
   </div>
  </template>
 </main>
-<script src="https://unpkg.com/maplibre-gl@5.7.0/dist/maplibre-gl.js"></script>
-<script type="module" src="./app.mjs?v=1.0.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.7.0/dist/maplibre-gl.js"></script>
+<script type="module" src="./app.mjs?v=1.1.0"></script>
 </body>
 </html>
