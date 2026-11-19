@@ -268,3 +268,29 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
  .flight-labels span{font-size:8px}
 }
 @media(prefers-reduced-motion:reduce){.balloon-sparkles i{animation:none}}
+
+/* v5.1: cinema-quality layered SVG envelope and woven wicker foreground.
+   No photorealistic assets are generated or used for Ratón Pérez. */
+.balloon{
+ width:177px;height:248px;aspect-ratio:5/7;
+ filter:drop-shadow(0 17px 14px rgba(14,23,39,.5))
+        drop-shadow(0 0 8px rgba(255,229,169,.18))!important;
+}
+.balloon-base,.balloon-basket-front{
+ image-rendering:auto;
+ backface-visibility:hidden;
+ will-change:transform;
+}
+.balloon .official{
+ left:40%;top:65%;width:23%;height:23%;
+ filter:drop-shadow(0 2px 2px rgba(21,26,38,.45));
+}
+.balloon-flare{opacity:.48}
+.balloon-sparkles i{animation-duration:3.7s}
+@media(max-width:700px){
+ .balloon{width:146px;height:205px;top:44%}
+ .balloon .official{left:40%;top:65%;width:23%;height:23%}
+}
+@media(max-width:400px){
+ .balloon{width:138px;height:193px;top:43%}
+}
