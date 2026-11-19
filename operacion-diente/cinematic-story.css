@@ -83,3 +83,28 @@
   .cinematic-windows b{opacity:.5}.cinematic-door-glow{opacity:.65}
   .cinematic-intro.is-revealing{filter:none}
 }
+
+
+/* Minimal HUD retained from v0.6; games are removed entirely. */
+.missions-hud{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #e5ca8942;border-radius:12px;padding:7px 10px;color:#dbebe7;background:#214b4e9c;font-size:11px;margin:6px 0 11px}
+.missions-hud strong{color:#ffdda2}
+.missions-hud-stars{color:#ffe2a3;font-size:18px;letter-spacing:2px;text-shadow:0 0 10px #e6bb7c}
+.voice-hint{display:block;color:#d7c3a1!important;margin-bottom:5px}
+.achievement-summary{max-width:450px;width:100%;background:linear-gradient(135deg,#173e47,#12343d);border:1px solid #edce94a8;border-radius:18px;padding:13px 16px;text-align:left}
+.achievement-summary>strong{color:#fff0c4;font:700 18px Georgia,serif}
+.achievement-summary p{font-size:12px;color:#c8e1db;margin:5px 0 10px}
+.arrival-badges{display:flex;flex-wrap:wrap;gap:6px}
+.arrival-badges span{font-size:10px;padding:6px 8px;border:1px solid #c9ae7859;border-radius:100px}
+.arrival-badges .earned{color:#fff0bc;background:#8d6a3780}
+.arrival-badges .unearned{color:#acc7c1;background:#22424a}
+.welcome-sound{appearance:none;display:block;margin:9px auto 2px;border:1px solid #edcb8678;border-radius:999px;background:#1c4850a8;color:#ffedc1;min-height:38px;padding:8px 17px;font-size:12px;font-weight:650;line-height:1.3}
+.welcome-sound.is-selected{background:#e8cb8f;color:#1c4350}
+.welcome-sound:focus-visible{outline:3px solid #fff0c6;outline-offset:3px}
+@media(max-height:720px){
+  .map-buttons{display:grid;grid-template-columns:repeat(2,38px);gap:6px;right:9px;top:148px}
+  .map-btn{width:38px;height:38px;font-size:18px}
+  .map-btn.compass-btn{width:38px;height:45px;border-radius:14px}
+  .compass-needle{font-size:21px}
+  .compass-btn small{font-size:7px}
+  .map-heading{right:90px}
+}
