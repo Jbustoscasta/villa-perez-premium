@@ -147,3 +147,11 @@ h1{font-size:30px;margin:8px 0}.lead{font-size:12px;margin-bottom:12px}
  .flight-warning{bottom:10px}
  .flight-bar{bottom:max(45px,calc(env(safe-area-inset-bottom) + 32px))}
 }
+
+.flight-labels button#modelMode{
+  background:rgba(133,206,181,.08);border:1px solid rgba(162,232,200,.21);
+  border-radius:14px;color:#b2edda;font-size:9px;font-weight:750;
+  padding:5px 7px;touch-action:manipulation;pointer-events:auto;cursor:pointer;
+}
+.flight-labels button#modelMode:active{background:rgba(133,206,181,.22)}
+@media(max-width:700px){.flight-labels button#modelMode{font-size:8px;padding:5px 6px}}
