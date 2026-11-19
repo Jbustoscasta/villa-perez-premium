@@ -20,11 +20,12 @@ export const APP_CONFIG = {
   // When original approved audio files exist, put their same-origin relative paths here.
   // Never impersonate the official voice using browser speech synthesis.
   narrationAudio: {
-    // intro: './audio/raton-oficial-intro.mp3',
-    // lights: './audio/raton-oficial-estrellas.mp3',
-    // chase: './audio/raton-oficial-estrella-traviesa.mp3',
-    // portal: './audio/raton-oficial-portal.mp3',
-    // done: './audio/raton-oficial-final.mp3'
+    // intro: './audio/raton-oficial-salida.mp3',
+    // depart: './audio/raton-oficial-camino.mp3',
+    // halfway: './audio/raton-oficial-mitad.mp3',
+    // scenic: './audio/raton-oficial-lugar-especial.mp3',
+    // near: './audio/raton-oficial-llegada.mp3',
+    // morning: './audio/raton-oficial-buenos-dias.mp3'
   },
   // En producción las imágenes son las mismas que en la app de Foto con Pérez.
   assets: { facade: '../villa-hero.webp', character: '../perez.png' }
