@@ -1,10 +1,9 @@
 import {calculateStreetRoute,interpolate as geoLerp} from './flight-native.mjs?v=3.1.2';
-import {CinemaNight} from './night-cinema.mjs?v=3.1.2';
 /*
  * Villa Pérez Google 3D experiment.
- * Google Maps JS API 3D / Map3DElement / native Model3DElement.
+ * Google Maps JavaScript API 3D, photorealistic daytime only.
  * Nothing is sent to a Villa Pérez backend. Public demo destinations are hardcoded.
- * User-entered addresses are sent only to Google Geocoding when the adult submits them.
+ * Geocoding and Routes receive origin/destination coordinates when the parent launches the flight.
  * API key is held in sessionStorage of this tab; never committed, logged, or put in URL.
  */
 const $=id=>document.getElementById(id);
@@ -15,31 +14,30 @@ const routes={
    START,{lat:40.41894,lng:-3.69218},{lat:40.41870,lng:-3.69533},
    {lat:40.41800,lng:-3.70022},{lat:40.41695,lng:-3.70382},
    {lat:40.41596,lng:-3.70569},{lat:40.41536,lng:-3.70737}
-  ],chapters:['Sobre los tejados','La ciudad se ilumina','Madrid desde el cielo','Una luz hacia Sol','Rumbo a Plaza Mayor','Ya casi llegamos']
+  ],chapters:['Sobre los tejados','Las avenidas de Madrid','Madrid desde el cielo','Rumbo al centro','Cerca de Plaza Mayor','Ya casi llegamos']
  },
  bernabeu:{
   label:'Santiago Bernabéu',points:[START,
    {lat:40.42522,lng:-3.68978},{lat:40.43360,lng:-3.69022},
    {lat:40.43920,lng:-3.69012},{lat:40.44472,lng:-3.68936},
    {lat:40.44929,lng:-3.68842},{lat:40.45306,lng:-3.68832}
-  ],chapters:['Madrid despierta','Por el eje del Prado','La Castellana bajo el globo','Sobre el corazón de Madrid','Los últimos tejados','Llegamos al estadio']
+  ],chapters:['La clínica queda atrás','Por las grandes avenidas','La Castellana bajo el globo','Sobre el corazón de Madrid','Los últimos tejados','Llegamos al estadio']
  },
  arroyofresno:{
   label:'Arroyo Fresno',points:[START,
    {lat:40.4268,lng:-3.6898},{lat:40.4385,lng:-3.6947},
    {lat:40.4465,lng:-3.7067},{lat:40.4554,lng:-3.7158},
    {lat:40.4652,lng:-3.7260},{lat:40.4787,lng:-3.7347}
-  ],chapters:['Despegamos de Madrid','El globo toma altura','Los barrios de Madrid','Cruzando nuevas avenidas','La ciudad se abre','Un secreto en tu barrio']
+  ],chapters:['Salimos de la clínica','Sobre los edificios','Los barrios de Madrid','Cruzando nuevas avenidas','La ciudad se abre','Un secreto en tu barrio']
  }
 };
 const state={
  loaded:false,map:null,Polyline3DElement:null,mapLoading:false,route:'plaza',
  custom:false,points:[],end:null,segment:0,flightToken:0,animationCleanup:null,
- playing:false,paused:false,activeDestination:null,timeout:null,dusk:false,apiKey:'',
+ playing:false,paused:false,activeDestination:null,timeout:null,apiKey:'',
  phase:'idle',progressMs:0,routeDurationMs:72000,orbitDurationMs:22000,
  orbitElapsedMs:0,frameId:0,lastFrame:0,lastPaint:0,filteredHeading:null,
  native:null,Model3DElement:null,Marker3DElement:null,routeSource:'panoramica',effectsOn:true,
- nightFx:null,
  routeDistances:[],routeLength:0,orbitStartHeading:0,orbitView:-1,busy:false,
  origin:{lat:START.lat,lng:START.lng},clinicName:'Clínica del Doctor Abreu',
  originLabel:'Origen de prueba · Puerta de Alcalá',clinicVerified:false,originMarker:null,
@@ -134,6 +132,8 @@ async function connectGoogle(){
      qualityMode:'FIDELITY',defaultUIHidden:true
    });
    state.map=map;
+   // Keep SATELLITE photogrammetry as the single cinematic visual mode.
+   map.mode='SATELLITE';
    map.style.cssText='width:100%;height:100%;display:block;';
    map.addEventListener('gmp-error',ev=>{
      console.warn('3D map initialization event:',ev);
@@ -157,7 +157,8 @@ async function connectGoogle(){
    $('setup').classList.add('ready');
    $('connect').textContent='✓ Google Maps 3D conectado';
    $('launch').disabled=false;
-   status('GOOGLE MAPS · FOTOGRAFÍA 3D');
+   updateClinicSummary();
+   status('GOOGLE MAPS · EDIFICIOS REALES');
    info('Conectado. Pulsa «Despegar» para ver el vuelo fotorrealista.');
  }catch(e){
    console.error('Error inicializando Maps 3D:',e);
@@ -168,6 +169,13 @@ async function connectGoogle(){
  }
 }
 $('connect').addEventListener('click',connectGoogle);
+function updateClinicSummary(){
+ const address=$('clinicAddress').value.trim();
+ const name=$('clinicName').value.trim()||'Clínica del Doctor Abreu';
+ $('clinicSummary').textContent=address?name:'Origen de prueba · Puerta de Alcalá';
+}
+$('clinicName').addEventListener('input',updateClinicSummary);
+$('clinicAddress').addEventListener('input',updateClinicSummary);
 async function locateClinicOrigin(){
  const name=$('clinicName').value.trim()||'Clínica del Doctor Abreu';
  const address=$('clinicAddress').value.trim();
@@ -177,6 +185,7 @@ async function locateClinicOrigin(){
   state.clinicVerified=false;
   state.originLabel='Origen de prueba · Puerta de Alcalá';
   $('originBadge').textContent=state.originLabel;
+  updateClinicSummary();
   createOriginMarker();
   return;
  }
@@ -195,6 +204,7 @@ async function locateClinicOrigin(){
  state.clinicVerified=true;
  state.originLabel=name;
  $('originBadge').textContent='SALIDA · '+name;
+ updateClinicSummary();
  try{localStorage.setItem('vp_clinic_origin',JSON.stringify({name,address}))}catch(e){}
  createOriginMarker();
 }
@@ -262,10 +272,10 @@ function makePolyline(points,destination){
  clearRouteMap();
  // Raise the entire path above many roofs; render occluded segments in overview
  // so a parent can recognize all waypoints. A gold line remains in the map.
- const path=points.map(p=>({...p,altitude:33}));
+ const path=points.map(p=>({...p,altitude:18}));
  try{
   state.routeGlow=new state.Polyline3DElement({
-   path,strokeColor:'#d6a054',strokeWidth:15,
+   path,strokeColor:'#e3ab58',strokeWidth:13,
    outerColor:'#ffe0a3',outerWidth:.8,
    altitudeMode:'RELATIVE_TO_GROUND',drawsOccludedSegments:true
   });
@@ -274,7 +284,7 @@ function makePolyline(points,destination){
  }catch(e){console.warn('Route glow disabled',e)}
  try{
   state.routeLine=new state.Polyline3DElement({
-   path,strokeColor:'#fff1c1',strokeWidth:6,
+   path,strokeColor:'#fff1c1',strokeWidth:5,
    outerColor:'#bb742e',outerWidth:.5,
    altitudeMode:'RELATIVE_TO_GROUND',drawsOccludedSegments:true
   });
@@ -296,14 +306,17 @@ function makePolyline(points,destination){
 function overviewCamera(){
  const points=state.points;
  if(!points?.length||!state.map)return;
- const first=points[0],last=points[points.length-1];
- const middle={lat:(first.lat+last.lat)/2,lng:(first.lng+last.lng)/2};
- const length=Math.max(state.routeLength,distance(first,last));
- // Allow enough horizontal margin to show the entire geography; Safari is tall.
- const range=Math.min(28000,Math.max(1550,length*(innerWidth<680?3.3:2.1)+700));
+ const limits={
+  minLat:Math.min(...points.map(p=>p.lat)),maxLat:Math.max(...points.map(p=>p.lat)),
+  minLng:Math.min(...points.map(p=>p.lng)),maxLng:Math.max(...points.map(p=>p.lng))
+ };
+ const middle={lat:(limits.minLat+limits.maxLat)/2,lng:(limits.minLng+limits.maxLng)/2};
+ const diag=distance({lat:limits.minLat,lng:limits.minLng},{lat:limits.maxLat,lng:limits.maxLng});
+ // Fit the full route, not just its endpoints; leave space for a narrow iPhone.
+ const range=Math.min(32000,Math.max(1800,diag*(innerWidth<680?2.35:1.7)+650));
  try{
   state.map.stopCameraAnimation?.();
-  state.map.center={...middle,altitude:850};
+  state.map.center={...middle,altitude:790};
   state.map.heading=0;state.map.tilt=28;state.map.range=range;
  }catch(e){console.warn('Could not show full route:',e)}
 }
@@ -313,7 +326,7 @@ function closeOverview(){
  clearTimeout(state.overviewTimer);state.overviewTimer=0;
  $('overviewToggle').textContent='🗺 Ver recorrido completo';
  $('overviewToggle').setAttribute('aria-pressed','false');
- $('balloon').hidden=!(!state.native&&state.phase!=='done');
+ $('balloon').hidden=state.phase==='done';
  state.lastFrame=getNow();state.lastPaint=0;
  if(state.phase==='preview'){
   flightStart();
@@ -335,19 +348,11 @@ function enterOverview({intro=false}={}){
  $('travelLabel').textContent=state.originLabel.toUpperCase()+' → '+(state.activeDestination?.label||'DESTINO').toUpperCase();
  status('MAPA COMPLETO · ORIGEN Y DESTINO');
  overviewCamera();
- // Space seven little 3D magic stars across the route for the panoramic photo.
- // During flight they become the moving tail of Ratón Pérez.
- if(state.native?.stars?.length&&state.effectsOn){
-  state.native.stars.forEach((star,i)=>{
-   const point=routePosition((i+1)/(state.native.stars.length+1));
-   star.position={lat:point.lat,lng:point.lng,altitude:55};
-  });
- }
  if(intro){
   state.phase='preview';
   state.overviewTimer=setTimeout(()=>{
     if(state.overview&&state.phase==='preview')closeOverview()
-  },5200);
+  },4500);
  }
 }
 function toggleOverview(){
@@ -361,7 +366,7 @@ function toggleOverview(){
  * interpolate the map camera directly at a constant RANGE and TILT.
  * The panorama ends with an orbit on the same fixed camera distance.
  */
-const CAMERA={altitude:750,range:550,tilt:74};
+const CAMERA={altitude:748,range:495,tilt:71};
 const ORBIT_CHAPTERS=[
  ['Primera vista del destino','Los tejados y las calles aparecen justo bajo el globo.'],
  ['Desde el otro lado','Giramos suavemente para reconocer los edificios desde otro ángulo.'],
@@ -450,7 +455,6 @@ function scene(n,total){
 }
 function renderRoute(t){
  const p=clamp01(t);
- state.nightFx?.setProgress(p);
  const here=routePosition(p);
  const before=routePosition(Math.max(0,p-.003));
  const after=routePosition(Math.min(1,p+.003));
@@ -468,7 +472,6 @@ function renderRoute(t){
 }
 function renderOrbit(t){
  const p=clamp01(t);
- state.nightFx?.setProgress(p);
  const waypoint=state.points[state.points.length-1];
  // Four recognizable perspectives, one full turn, no height/range changes.
  setCamera(waypoint,state.orbitStartHeading+p*360);
@@ -487,7 +490,6 @@ function renderOrbit(t){
 function finishFlight(){
  stopFrame();clearTimeout(state.overviewTimer);state.overviewTimer=0;state.overview=false;
  state.playing=false;state.paused=false;state.phase='done';
- state.native?.reset();state.native=null;
  state.progressMs=state.routeDurationMs;state.orbitElapsedMs=state.orbitDurationMs;
  progress(1,1);
  $('balloon').hidden=true;
@@ -531,8 +533,8 @@ function flightStart(){
  state.progressMs=0;state.orbitElapsedMs=0;state.filteredHeading=null;state.orbitView=-1;
  state.cameraFaulted=false;
  state.phase='route';state.playing=true;state.paused=false;
- state.routeDurationMs=Math.max(44000,Math.min(98000,state.routeLength/22*1000));
- state.orbitDurationMs=21000;
+ state.routeDurationMs=Math.max(39000,Math.min(72000,state.routeLength/33*1000));
+ state.orbitDurationMs=14000;
  state.lastFrame=getNow();state.lastPaint=0;
  $('pause').textContent='⏸ Pausar';
  renderRoute(0);
@@ -550,7 +552,7 @@ async function fly(){
   await improveRoute(destination);
  }catch(e){
   error('No se ha podido preparar el vuelo: '+(e.message||String(e)));
-  $('launch').textContent='✦ Despegar sobre Madrid';
+  $('launch').textContent='✦ Comenzar vuelo mágico';
   $('launch').disabled=false;state.busy=false;return;
  }
  state.busy=false;state.flightToken++;
@@ -561,13 +563,12 @@ async function fly(){
  $('flightUI').hidden=false;$('arrival').hidden=true;
  // Use photorealistic Google's buildings, NOT procedurally modelled houses.
  // The 2D screen-space vector balloon intentionally stays visible on top.
- state.native?.reset?.();state.native=null;
  $('balloon').hidden=false;
- $('modelMode').textContent='GLOBO ILUSTRADO · SIEMPRE VISIBLE';
+ $('balloon').classList.toggle('fx-off',!state.effectsOn);
  $('routeMode').textContent=state.routeSource==='google'
     ?'RUTA POR CALLES REALES · GOOGLE'
     :'VUELO PANORÁMICO · RUTA APROXIMADA';
- $('launch').textContent='✦ Despegar sobre Madrid';
+ $('launch').textContent='✦ Comenzar vuelo mágico';
  $('launch').disabled=false;
  $('travelLabel').textContent=state.originLabel.toUpperCase()+' → '+destination.label.toUpperCase();
  $('originBadge').textContent=state.clinicVerified?'SALIDA · '+state.clinicName:state.originLabel;
@@ -593,7 +594,6 @@ function restart(){
  stopFrame();clearTimeout(state.overviewTimer);state.overviewTimer=0;state.overview=false;
  state.flightToken++;state.playing=false;state.paused=false;state.busy=false;
  state.phase='idle';state.progressMs=0;state.orbitElapsedMs=0;
- state.native?.reset();state.native=null;
  clearRouteMap();createOriginMarker();
  state.filteredHeading=null;state.orbitView=-1;
  $('pause').textContent='⏸ Pausar';
@@ -605,35 +605,15 @@ function restart(){
  if(state.loaded){resetCamera();status('GOOGLE MAPS · FOTOGRAFÍA 3D')}
  progress(0,1);
 }
-function toggleTwilight(){
- // Real Google 3D SATELLITE photos do not have physical night illumination.
- // ROADMAP Dark is a native dark 3D basemap; it is visually different,
- // not a blue mask that falsely claims to be nighttime photography.
- state.dusk=!state.dusk;
- if(!state.map)return;
- try{
-  state.map.mode=state.dusk?'ROADMAP':'SATELLITE';
-  state.map.colorScheme=state.dusk?'DARK':'LIGHT';
- }catch(e){console.warn('Google map mode unsupported',e);state.dusk=false}
- $('twilight').textContent=state.dusk?'☀ Edificios reales':'☾ Noche ilustrada';
- $('twilight').setAttribute('aria-pressed',String(state.dusk));
- $('routeMode').textContent=state.dusk
-  ?'NOCHE GOOGLE · EDIFICIOS ESTILIZADOS'
-  :state.routeSource==='google'?'RUTA POR CALLES REALES · GOOGLE'
-   :'VUELO PANORÁMICO · RECORRIDO APROXIMADO';
- status(state.dusk?'CIUDAD NOCTURNA ILUSTRADA':'GOOGLE MAPS · EDIFICIOS FOTOGRÁFICOS');
- info(state.dusk?'Noche estilizada de Google, no fotografía nocturna.':
-  'De nuevo, edificios y cubiertas reales de la ciudad.');
-}
 $('launch').addEventListener('click',fly);
 $('overviewToggle').addEventListener('click',toggleOverview);
 $('pause').addEventListener('click',pause);
 $('restart').addEventListener('click',restart);
 $('again').addEventListener('click',restart);
-$('twilight').addEventListener('click',toggleTwilight);
 $('fxToggle').addEventListener('click',()=>{
  state.effectsOn=!state.effectsOn;
  $('dustLayer').classList.toggle('fx-off',!state.effectsOn);
+ $('balloon').classList.toggle('fx-off',!state.effectsOn);
  $('fxToggle').textContent=state.effectsOn?'✨ Magia ON':'✨ Magia OFF';
 });
 
@@ -653,6 +633,7 @@ try{
   $('clinicName').value=clinic.name;
   $('clinicAddress').value=clinic.address;
  }
+ updateClinicSummary();
 }catch(e){console.warn('Clinic setting unavailable',e)}
 try{
  const cached=sessionStorage.getItem('vp_google3d_trial_key');
