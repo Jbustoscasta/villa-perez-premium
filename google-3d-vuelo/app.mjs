@@ -1,4 +1,4 @@
-import {NativeFlightScene,calculateStreetRoute,interpolate as geoLerp} from './flight-native.mjs?v=3.1.2';
+import {calculateStreetRoute,interpolate as geoLerp} from './flight-native.mjs?v=3.1.2';
 import {CinemaNight} from './night-cinema.mjs?v=3.1.2';
 /*
  * Villa Pérez Google 3D experiment.
@@ -448,30 +448,6 @@ function scene(n,total){
   'Por privacidad, los últimos metros serán un secreto.'
  ][chapter];
 }
-function nativeFallback(reason){
- console.warn('GLB fallback:',reason);
- state.native?.reset();state.native=null;
- $('balloon').hidden=state.overview;
- $('modelMode').textContent='GLOBO PNG · PULSA PARA 3D';
-}
-function safeNativePose(method,...params){
- if(!state.native)return;
- try{state.native[method](...params)}catch(e){nativeFallback(e?.message||e)}
-}
-function switchGlobe(){
- if(!state.loaded||!state.playing||state.phase==='done')return;
- if(state.native){nativeFallback('Seleccionado por el usuario');return}
- try{
-  const scene=new NativeFlightScene(state.map,{
-    Model3DElement:state.Model3DElement,
-    Marker3DElement:state.Marker3DElement,
-    Polyline3DElement:state.Polyline3DElement
-  },()=>nativeFallback('Error del modelo 3D'),state.origin);
-  scene.create();scene.setEffects(state.effectsOn);
-  state.native=scene;$('balloon').hidden=true;
-  $('modelMode').textContent='GLOBO 3D · OCLUSIÓN NATIVA';
- }catch(e){nativeFallback(e?.message||e)}
-}
 function renderRoute(t){
  const p=clamp01(t);
  state.nightFx?.setProgress(p);
@@ -484,7 +460,9 @@ function renderRoute(t){
  // Aim just ahead of the globo, keeping the street geometry recognizable.
  const lookAhead=routePosition(Math.min(1,p+.006));
  setCamera(geoLerp(here,lookAhead,.18),state.filteredHeading+350);
- safeNativePose('pose',here,state.filteredHeading,p,routePosition,getNow());
+ $('balloon').hidden=state.overview;
+ // The SVG balloon and untouched mouse PNG stay centered as the real 3D city moves.
+ // No native Model3DElement or image marker can occlude or magnify Ratón Pérez.
  progress(p*.82,1);
  scene(p,1);
 }
@@ -494,7 +472,7 @@ function renderOrbit(t){
  const waypoint=state.points[state.points.length-1];
  // Four recognizable perspectives, one full turn, no height/range changes.
  setCamera(waypoint,state.orbitStartHeading+p*360);
- safeNativePose('orbit',waypoint,p,state.orbitStartHeading+p*360,getNow());
+ $('balloon').hidden=state.overview;
  const view=Math.min(3,Math.floor(p*4));
  if(view!==state.orbitView){
   state.orbitView=view;
@@ -581,23 +559,11 @@ async function fly(){
  buildRouteLengths(state.points);
  $('setup').classList.add('off');
  $('flightUI').hidden=false;$('arrival').hidden=true;
- // True 3D glTF asset is depth-tested with the Google scene.
- state.native?.reset();state.native=null;
- try{
-  const native=new NativeFlightScene(state.map,{
-    Model3DElement:state.Model3DElement,
-    Marker3DElement:state.Marker3DElement,
-    Polyline3DElement:state.Polyline3DElement
-  },()=>nativeFallback('Modelo 3D no disponible'),state.origin);
-  native.create();native.setEffects?.(state.effectsOn);
-  state.native=native;
-  $('balloon').hidden=true;
-  $('modelMode').textContent='GLOBO 3D · OCLUSIÓN NATIVA';
- }catch(e){
-  console.warn('3D balloon unavailable; showing flat compatibility picture',e);
-  $('balloon').hidden=false;
-  $('modelMode').textContent='GLOBO PNG · COMPATIBILIDAD';
- } 
+ // Use photorealistic Google's buildings, NOT procedurally modelled houses.
+ // The 2D screen-space vector balloon intentionally stays visible on top.
+ state.native?.reset?.();state.native=null;
+ $('balloon').hidden=false;
+ $('modelMode').textContent='GLOBO ILUSTRADO · SIEMPRE VISIBLE';
  $('routeMode').textContent=state.routeSource==='google'
     ?'RUTA POR CALLES REALES · GOOGLE'
     :'VUELO PANORÁMICO · RUTA APROXIMADA';
@@ -640,33 +606,24 @@ function restart(){
  progress(0,1);
 }
 function toggleTwilight(){
+ // Real Google 3D SATELLITE photos do not have physical night illumination.
+ // ROADMAP Dark is a native dark 3D basemap; it is visually different,
+ // not a blue mask that falsely claims to be nighttime photography.
  state.dusk=!state.dusk;
- if(!state.nightFx)state.nightFx=new CinemaNight($('nightCanvas'),enabled=>{
-   if(!state.map)return;
-   if(enabled){
-    state.map.mode='ROADMAP';
-    state.map.colorScheme='DARK';
-    $('routeMode').textContent='NOCHE GOOGLE · MAPA 3D ESTILIZADO';
-   }else{
-    state.map.mode='SATELLITE';
-    state.map.colorScheme='LIGHT';
-    $('routeMode').textContent=state.routeSource==='google'
-      ?'RUTA POR CALLES REALES · GOOGLE'
-      :'VUELO PANORÁMICO · RUTA APROXIMADA';
-   }
- });
- state.nightFx.setNight(state.dusk);
- $('twilight').textContent=state.dusk?'☀ Amanecer':'☾ Anochecer';
+ if(!state.map)return;
+ try{
+  state.map.mode=state.dusk?'ROADMAP':'SATELLITE';
+  state.map.colorScheme=state.dusk?'DARK':'LIGHT';
+ }catch(e){console.warn('Google map mode unsupported',e);state.dusk=false}
+ $('twilight').textContent=state.dusk?'☀ Edificios reales':'☾ Noche ilustrada';
  $('twilight').setAttribute('aria-pressed',String(state.dusk));
- document.documentElement.classList.toggle('night-active',state.dusk);
- status(state.dusk?'HORA AZUL · NOCHE SIMULADA':'GOOGLE MAPS · FOTOGRAFÍA 3D');
- // Preserve the photorealistic SATELLITE mode and full image detail.
- // WebGL creates atmospheric color and distant lights; does NOT relight real windows.
- info(state.dusk
-   ? (state.nightFx.disabled
-      ? 'Safari no admite el efecto WebGL: activado el modo nocturno 3D estilizado de Google (sin fotografía).'
-      : 'Anochecer WebGL activo: hora azul y luces simuladas sobre fotografía aérea 3D.')
-   : 'Restaurando la cartografía diurna original.');
+ $('routeMode').textContent=state.dusk
+  ?'NOCHE GOOGLE · EDIFICIOS ESTILIZADOS'
+  :state.routeSource==='google'?'RUTA POR CALLES REALES · GOOGLE'
+   :'VUELO PANORÁMICO · RECORRIDO APROXIMADO';
+ status(state.dusk?'CIUDAD NOCTURNA ILUSTRADA':'GOOGLE MAPS · EDIFICIOS FOTOGRÁFICOS');
+ info(state.dusk?'Noche estilizada de Google, no fotografía nocturna.':
+  'De nuevo, edificios y cubiertas reales de la ciudad.');
 }
 $('launch').addEventListener('click',fly);
 $('overviewToggle').addEventListener('click',toggleOverview);
@@ -674,10 +631,9 @@ $('pause').addEventListener('click',pause);
 $('restart').addEventListener('click',restart);
 $('again').addEventListener('click',restart);
 $('twilight').addEventListener('click',toggleTwilight);
-$('modelMode').addEventListener('click',switchGlobe);
 $('fxToggle').addEventListener('click',()=>{
  state.effectsOn=!state.effectsOn;
- state.native?.setEffects?.(state.effectsOn);
+ $('dustLayer').classList.toggle('fx-off',!state.effectsOn);
  $('fxToggle').textContent=state.effectsOn?'✨ Magia ON':'✨ Magia OFF';
 });
 
