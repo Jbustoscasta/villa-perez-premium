@@ -1,4 +1,5 @@
 import {NativeFlightScene,calculateStreetRoute,interpolate as geoLerp} from './flight-native.mjs?v=2.0.0';
+import {CinemaNight} from './night-cinema.mjs?v=3.0.0';
 /*
  * Villa Pérez Google 3D experiment.
  * Google Maps JS API 3D / Map3DElement / native Model3DElement.
@@ -38,6 +39,7 @@ const state={
  phase:'idle',progressMs:0,routeDurationMs:72000,orbitDurationMs:22000,
  orbitElapsedMs:0,frameId:0,lastFrame:0,lastPaint:0,filteredHeading:null,
  native:null,Model3DElement:null,Marker3DElement:null,routeSource:'panoramica',effectsOn:true,
+ nightFx:null,
  routeDistances:[],routeLength:0,orbitStartHeading:0,orbitView:-1,busy:false
 };
 const R=Earth=>Earth*Math.PI/180;
@@ -327,6 +329,7 @@ function switchGlobe(){
 }
 function renderRoute(t){
  const p=clamp01(t);
+ state.nightFx?.setProgress(p);
  const here=routePosition(p);
  const before=routePosition(Math.max(0,p-.003));
  const after=routePosition(Math.min(1,p+.003));
@@ -342,6 +345,7 @@ function renderRoute(t){
 }
 function renderOrbit(t){
  const p=clamp01(t);
+ state.nightFx?.setProgress(p);
  const waypoint=state.points[state.points.length-1];
  // Four recognizable perspectives, one full turn, no height/range changes.
  setCamera(waypoint,state.orbitStartHeading+p*360);
@@ -484,11 +488,15 @@ function restart(){
 }
 function toggleTwilight(){
  state.dusk=!state.dusk;
- $('cinemaGrade').classList.toggle('twilight',state.dusk);
- $('twilight').textContent=state.dusk?'☀ Aclarar':'☾ Oscurecer';
+ if(!state.nightFx)state.nightFx=new CinemaNight($('nightCanvas'));
+ state.nightFx.setNight(state.dusk);
+ $('twilight').textContent=state.dusk?'☀ Amanecer':'☾ Anochecer';
+ $('twilight').setAttribute('aria-pressed',String(state.dusk));
+ // Preserve the photorealistic SATELLITE mode and full image detail.
+ // WebGL creates atmospheric color and distant lights; does NOT relight real windows.
  info(state.dusk
-   ? 'Oscurecimiento de ficción sobre fotografía aérea diurna real.'
-   : 'Fotografía aérea con iluminación original.');
+   ? 'Anochecer cinematográfico WebGL: luces y estrellas simuladas sobre fotografía 3D.'
+   : 'Restaurando la fotografía aérea original.');
 }
 $('launch').addEventListener('click',fly);
 $('pause').addEventListener('click',pause);
