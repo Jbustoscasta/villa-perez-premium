@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#091927">
 <meta name="description" content="Prueba de vuelo cinematográfico sobre Google Maps 3D fotorrealista para Villa Pérez.">
 <title>Google 3D · Vuelo del Ratón Pérez · Villa Pérez</title>
-<link rel="stylesheet" href="./styles.css?v=1.0.0">
-<script type="module" src="./app.mjs?v=1.0.0"></script>
+<link rel="stylesheet" href="./styles.css?v=1.1.0">
+<script type="module" src="./app.mjs?v=1.1.0"></script>
 </head>
 <body>
 <div class="app">
@@ -43,22 +43,9 @@
   </div>
   <p class="setup-tail">Prototipo independiente. No usa la dirección real de la clínica. La fotogrametría depende de la cobertura de Google y el rendimiento del iPhone.</p>
  </section>
- <div id="balloon" class="balloon" aria-label="Globo mágico de Villa Pérez" role="img" hidden>
-  <svg viewBox="0 0 164 228" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-   <defs>
-    <radialGradient id="env" cx=".3" cy=".28"><stop stop-color="#ffecd0"/><stop offset=".42" stop-color="#dbb77a"/><stop offset=".8" stop-color="#689994"/><stop offset="1" stop-color="#23495a"/></radialGradient>
-    <linearGradient id="basket" x1="0" x2="1"><stop stop-color="#7c4c2a"/><stop offset=".55" stop-color="#c89d60"/><stop offset="1" stop-color="#7c4c2a"/></linearGradient>
-   </defs>
-   <path d="M82 5C36 5 13 43 16 89C18 118 48 146 64 167L100 167C117 145 146 114 148 89C151 43 128 5 82 5" fill="url(#env)" stroke="#f8db98" stroke-width="2"/>
-   <path d="M82 5C63 12 49 44 54 88C59 125 69 151 68 167M82 5C101 12 115 44 110 88C105 125 95 151 96 167" fill="none" stroke="#fff1bb" stroke-width="3" opacity=".8"/>
-   <path d="M19 81C47 96 116 104 145 81M26 112C50 129 116 136 139 112" fill="none" stroke="#e4bd7a" stroke-width="6" opacity=".7"/>
-   <path d="M67 167L59 197M98 167L106 197" fill="none" stroke="#d9b47c" stroke-width="3"/>
-   <path d="M50 192L114 192L106 224L59 224Z" fill="url(#basket)" stroke="#fce3a4" stroke-width="3"/>
-   <path d="M56 205C72 212 94 212 110 205M60 216C72 222 94 222 106 216" fill="none" stroke="#5a3a24" opacity=".6" stroke-width="2"/>
-   <circle cx="82" cy="98" r="22" fill="#1b4d56" stroke="#f6d58f" stroke-width="5"/>
-   <path d="M73 88L82 91L91 88L89 102L82 109L75 102Z" fill="#fff6d4"/>
-  </svg>
-  <img class="official" src="../perez.png" alt="">
+ <div id="balloon" class="balloon" aria-label="Globo aerostático fotográfico de Villa Pérez con Ratón Pérez oficial" role="img" hidden>
+  <img class="balloon-base" src="./assets/globo-realista.png" alt="" decoding="async">
+  <img class="official" src="../perez.png" alt="" decoding="async" draggable="false">
   <div class="balloon-flare"></div>
  </div>
  <div class="flight-overlay" id="flightUI" hidden>
@@ -68,7 +55,7 @@
    <div class="bar-track"><div id="progressFill"></div></div>
    <div class="flight-buttons">
     <button id="pause" type="button">⏸ Pausar</button>
-    <button id="twilight" type="button">☾ Atardecer</button>
+    <button id="twilight" type="button">☾ Oscurecer</button>
     <button id="restart" type="button">↺ Reiniciar</button>
    </div>
   </div>
