@@ -1,8 +1,8 @@
-import {APP_CONFIG as CFG} from './config.js?v=1.0.2';
-import {createPath,pointAt,validCoordinate,compactAddress,formatDistance,postcardSvg,trailParticles,routeBearing,cinematicProgress,cinematicPhase,publicFacingRoute,nearestPublicLandmark} from './route-utils.mjs?v=1.0.2';
+import {APP_CONFIG as CFG} from './config.js?v=1.0.3';
+import {createPath,pointAt,validCoordinate,compactAddress,formatDistance,postcardSvg,trailParticles,routeBearing,cinematicProgress,cinematicPhase,publicFacingRoute,nearestPublicLandmark} from './route-utils.mjs?v=1.0.3';
 
-import {applyPremiumStreetStyle,installPremiumCityLayers,premiumRoutePaint,drawGoldenRouteFx} from './premium-map.mjs?v=1.0.2';
-import {JourneyDirector,makeMemento,safeMemento,MEMENTO_KEY} from './journey-director.mjs?v=1.0.2';
+import {applyPremiumStreetStyle,installPremiumCityLayers,premiumRoutePaint,drawGoldenRouteFx} from './premium-map.mjs?v=1.0.3';
+import {JourneyDirector,makeMemento,safeMemento,MEMENTO_KEY} from './journey-director.mjs?v=1.0.3';
 const $ = id => document.getElementById(id);
 const screens = ['welcome','address','route','arrival','morning'];
 const state = {
