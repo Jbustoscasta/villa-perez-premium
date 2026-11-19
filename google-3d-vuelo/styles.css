@@ -192,3 +192,38 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
  .setup.ready{max-height:67dvh}
  .section-destination{margin-top:12px;padding-top:11px}
 }
+
+/* v4: actual architectural realism belongs to Google's native photogrammetry.
+   The mouse never becomes a 3D map marker, which caused it to appear gigantic.
+   The official PNG is layered unchanged inside our high-detail SVG basket. */
+.balloon{
+  width:154px;height:216px;top:47%;left:50%;
+  transform:translate(-50%,-50%);filter:drop-shadow(0 16px 13px rgba(7,14,24,.57));
+  aspect-ratio:5/7;isolation:isolate;
+}
+.balloon-base,.balloon-basket-front{
+  position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;
+  transform-origin:50% 91%;
+}
+.balloon-base{z-index:2;animation:balloonSway 4s ease-in-out infinite alternate}
+.balloon .official{
+ position:absolute;z-index:3;left:41%;top:65%;width:21%;height:22%;
+ object-fit:contain;object-position:center bottom;
+ animation:passengerSway 4.1s ease-in-out infinite alternate;
+ filter:drop-shadow(0 2px 3px #192132b5);
+}
+.balloon-basket-front{
+ z-index:4;clip-path:none!important;
+ animation:balloonSway 4s ease-in-out infinite alternate;
+}
+.balloon-flare{z-index:1;top:24%;left:20%;width:60%;height:60%;opacity:.65}
+.flight-labels #modelMode{
+ font-size:9px;color:#eacb96;border:1px solid rgba(244,206,139,.3);
+ background:rgba(8,29,43,.77);border-radius:14px;padding:5px 8px;font-weight:700;
+}
+.dust-layer.fx-off i{animation:none!important;opacity:0!important}
+@media(max-width:700px){
+ .balloon{width:123px;height:172px;top:46%}
+ .balloon .official{left:41%;top:65%;width:21%;height:22%}
+ .flight-labels #modelMode{font-size:8px;padding:5px}
+}
