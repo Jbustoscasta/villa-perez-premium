@@ -1,4 +1,14 @@
-# Operación Diente Perdido — módulo Villa Pérez v0.2
+# Operación Diente Perdido — módulo Villa Pérez v0.3 · demo HTTPS
+
+## Demo pública para iPhone — 19 noviembre 2026
+
+**URL:** https://jbustoscasta.github.io/villa-perez-premium/operacion-diente/
+
+**Enlace de acceso directo:** https://jbustoscasta.github.io/villa-perez-premium/operacion-diente/?demo=1
+
+El botón «Probar recorrido de Madrid» selecciona dos lugares públicos (Puerta de Alcalá → Plaza Mayor) sin pedir dirección familiar. Intenta obtener una ruta peatonal calculada por el servicio OSM. Si este servidor público falla, muestra una **ruta ilustrativa explícitamente marcada como no verificada** para que se pueda evaluar la interfaz. La animación empieza al terminar de cargar el mapa. La opción «¡Se me ha caído un diente!» permite probar otras direcciones reales mediante el formulario para adultos.
+
+**Límites de la demo:** la dirección real de Clínica del Doctor Abreu NO está configurada; los servicios comunitarios pueden limitar peticiones. La prueba en Safari físico y la accesibilidad de GitHub Pages deben comprobarse externamente. No es un servicio de producción.
 
 Módulo web independiente, **sin tocar el flujo de Foto con Pérez**. Diseñado para alojarse en `villa-perez-premium/operacion-diente/` y reutilizar `../perez.png` (máster oficial intacto) y `../villa-hero.webp` (fachada oficial existente). No se dibuja ni se sustituye el personaje.
 
