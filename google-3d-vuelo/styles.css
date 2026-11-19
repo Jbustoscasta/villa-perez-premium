@@ -84,3 +84,13 @@ h1{font-size:30px;margin:8px 0}.lead{font-size:12px;margin-bottom:12px}
 .flight-warning{font-size:9px;bottom:16px}
 }
 @media(prefers-reduced-motion:reduce){.balloon svg,.dust-layer i,.unloaded-star{animation:none}}
+
+/* Preserve the Google logo/copyright at the lower edge after the map is connected. */
+.setup.ready{top:102px;bottom:auto;max-height:min(70dvh,630px)}
+.setup.ready .key-group{display:none}
+@media(max-width:700px){
+.setup.ready{top:max(84px,calc(env(safe-area-inset-top) + 70px));bottom:auto;left:12px;right:12px;width:auto;max-height:53dvh;border:1px solid rgba(255,230,170,.32);border-radius:19px;padding:17px 18px}
+.setup.ready h1,.setup.ready .lead{display:none}
+.setup.ready .route-group{padding-top:5px}
+.setup.ready .setup-tail{display:none}
+}
