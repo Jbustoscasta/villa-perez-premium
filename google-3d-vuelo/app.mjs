@@ -1,6 +1,7 @@
+import {NativeFlightScene,calculateStreetRoute,interpolate as geoLerp} from './flight-native.mjs?v=2.0.0';
 /*
  * Villa Pérez Google 3D experiment.
- * Google Maps JS API 3D / Map3DElement / flyCameraTo.
+ * Google Maps JS API 3D / Map3DElement / native Model3DElement.
  * Nothing is sent to a Villa Pérez backend. Public demo destinations are hardcoded.
  * User-entered addresses are sent only to Google Geocoding when the adult submits them.
  * API key is held in sessionStorage of this tab; never committed, logged, or put in URL.
@@ -36,6 +37,7 @@ const state={
  playing:false,paused:false,activeDestination:null,timeout:null,dusk:false,apiKey:'',
  phase:'idle',progressMs:0,routeDurationMs:72000,orbitDurationMs:22000,
  orbitElapsedMs:0,frameId:0,lastFrame:0,lastPaint:0,filteredHeading:null,
+ native:null,Model3DElement:null,Marker3DElement:null,routeSource:'panoramica',effectsOn:true,
  routeDistances:[],routeLength:0,orbitStartHeading:0,orbitView:-1,busy:false
 };
 const R=Earth=>Earth*Math.PI/180;
@@ -114,11 +116,13 @@ async function connectGoogle(){
  try{
    await loadGoogle(key);
    if(!window.google?.maps?.importLibrary)throw new Error('Maps JavaScript API no ha terminado de inicializarse.');
-   const {Map3DElement,Polyline3DElement}=await google.maps.importLibrary('maps3d');
+   const {Map3DElement,Polyline3DElement,Model3DElement,Marker3DElement}=await google.maps.importLibrary('maps3d');
    state.Polyline3DElement=Polyline3DElement;
+   state.Model3DElement=Model3DElement;
+   state.Marker3DElement=Marker3DElement;
    const map=new Map3DElement({
      center:{lat:START.lat,lng:START.lng,altitude:755},
-     heading:244,tilt:73,range:620,mode:'SATELLITE',
+     heading:244,tilt:74,range:550,mode:'SATELLITE',
      qualityMode:'FIDELITY',defaultUIHidden:true
    });
    state.map=map;
@@ -157,7 +161,10 @@ async function connectGoogle(){
 $('connect').addEventListener('click',connectGoogle);
 async function getDestination(){
  const text=$('address').value.trim();
- if(!text){state.custom=false;return {points:routes[state.route].points,label:routes[state.route].label};}
+ if(!text){state.custom=false;return {
+ points:routes[state.route].points,label:routes[state.route].label,
+ trueEnd:routes[state.route].points.at(-1),custom:false
+};}
  if(text.length>220)throw new Error('La dirección es demasiado larga.');
  let Geocoder;
  try{({Geocoder}=await google.maps.importLibrary('geocoding'))}
@@ -168,7 +175,25 @@ async function getDestination(){
  const loc=first.geometry.location;const end={lat:loc.lat(),lng:loc.lng()};
  if(!Number.isFinite(end.lat)||!Number.isFinite(end.lng))throw new Error('No se han recibido coordenadas válidas.');
  if(distance(START,end)>80000)throw new Error('Para esta prueba el destino debe estar a menos de 80 km de Madrid.');
- return {points:smoothCustom(end),label:'destino elegido',custom:true};
+ return {points:smoothCustom(end),trueEnd:end,label:'destino elegido',custom:true};
+}
+async function improveRoute(destination){
+ // Route.computeRoutes is the current Google route API, and may require a
+ // separately enabled Google Routes API. Do not block the parent when unavailable.
+ const attempt=calculateStreetRoute(START,destination.trueEnd,!!destination.custom);
+ try{
+  const result=await Promise.race([
+   attempt,
+   new Promise((_,reject)=>setTimeout(()=>reject(new Error('Routes timeout')),11000))
+  ]);
+  if(result?.length>=2){
+   destination.points=result;
+   state.routeSource='google';
+   return true;
+  }
+ }catch(e){console.warn('Google Routes not enabled, using scenic flight:',e)}
+ state.routeSource='panoramica';
+ return false;
 }
 function makePolyline(points){
  if(!state.Polyline3DElement||!state.map)return;
@@ -176,9 +201,9 @@ function makePolyline(points){
   const existing=state.map.querySelector('#vpRoute3d');if(existing)existing.remove();
   const line=new state.Polyline3DElement({
    path:points.map(p=>({...p,altitude:4})),
-   strokeColor:'#ffe4a4',outerColor:'#a56f38',
-   strokeWidth:6,outerWidth:.42,altitudeMode:'RELATIVE_TO_GROUND',
-   drawsOccludedSegments:true
+   strokeColor:'#97b5b3',outerColor:'#244854',
+   strokeWidth:3,outerWidth:.3,altitudeMode:'RELATIVE_TO_GROUND',
+   drawsOccludedSegments:false
   });
   line.id='vpRoute3d';state.map.append(line);
  }catch(e){console.warn('Ruta dibujada no disponible en esta versión de Maps 3D',e)}
@@ -189,7 +214,7 @@ function makePolyline(points){
  * interpolate the map camera directly at a constant RANGE and TILT.
  * The panorama ends with an orbit on the same fixed camera distance.
  */
-const CAMERA={altitude:755,range:620,tilt:73};
+const CAMERA={altitude:750,range:550,tilt:74};
 const ORBIT_CHAPTERS=[
  ['Primera vista del destino','Los tejados y las calles aparecen justo bajo el globo.'],
  ['Desde el otro lado','Giramos suavemente para reconocer los edificios desde otro ángulo.'],
@@ -251,7 +276,9 @@ function routePosition(progress){
  while(i<points.length-2&&meters>state.routeDistances[i+1])i++;
  const leg=state.routeDistances[i+1]-state.routeDistances[i]||1;
  const u=clamp01((meters-state.routeDistances[i])/leg);
- return catmullRom(points[Math.max(0,i-1)],points[i],points[i+1],points[Math.min(points.length-1,i+2)],u);
+ return state.routeSource==='google'
+  ? geoLerp(points[i],points[i+1],u)
+  : catmullRom(points[Math.max(0,i-1)],points[i],points[i+1],points[Math.min(points.length-1,i+2)],u);
 }
 function progress(n,total){
  const pct=Math.round(clamp01(n/Math.max(1,total))*100);
@@ -282,7 +309,10 @@ function renderRoute(t){
  const desired=heading(before,after);
  if(state.filteredHeading===null||!Number.isFinite(state.filteredHeading))state.filteredHeading=desired;
  else state.filteredHeading=normHeading(state.filteredHeading+shortestTurn(state.filteredHeading,desired)*.19);
- setCamera(here,state.filteredHeading+350);
+ // Aim just ahead of the globo, keeping the street geometry recognizable.
+ const lookAhead=routePosition(Math.min(1,p+.006));
+ setCamera(geoLerp(here,lookAhead,.18),state.filteredHeading+350);
+ state.native?.pose(here,state.filteredHeading,p,routePosition,getNow());
  progress(p*.82,1);
  scene(p,1);
 }
@@ -291,6 +321,7 @@ function renderOrbit(t){
  const waypoint=state.points[state.points.length-1];
  // Four recognizable perspectives, one full turn, no height/range changes.
  setCamera(waypoint,state.orbitStartHeading+p*360);
+ state.native?.orbit(waypoint,p,state.orbitStartHeading+p*360,getNow());
  const view=Math.min(3,Math.floor(p*4));
  if(view!==state.orbitView){
   state.orbitView=view;
@@ -304,6 +335,7 @@ function renderOrbit(t){
 }
 function finishFlight(){
  stopFrame();state.playing=false;state.paused=false;state.phase='done';
+ state.native?.reset();state.native=null;
  state.progressMs=state.routeDurationMs;state.orbitElapsedMs=state.orbitDurationMs;
  progress(1,1);
  $('balloon').hidden=true;
@@ -327,7 +359,7 @@ function renderTick(now){
    state.phase='orbit';state.orbitElapsedMs=0;state.orbitView=-1;
    state.orbitStartHeading=normHeading(state.filteredHeading+350);
    state.lastPaint=0;renderOrbit(0);
-  }else if(now-state.lastPaint>=35){
+  }else if(now-state.lastPaint>=50){
    state.lastPaint=now;
    renderRoute(state.progressMs/state.routeDurationMs);
   }
@@ -335,7 +367,7 @@ function renderTick(now){
   state.orbitElapsedMs=Math.min(state.orbitDurationMs,state.orbitElapsedMs+delta);
   if(state.orbitElapsedMs>=state.orbitDurationMs){
    renderOrbit(1);finishFlight();return;
-  }else if(now-state.lastPaint>=35){
+  }else if(now-state.lastPaint>=50){
    state.lastPaint=now;
    renderOrbit(state.orbitElapsedMs/state.orbitDurationMs);
   }
@@ -358,7 +390,7 @@ async function fly(){
  if(!state.loaded){error('Debes conectar primero Google Maps 3D.');return}
  if(state.playing||state.paused||state.busy)return;
  state.busy=true;clearError();
- $('launch').disabled=true;$('launch').textContent='Preparando el destino…';
+ $('launch').disabled=true;$('launch').textContent='Buscando calles reales…';
  let destination;
  try{destination=await getDestination()}
  catch(e){
@@ -367,11 +399,32 @@ async function fly(){
   $('launch').disabled=false;state.busy=false;return;
  }
  state.busy=false;state.flightToken++;
+ await improveRoute(destination);
  state.points=destination.points;state.activeDestination=destination;
  state.custom=!!destination.custom;
  buildRouteLengths(state.points);
  $('setup').classList.add('off');
- $('flightUI').hidden=false;$('balloon').hidden=false;$('arrival').hidden=true;
+ $('flightUI').hidden=false;$('arrival').hidden=true;
+ // True 3D glTF asset is depth-tested with the Google scene.
+ state.native?.reset();state.native=null;
+ try{
+  const native=new NativeFlightScene(state.map,{
+    Model3DElement:state.Model3DElement,
+    Marker3DElement:state.Marker3DElement,
+    Polyline3DElement:state.Polyline3DElement
+  });
+  native.create();native.setEffects?.(state.effectsOn);
+  state.native=native;
+  $('balloon').hidden=true;
+  $('modelMode').textContent='GLOBO 3D · OCLUSIÓN NATIVA';
+ }catch(e){
+  console.warn('3D balloon unavailable; showing flat compatibility picture',e);
+  $('balloon').hidden=false;
+  $('modelMode').textContent='GLOBO PNG · COMPATIBILIDAD';
+ } 
+ $('routeMode').textContent=state.routeSource==='google'
+    ?'RUTA POR CALLES REALES · GOOGLE'
+    :'VUELO PANORÁMICO · RUTA APROXIMADA';
  $('launch').textContent='✦ Despegar sobre Madrid';
  $('launch').disabled=false;
  $('travelLabel').textContent='PUERTA DE ALCALÁ → '+destination.label.toUpperCase();
@@ -396,6 +449,7 @@ function restart(){
  stopFrame();
  state.flightToken++;state.playing=false;state.paused=false;state.busy=false;
  state.phase='idle';state.progressMs=0;state.orbitElapsedMs=0;
+ state.native?.reset();state.native=null;
  state.filteredHeading=null;state.orbitView=-1;
  $('pause').textContent='⏸ Pausar';
  $('balloon').hidden=true;$('flightUI').hidden=true;$('arrival').hidden=true;
@@ -417,6 +471,12 @@ $('pause').addEventListener('click',pause);
 $('restart').addEventListener('click',restart);
 $('again').addEventListener('click',restart);
 $('twilight').addEventListener('click',toggleTwilight);
+$('fxToggle').addEventListener('click',()=>{
+ state.effectsOn=!state.effectsOn;
+ state.native?.setEffects?.(state.effectsOn);
+ $('fxToggle').textContent=state.effectsOn?'✨ Magia ON':'✨ Magia OFF';
+});
+
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden&&state.playing&&!state.paused)pause();
 });
@@ -429,5 +489,9 @@ for(let i=0;i<27;i++){
 setActiveChoice('plaza');
 try{
  const cached=sessionStorage.getItem('vp_google3d_trial_key');
- if(cached&&cached.startsWith('AIza'))$('apiKey').value=cached;
+ if(cached&&cached.startsWith('AIza')){
+  $('apiKey').value=cached;
+  // Restore the existing Maps session automatically after an update.
+  setTimeout(()=>{if(!state.loaded&&!state.mapLoading)connectGoogle()},200);
+}
 }catch(e){}
