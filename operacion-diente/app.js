@@ -401,11 +401,60 @@ function reset(){
   state.cinematic=true;$('cinematic-map').classList.add('is-selected');$('cinematic-map').setAttribute('aria-pressed','true');
   showScreen('welcome');
 }
-function downloadPostcard(){
+function postcardMarkup(){
+  return postcardSvg({clinicName:CFG.clinic.name,distanceMeters:state.route.serviceMeters,stars:state.director?.earned.size||0});
+}
+async function postcardPng(){
+  const svg=new Blob([postcardMarkup()],{type:'image/svg+xml;charset=utf-8'});
+  const url=URL.createObjectURL(svg);
+  try{
+    const image=new Image();
+    await new Promise((resolve,reject)=>{
+      image.onload=resolve;image.onerror=()=>reject(new Error('No se pudo preparar la postal.'));
+      image.src=url;
+    });
+    const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;
+    const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Este navegador no puede exportar imágenes.');
+    ctx.drawImage(image,0,0,1080,1350);
+    const png=await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('No se pudo generar PNG.')),'image/png'));
+    return png;
+  }finally{URL.revokeObjectURL(url)}
+}
+function downloadBlob(blob,name){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=name;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),12000);
+}
+function postcardNotice(err){
+  if(err?.name==='AbortError')return;
+  const el=$('postcard-error');
+  el.textContent=err?.message||'No se pudo generar la postal.';
+  el.classList.remove('hidden');
+}
+async function downloadPostcard(){
   if(!state.path)return;
-  const doc=postcardSvg({clinicName:CFG.clinic.name,distanceMeters:state.route.serviceMeters,stars:state.director?.earned.size||0});
-  const blob=new Blob([doc],{type:'image/svg+xml;charset=utf-8'}),href=URL.createObjectURL(blob);
-  const link=document.createElement('a');link.href=href;link.download='mi-viaje-raton-perez-villa-perez.svg';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(href),3000);
+  $('postcard-error').classList.add('hidden');
+  try{downloadBlob(await postcardPng(),'recuerdo-raton-perez-villa-perez.png');}
+  catch(e){
+    postcardNotice(e);
+    downloadBlob(new Blob([postcardMarkup()],{type:'image/svg+xml;charset=utf-8'}),'recuerdo-villa-perez.svg');
+  }
+}
+async function sharePostcard(){
+  if(!state.path)return;
+  $('postcard-error').classList.add('hidden');
+  try{
+    const blob=await postcardPng();
+    const file=new File([blob],'mi-recuerdo-villa-perez.png',{type:'image/png'});
+    if(navigator.canShare?.({files:[file]}) && navigator.share){
+      await navigator.share({files:[file],title:'Mi aventura con el Ratón Pérez'});
+    }else{
+      downloadBlob(blob,file.name);
+      $('postcard-error').textContent='Imagen PNG preparada para compartir desde tu galería.';
+      $('postcard-error').classList.remove('hidden');
+    }
+  }catch(e){postcardNotice(e);}
 }
 function setup(){
   updateConfig();
@@ -454,6 +503,7 @@ function setup(){
   $('restart').addEventListener('click',reset);
   $('new-trip').addEventListener('click',reset);
   $('download-postcard').addEventListener('click',downloadPostcard);
+  $('share-postcard').addEventListener('click',sharePostcard);
   setupAutocomplete('origin-address','origin-suggestions','origin');
   setupAutocomplete('destination-address','destination-suggestions','destination');
   $('address-form').addEventListener('submit',async e=>{
