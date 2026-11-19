@@ -114,8 +114,8 @@ async function connectGoogle(){
    const {Map3DElement,Polyline3DElement}=await google.maps.importLibrary('maps3d');
    state.Polyline3DElement=Polyline3DElement;
    const map=new Map3DElement({
-     center:{lat:START.lat,lng:START.lng,altitude:685},
-     heading:244,tilt:66,range:1650,mode:'SATELLITE',
+     center:{lat:START.lat,lng:START.lng,altitude:755},
+     heading:244,tilt:70,range:900,mode:'SATELLITE',
      qualityMode:'FIDELITY',defaultUIHidden:true
    });
    state.map=map;
@@ -181,18 +181,23 @@ function makePolyline(points){
  }catch(e){console.warn('Ruta dibujada no disponible en esta versión de Maps 3D',e)}
 }
 function camera(point,next,index,total){
- const angle=heading(point,next||point);
+ // Madrid lies ~600–750m above sea level. Reducing altitude to 300m would
+ // push the 3D camera target BELOW the city's ground. We lower the flight
+ // visually by reducing camera RANGE, keeping a safe altitude above terrain.
+ const bearing=heading(point,next||point);
+ const last=index===total-1,first=index<2;
  return {
-  center:{lat:point.lat,lng:point.lng,altitude:685},
-  heading:(angle+345)%360,tilt:index===total-1?63:70,
-  range:index===total-1?880:index<2?1250:970
+   center:{lat:point.lat,lng:point.lng,altitude:755},
+   heading:(bearing+347)%360,
+   tilt:last?68:72,
+   range:last?565:first?830:650
  };
 }
 function resetCamera(){
  try{
   state.map.stopCameraAnimation();
-  state.map.center={lat:START.lat,lng:START.lng,altitude:685};
-  state.map.range=1650;state.map.heading=244;state.map.tilt=66;
+  state.map.center={lat:START.lat,lng:START.lng,altitude:755};
+  state.map.range=900;state.map.heading=244;state.map.tilt=70;
  }catch(e){console.warn('Camera reset not available:',e)}
 }
 function progress(n,total){
@@ -303,8 +308,10 @@ function restart(){
 function toggleTwilight(){
  state.dusk=!state.dusk;
  $('cinemaGrade').classList.toggle('twilight',state.dusk);
- $('twilight').textContent=state.dusk?'☀ Ver imagen original':'☾ Atardecer';
- info(state.dusk?'Atardecer simulado sobre fotos diurnas reales.':'Fotografías aéreas sin filtro nocturno.');
+ $('twilight').textContent=state.dusk?'☀ Aclarar':'☾ Oscurecer';
+ info(state.dusk
+   ? 'Oscurecimiento de ficción sobre fotografía aérea diurna real.'
+   : 'Fotografía aérea con iluminación original.');
 }
 $('launch').addEventListener('click',fly);
 $('pause').addEventListener('click',pause);
