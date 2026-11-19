@@ -1,5 +1,5 @@
-import {APP_CONFIG as CFG} from './config.js';
-import {createPath,pointAt,validCoordinate,compactAddress,formatDistance,postcardSvg,trailParticles,routeBearing,cinematicProgress,cinematicPhase,publicFacingRoute,nearestPublicLandmark} from './route-utils.mjs';
+import {APP_CONFIG as CFG} from './config.js?v=0.4.0';
+import {createPath,pointAt,validCoordinate,compactAddress,formatDistance,postcardSvg,trailParticles,routeBearing,cinematicProgress,cinematicPhase,publicFacingRoute,nearestPublicLandmark} from './route-utils.mjs?v=0.4.0';
 
 const $ = id => document.getElementById(id);
 const screens = ['welcome','address','route','arrival'];
@@ -17,7 +17,7 @@ const state = {
 function showScreen(name) {
   state.screen=name;
   screens.forEach(s=>$( `screen-${s}` ).classList.toggle('active',s===name));
-  window.scrollTo({top:0,behavior:'instant'});
+  window.scrollTo({top:0,behavior:'auto'});
   if(name==='route' && state.map) setTimeout(()=>state.map.resize(),120);
 }
 function errorMessage(msg) { const node=$('form-error');node.textContent=msg;node.classList.remove('hidden');node.scrollIntoView({block:'nearest'}); }
