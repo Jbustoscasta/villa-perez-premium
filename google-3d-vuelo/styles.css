@@ -131,3 +131,19 @@ h1{font-size:30px;margin:8px 0}.lead{font-size:12px;margin-bottom:12px}
 .setup.ready .route-group{padding-top:5px}
 .setup.ready .setup-tail{display:none}
 }
+
+/* Google 3D native scene controls: tiny, legible labels without blocking the map. */
+.flight-labels{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;color:#e4d6b7;font-size:9px;letter-spacing:.055em;margin:-2px 0 11px;opacity:.92}
+.flight-labels span:last-child{color:#abebd5}
+.flight-buttons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.flight-buttons button{min-width:0;white-space:nowrap;font-size:10px;padding:11px 5px;touch-action:manipulation}
+.flight-buttons button:active{background:rgba(255,233,188,.28)}
+#fxToggle{color:#ffe5a1}
+#modelMode{font-weight:700}
+@media(max-width:700px){
+ .flight-buttons{gap:5px}
+ .flight-buttons button{font-size:9px;padding:10px 3px}
+ .flight-labels{font-size:8px;gap:3px}
+ .flight-warning{bottom:10px}
+ .flight-bar{bottom:max(45px,calc(env(safe-area-inset-bottom) + 32px))}
+}
