@@ -64,28 +64,32 @@ input::placeholder{color:#a9bbb9}
 }
 .balloon-base{
   position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
-  animation:bob 2.7s ease-in-out infinite alternate;
+  animation:balloonSway 3.8s ease-in-out infinite alternate;
+  transform-origin:50% 88%;
   filter:drop-shadow(0 0 9px rgba(255,198,118,.18));
 }
 .balloon .official{
   position:absolute;left:52px;top:126px;z-index:1;
   width:42px;height:48px;object-fit:contain;
   filter:drop-shadow(0 2px 3px rgba(0,0,0,.52));
-  animation:passenger 2.7s ease-in-out infinite alternate;
+  animation:passengerSway 3.8s ease-in-out infinite alternate;
+  transform-origin:50% 92%;
 }
 .balloon-basket-front{
   position:absolute;inset:0;width:100%;height:100%;z-index:2;
   object-fit:contain;clip-path:inset(81% 0 0 0);
   pointer-events:none;
-  animation:bob 2.7s ease-in-out infinite alternate;
+  animation:balloonSway 3.8s ease-in-out infinite alternate;
+  transform-origin:50% 88%;
 }
 .balloon-flare{
   position:absolute;z-index:-1;left:26px;top:80px;width:100px;height:87px;
   background:radial-gradient(circle,rgba(255,213,130,.35),transparent 74%);
   filter:blur(10px);pointer-events:none;
 }
-@keyframes bob{from{transform:translateY(-5px) rotate(-1.6deg)}to{transform:translateY(6px) rotate(1.6deg)}}
-@keyframes passenger{from{transform:translateY(-5px)}to{transform:translateY(6px)}}
+/* Zero vertical motion: the balloon remains at a fixed onscreen height. */
+@keyframes balloonSway{from{transform:rotate(-.65deg)}to{transform:rotate(.65deg)}}
+@keyframes passengerSway{0%{transform:rotate(-1.8deg)}50%{transform:rotate(1.4deg)}100%{transform:rotate(-1.8deg)}}
 .flight-overlay{position:absolute;inset:0;z-index:8;pointer-events:none}
 .chapter{position:absolute;top:108px;left:27px;max-width:min(480px,70vw);text-shadow:0 2px 19px #09121e}
 .chapter h2{font-size:clamp(33px,5vw,55px);line-height:1.04;color:#ffefca;margin:10px 0}
