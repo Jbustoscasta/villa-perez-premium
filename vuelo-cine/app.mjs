@@ -47,7 +47,7 @@ const ctx={
  token:0,frame:0,prevTime:0,prevPaint:0,heading:0,
  overviewTimeout:null,toasts:null,magic:true,day:false,viewIndex:-1,
  effectsReady:false,mouseAssetError:false,nightWindowTimer:null,
- city3d:null,cityStats:null
+ city3d:null,cityStats:null,cityRefreshAt:0,cityRefreshCount:0
 };
 const safeText=s=>String(s||'').slice(0,120);
 function toast(message,ms=3900){
@@ -363,6 +363,17 @@ function loadMap(){
  });
  map.on('idle',()=>{if(!ctx.rescue&&!ctx.ready&&map.isStyleLoaded())ready()});
  map.on('moveend',()=>{if(!ctx.rescue)scheduleWindows()});
+ map.on('sourcedata',e=>{
+  // The first frame can precede real OSM footprint tiles. Upgrade the
+  // fictional infill with actual 3D buildings as data arrives.
+  if(ctx.rescue||!ctx.city3d||!e?.isSourceLoaded||ctx.cityRefreshCount>=6)return;
+  if(e.sourceId!==getSourceId(map))return;
+  const now=Date.now();
+  if(now-ctx.cityRefreshAt<2800)return;
+  ctx.cityRefreshAt=now;ctx.cityRefreshCount++;
+  ctx.city3d.ready=false;
+  map.triggerRepaint?.();
+ });
  map.on('error',e=>{
   console.warn('MapLibre map loading problem:',e?.error||e);
   if(!ctx.ready)status('PROVEEDOR DE MAPAS LENTO · PUEDES DESPEGAR');
