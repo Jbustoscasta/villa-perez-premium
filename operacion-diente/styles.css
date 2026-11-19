@@ -146,3 +146,8 @@
 .magic-event p{margin:0;color:#cfe1dd;font-size:12px;line-height:1.45}
 @media(max-height:720px){.screen--route .route-sheet{max-height:190px}.screen--route .route-sheet .journey-milestones{display:none}.screen--route .floating-message{bottom:196px}.screen--route .map-signature{bottom:193px}.screen--route .map-heading h1{font-size:26px}}
 @media(prefers-reduced-motion:reduce){.magic-event,.magic-event .event-symbol{transition:none;animation:none}}
+
+/* Keep the film's opening unobstructed: the lower controls only appear after the aerial reveal. */
+.screen--route .route-sheet{transition:transform .8s cubic-bezier(.24,.81,.2,1),opacity .65s ease}
+.screen--route.intro-active .route-sheet{opacity:0;transform:translateY(110%);pointer-events:none}
+.screen--route.intro-active .map-buttons,.screen--route.intro-active .map-heading,.screen--route.intro-active .floating-message,.screen--route.intro-active .street-locator,.screen--route.intro-active .map-signature{opacity:0;pointer-events:none}
