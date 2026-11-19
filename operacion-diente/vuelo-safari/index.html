@@ -106,7 +106,7 @@ h1{font-size:31px;margin:7px 0}#landing p{font-size:12px;margin:7px 0}
 <section id="landing" aria-label="Preparar vuelo de prueba">
  <span class="kicker">Laboratorio de vuelo · gratuito</span>
  <h1>Sobrevuela las <em>calles de Madrid</em></h1>
- <p>Esta versión no necesita Google Maps, WebGL ni librerías externas. La cartografía real se descarga como imágenes individuales; si no llegan, el vuelo continúa sobre un plano de respaldo claramente identificado.</p>
+ <p>Ahora usamos OpenStreetMap sin API key. Durante el vuelo puedes activar una fotografía aérea real de Madrid del Instituto Geográfico Nacional. Si las imágenes fallan, mostramos un plano ilustrativo claramente identificado.</p>
  <div id="origin"><small>PUNTO DE SALIDA DE PRUEBA, NO ES UNA CLÍNICA REAL</small><strong>Puerta de Alcalá, Madrid</strong></div>
  <label for="destination">DESTINO DEL VUELO</label>
  <input id="destination" value="Plaza Mayor, Madrid" autocomplete="off" placeholder="Calle y número, municipio">
@@ -116,9 +116,9 @@ h1{font-size:31px;margin:7px 0}#landing p{font-size:12px;margin:7px 0}
  <div class="footnote">En destinos personalizados la dirección se consulta a Photon/Komoot; en las tres demostraciones no se envía ninguna dirección. La ruta aérea es ficticia y no sigue necesariamente las calles.</div>
 </section>
 <div id="hud" aria-live="polite"><div id="chapters"><span class="kicker" id="chapterNumber">CAPÍTULO 1</span><h2 id="chapterTitle">Madrid desde las nubes</h2><p id="chapterCopy">La luz mágica comienza a recorrer los tejados.</p></div>
- <div id="hudBottom"><div id="hudTop"><span>✦ VUELO MÁGICO</span><span id="progressText">0 %</span></div><div id="barBase"><div id="bar"></div></div><div class="actions"><button id="pause">⏸ Pausar</button><button id="view">☀ Vista clara</button><button id="restart">↻ Reiniciar</button></div></div>
+ <div id="hudBottom"><div id="hudTop"><span>✦ VUELO MÁGICO</span><span id="progressText">0 %</span></div><div id="barBase"><div id="bar"></div></div><div class="actions"><button id="pause">⏸ Pausar</button><button id="view">🛰 Foto aérea real</button><button id="restart">↻ Reiniciar</button></div></div>
 </div>
-<div class="attribution" id="attribution">Cartografía © OpenStreetMap · © CARTO</div>
+<div class="attribution" id="attribution">© colaboradores de OpenStreetMap</div>
 <button id="debugBtn">Diagnóstico del mapa</button>
 <div id="arrived"><div><span class="kicker">VILLA PÉREZ · MISIÓN COMPLETADA</span><h2>¡Hemos llegado!</h2><p>El globo ha cruzado la ciudad. Para conseguir una experiencia como HELLO, el siguiente paso es probar edificios fotorrealistas con Google Maps 3D.</p><button class="mainBtn" id="again">Volver a empezar</button></div></div>
 <script>
@@ -130,8 +130,8 @@ const presets={
  bernabeu:{name:'Estadio Santiago Bernabéu, Madrid',end:[-3.68832,40.45306],stops:[[-3.68918,40.42612],[-3.68922,40.43656],[-3.68934,40.4471]]},
  fresno:{name:'Arroyo Fresno, Madrid',end:[-3.7347,40.4787],stops:[[-3.69478,40.4316],[-3.71148,40.4495],[-3.72774,40.4634]]}
 };
-const START=[-3.68845,40.42016], ZOOM=15, GRID=7, TILESZ=256, WORLD=Math.pow(2,ZOOM);
-let selected='mayor',target=presets.mayor,route=[],images=new Map(),baseX=0,baseY=0,tileGood=0,tileBad=0,chosenMode='dark';
+const START=[-3.68845,40.42016], ZOOM=15, GRID=window.innerWidth<800?5:7, TILESZ=256, WORLD=Math.pow(2,ZOOM);
+let selected='mayor',target=presets.mayor,route=[],images=new Map(),baseX=0,baseY=0,tileGood=0,tileBad=0,chosenMode='street';
 let current=[...START],running=false,paused=false,clock=0,pausedAt=0,elapsed=0,frame=0,progress=0,lastScene=-1;
 const duration=47000;
 const scenes=[
@@ -153,17 +153,36 @@ function prepare(){
  all.push(target.end);route=all;updateMap(START,true);drawPath(0);
 }
 function tileSrc(x,y,provider){
- if(provider===0){const letter=['a','b','c','d'][((x+y)%4+4)%4];return 'https://'+letter+'.basemaps.cartocdn.com/'+(chosenMode==='dark'?'dark_all':'voyager')+'/'+ZOOM+'/'+x+'/'+y+'.png';}
- if(provider===1)return 'https://tile.openstreetmap.org/'+ZOOM+'/'+x+'/'+y+'.png';
+ // OSM's standard street map works WITHOUT an API key. The raster PNOA aerial
+ // images are an optional experiment provided by Spain's Instituto Geografico Nacional.
+ // Never send keyless requests to CARTO: since Sep 2026 they return watermarked images.
+ if(chosenMode==='street'){
+   return provider===0?'https://tile.openstreetmap.org/'+ZOOM+'/'+x+'/'+y+'.png':'';
+ }
+ if(provider===0) {
+   return 'https://www.ign.es/wmts/pnoa-ma?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=OI.OrthoimageCoverage&STYLE=default&FORMAT=image/jpeg&TILEMATRIXSET=GoogleMapsCompatible&TILEMATRIX='+ZOOM+'&TILEROW='+y+'&TILECOL='+x;
+ }
+ if(provider===1) {
+   // IGN's XYZ/TMS service uses inverted Y.
+   return 'https://tms-pnoa-ma.idee.es/1.0.0/pnoa-ma/'+ZOOM+'/'+x+'/'+(WORLD-1-y)+'.jpeg';
+ }
+ if(provider===2) return 'https://tile.openstreetmap.org/'+ZOOM+'/'+x+'/'+y+'.png';
  return '';
 }
 function tileLoad(img,x,y){
- let next=0;
- img.onload=function(){if(img.dataset.ok)return;img.dataset.ok='1';tileGood++;updateAvailability()};
- img.onerror=function(){if(next++===0){img.src=tileSrc(x,y,1);}
- else{tileBad++;updateAvailability();img.style.visibility='hidden';}};
- img.referrerPolicy='no-referrer';
- img.src=tileSrc(x,y,0);
+ let attempt=0;
+ img.onload=function(){
+   if(img.dataset.ok)return;
+   img.dataset.ok='1';tileGood++;updateAvailability();
+ };
+ img.onerror=function(){
+   attempt++;
+   const url=tileSrc(x,y,attempt);
+   if(url){img.src=url;}
+   else{tileBad++;updateAvailability();img.style.visibility='hidden';}
+ };
+ // Do NOT set referrerPolicy='no-referrer'. OSM explicitly requires a browser Referer.
+ img.src=tileSrc(x,y,attempt);
 }
 function redrawGrid(cx,cy){
  const midX=Math.floor(cx/TILESZ),midY=Math.floor(cy/TILESZ),n=Math.floor(GRID/2);
@@ -197,8 +216,13 @@ function drawPath(percent){
  $('pathDone').setAttribute('points',path.slice(0,last+1).join(' '));
 }
 function updateAvailability(){
- if(tileGood>0){$('topStatus').textContent='CALLES REALES · OSM';$('warning').style.display='none';$('attribution').textContent='© OpenStreetMap contributors · © CARTO';}
- else{$('topStatus').textContent='COMPROBANDO MAPAS';}
+ if(tileGood>0){
+   $('topStatus').textContent=chosenMode==='aerial'?'FOTO AÉREA REAL · IGN':'CALLES REALES · OSM';
+   $('warning').style.display='none';
+   $('attribution').textContent=chosenMode==='aerial'?'Ortofotos PNOA © Instituto Geográfico Nacional · CNIG':'© colaboradores de OpenStreetMap';
+ } else {
+   $('topStatus').textContent=chosenMode==='aerial'?'CARGANDO FOTO AÉREA':'CARGANDO CALLES REALES';
+ }
 }
 setTimeout(()=>{
  if(!tileGood){$('topStatus').textContent='PLANO ILUSTRATIVO';$('warning').style.display='block';$('warning').textContent='No han cargado las imágenes cartográficas. El vuelo funciona sobre un esquema ilustrativo, no sobre calles reales. Puedes repetirlo con Wi-Fi.';$('attribution').textContent='Plano de respaldo ilustrativo (no cartografía real)';}
@@ -256,9 +280,18 @@ $('pause').addEventListener('click',()=>{
 });
 $('restart').addEventListener('click',reset);$('again').addEventListener('click',reset);
 $('view').addEventListener('click',()=>{
- chosenMode=chosenMode==='dark'?'light':'dark';$('view').textContent=chosenMode==='dark'?'☀ Vista clara':'☾ Vista nocturna';
- for(const img of images.values())img.remove();images.clear();tileGood=0;tileBad=0;
- $('topStatus').textContent='COMPROBANDO MAPAS';updateMap(current,true);drawPath(progress);
+ chosenMode=chosenMode==='street'?'aerial':'street';
+ $('view').textContent=chosenMode==='street'?'🛰 Foto aérea real':'🗺 Ver callejero';
+ for(const img of images.values())img.remove();
+ images.clear();tileGood=0;tileBad=0;
+ updateMap(current,true);drawPath(progress);
+ // Let the parent switch back immediately if the IGN imagery is unavailable.
+ setTimeout(()=>{
+   if(tileGood===0&&chosenMode==='aerial'){
+     $('warning').style.display='block';
+     $('warning').textContent='Las ortofotos del IGN tardan o no responden en esta conexión. Pulsa «Ver callejero» para continuar.';
+   }
+ },9000);
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!paused){paused=true;elapsed=progress*duration;cancelAnimationFrame(frame);$('pause').textContent='▶ Continuar';}});
 prepare();
