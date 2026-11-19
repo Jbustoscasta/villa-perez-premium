@@ -301,6 +301,30 @@ function scene(n,total){
   'Por privacidad, los últimos metros serán un secreto.'
  ][chapter];
 }
+function nativeFallback(reason){
+ console.warn('GLB fallback:',reason);
+ state.native?.reset();state.native=null;
+ $('balloon').hidden=false;
+ $('modelMode').textContent='GLOBO PNG · PULSA PARA 3D';
+}
+function safeNativePose(method,...params){
+ if(!state.native)return;
+ try{state.native[method](...params)}catch(e){nativeFallback(e?.message||e)}
+}
+function switchGlobe(){
+ if(!state.loaded||!state.playing||state.phase==='done')return;
+ if(state.native){nativeFallback('Seleccionado por el usuario');return}
+ try{
+  const scene=new NativeFlightScene(state.map,{
+    Model3DElement:state.Model3DElement,
+    Marker3DElement:state.Marker3DElement,
+    Polyline3DElement:state.Polyline3DElement
+  },()=>nativeFallback('Error del modelo 3D'));
+  scene.create();scene.setEffects(state.effectsOn);
+  state.native=scene;$('balloon').hidden=true;
+  $('modelMode').textContent='GLOBO 3D · OCLUSIÓN NATIVA';
+ }catch(e){nativeFallback(e?.message||e)}
+}
 function renderRoute(t){
  const p=clamp01(t);
  const here=routePosition(p);
@@ -312,7 +336,7 @@ function renderRoute(t){
  // Aim just ahead of the globo, keeping the street geometry recognizable.
  const lookAhead=routePosition(Math.min(1,p+.006));
  setCamera(geoLerp(here,lookAhead,.18),state.filteredHeading+350);
- state.native?.pose(here,state.filteredHeading,p,routePosition,getNow());
+ safeNativePose('pose',here,state.filteredHeading,p,routePosition,getNow());
  progress(p*.82,1);
  scene(p,1);
 }
@@ -321,7 +345,7 @@ function renderOrbit(t){
  const waypoint=state.points[state.points.length-1];
  // Four recognizable perspectives, one full turn, no height/range changes.
  setCamera(waypoint,state.orbitStartHeading+p*360);
- state.native?.orbit(waypoint,p,state.orbitStartHeading+p*360,getNow());
+ safeNativePose('orbit',waypoint,p,state.orbitStartHeading+p*360,getNow());
  const view=Math.min(3,Math.floor(p*4));
  if(view!==state.orbitView){
   state.orbitView=view;
@@ -412,7 +436,7 @@ async function fly(){
     Model3DElement:state.Model3DElement,
     Marker3DElement:state.Marker3DElement,
     Polyline3DElement:state.Polyline3DElement
-  });
+  },()=>nativeFallback('Modelo 3D no disponible'));
   native.create();native.setEffects?.(state.effectsOn);
   state.native=native;
   $('balloon').hidden=true;
@@ -471,6 +495,7 @@ $('pause').addEventListener('click',pause);
 $('restart').addEventListener('click',restart);
 $('again').addEventListener('click',restart);
 $('twilight').addEventListener('click',toggleTwilight);
+$('modelMode').addEventListener('click',switchGlobe);
 $('fxToggle').addEventListener('click',()=>{
  state.effectsOn=!state.effectsOn;
  state.native?.setEffects?.(state.effectsOn);
