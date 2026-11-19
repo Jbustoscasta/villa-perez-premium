@@ -59,7 +59,7 @@ export class CinemaNight {
  constructor(canvas){
   this.canvas=canvas;this.gl=null;this.program=null;
   this.level=0;this.target=0;this.phase=0;this.raf=0;
-  this.last=0;this.disabled=false;this.resizeBound=this.resize.bind(this);
+  this.last=0;this.lastDraw=0;this.disabled=false;this.resizeBound=this.resize.bind(this);
   this.frameBound=this.frame.bind(this);
   this.contextLost=e=>{e.preventDefault();this.disabled=true;this.stop();this.useFallback()};
   this.contextRestored=()=>{this.disabled=false;this.gl=null;this.program=null;this.init();this.setNight(this.target>.01)};
@@ -123,7 +123,7 @@ export class CinemaNight {
   this.target=on?1:0;
   if(this.disabled){this.useFallback();return}
   if(!this.gl&&!this.init())return;
-  this.canvas.hidden=false;this.last=0;this.run();
+  this.canvas.hidden=false;this.last=0;this.lastDraw=0;this.run();
  }
  setProgress(v){this.phase=Number.isFinite(v)?Math.max(0,Math.min(1,v)):0}
  run(){if(!this.raf)this.raf=requestAnimationFrame(this.frameBound)}
@@ -137,6 +137,9 @@ export class CinemaNight {
   else if(this.target<this.level)this.level=Math.max(this.target,this.level-amount);
   if(this.level<.0001&&this.target===0){this.canvas.hidden=true;return}
   const gl=this.gl;if(!gl||!this.program)return;
+  // Keep WebGL atmosphere around 20 FPS while Google Maps 3D renders.
+  if(now-this.lastDraw<46){this.raf=requestAnimationFrame(this.frameBound);return}
+  this.lastDraw=now;
   gl.useProgram(this.program);
   gl.viewport(0,0,this.canvas.width,this.canvas.height);
   gl.uniform2f(this.res,this.canvas.width,this.canvas.height);
