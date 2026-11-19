@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" width="200" height="280">
+<defs>
+<linearGradient id="basket" x1="0" y1="0" x2=".92" y2="1"><stop stop-color="#f0c584"/><stop offset=".25" stop-color="#c28a4d"/><stop offset=".65" stop-color="#88512e"/><stop offset="1" stop-color="#522e20"/></linearGradient>
+<linearGradient id="rim" x1="0" x2="1"><stop stop-color="#a76732"/><stop offset=".32" stop-color="#ffe4a4"/><stop offset=".6" stop-color="#c38a48"/><stop offset="1" stop-color="#6e4225"/></linearGradient>
+<clipPath id="weave"><path d="M61 242Q100 248 139 242L134 267Q100 279 66 267Z"/></clipPath>
+</defs>
+<!-- Front rim hides only lower part of the intact official Ratón PNG -->
+<path d="M59 242Q100 250 141 242L135 270Q101 282 65 270Z" fill="url(#basket)" stroke="#f6ce8d" stroke-width="3"/>
+<g clip-path="url(#weave)" fill="none" stroke-linecap="round">
+<path d="M58 247Q101 260 143 247M58 252Q101 266 143 252M58 257Q101 271 143 257M58 262Q101 276 143 262M58 267Q101 281 143 267" stroke="#e8bb74" stroke-width="2.2" opacity=".85"/>
+<path d="M65 240L70 277M74 242L79 280M83 243L88 279M92 245L97 280M101 245L106 280M110 244L115 278M119 242L125 275M130 242L136 270" stroke="#754022" stroke-width="1.8" opacity=".7"/>
+</g>
+<path d="M60 241Q102 249 141 241" fill="none" stroke="#452518" stroke-width="7"/>
+<path d="M60 239Q102 247 141 239" fill="none" stroke="url(#rim)" stroke-width="5" stroke-linecap="round"/>
+<path d="M70 271Q100 282 132 271" fill="none" stroke="#e0ad69" stroke-width="2"/>
+<circle cx="60" cy="240" r="4" fill="#d5a263" stroke="#f6d69c"/><circle cx="140" cy="240" r="4" fill="#d5a263" stroke="#f6d69c"/>
+</svg>
