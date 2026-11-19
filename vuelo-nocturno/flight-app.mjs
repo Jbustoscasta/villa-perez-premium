@@ -238,7 +238,9 @@ function updateCamera(t,force=false){
 function renderFrame(timestamp,force=false){
  if(!state.mapReady||!state.childPath)return;
  const now=timestamp||performance.now();
- if(force||now-state.lastPaint>75){state.lastPaint=now;renderBalloon();drawTrail(now);
+ // Move real 3D balloon smoothly at display refresh; throttle heavier map updates.
+ renderBalloon();
+ if(force||now-state.lastPaint>65){state.lastPaint=now;drawTrail(now);
   const f=state.progress;
   $('percent').textContent=Math.round(f*100)+' %';$('track-fill').style.width=(f*100)+'%';document.querySelector('.track').style.setProperty('--p',(f*100)+'%');
   // Using the original geometry is essential: don't cut across streets when animating the drawn route.
