@@ -1,16 +1,16 @@
-import {APP_CONFIG as CFG} from './config.js?v=0.6.0';
-import {createPath,pointAt,validCoordinate,compactAddress,formatDistance,postcardSvg,trailParticles,routeBearing,cinematicProgress,cinematicPhase,publicFacingRoute,nearestPublicLandmark} from './route-utils.mjs?v=0.6.0';
+import {APP_CONFIG as CFG} from './config.js?v=0.7.0';
+import {createPath,pointAt,validCoordinate,compactAddress,formatDistance,postcardSvg,trailParticles,routeBearing,cinematicProgress,cinematicPhase,publicFacingRoute,nearestPublicLandmark} from './route-utils.mjs?v=0.7.0';
 
-import {applyPremiumStreetStyle,installPremiumCityLayers,premiumRoutePaint,drawGoldenRouteFx} from './premium-map.mjs?v=0.6.0';
-import {MagicAdventure} from './magic-adventure.mjs?v=0.6.0';
+import {applyPremiumStreetStyle,installPremiumCityLayers,premiumRoutePaint,drawGoldenRouteFx} from './premium-map.mjs?v=0.7.0';
+import {JourneyDirector,makeMemento,safeMemento,MEMENTO_KEY} from './journey-director.mjs?v=0.7.0';
 const $ = id => document.getElementById(id);
-const screens = ['welcome','address','route','arrival'];
+const screens = ['welcome','address','route','arrival','morning'];
 const state = {
   screen:'welcome', clinic:CFG.clinic,
   origin:{label:CFG.clinic.originLabel,coordinate:CFG.clinic.origin?.slice()||null},
   destination:{label:'',coordinate:null},
   map:null,ml:null,mouseMarker:null,originMarker:null,homeMarker:null,director:null,ratView:false,
-  route:null,path:null,mapPath:null,isDemo:false,landmark:null,landmarkShown:false,landmarkTimer:0,introTimer:0,arrivalShown:false,scenicUntil:0,
+  morningData:null,route:null,path:null,mapPath:null,isDemo:false,landmark:null,landmarkShown:false,landmarkTimer:0,introTimer:0,arrivalShown:false,scenicUntil:0,
   soundOn:false,audioCtx:null,durationMs:CFG.stageDurationSeconds*1000,progress:0,
   playing:false,startTime:0,frame:0,follow:true,cinematic:true,lastPaint:0,lastFx:0,lastStage:-1,lastCamera:0,
   reducedMotion:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches??false
@@ -161,7 +161,8 @@ const PUBLIC_LANDMARKS=[
 function prepareJourney(demo=false){
   state.director?.reset();
   state.ratView=false;
-  $('raton-view').classList.remove('is-selected');$('raton-view').setAttribute('aria-pressed','false');$('raton-view').setAttribute('aria-label','Activar vista Ratón');
+  $('magic-compass').classList.remove('is-selected');$('magic-compass').setAttribute('aria-pressed','false');
+  $('magic-compass').setAttribute('aria-label','Vista ciudad. Activar vista Ratón');$('compass-label').textContent='CIUDAD';
   state.isDemo=demo;
   state.mapPath=publicFacingRoute(state.path,{demo});
   state.landmark=nearestPublicLandmark(state.mapPath,PUBLIC_LANDMARKS,120)||
@@ -208,14 +209,21 @@ function showLandmark(){
 }
 function finishIntro(){
   clearTimeout(state.introTimer);
-  if($('cinematic-intro').classList.contains('hidden'))return;
-  $('cinematic-intro').classList.add('hidden');
-  if(state.path && state.map && !state.playing)playPause();
+  const overlay=$('cinematic-intro');
+  if(overlay.classList.contains('hidden')||overlay.classList.contains('is-revealing'))return;
+  overlay.classList.add('is-revealing');
+  if(state.map&&state.mapPath&&!state.reducedMotion){
+    state.map.easeTo({center:state.mapPath.points[0],zoom:16.8,pitch:58,bearing:routeBearing(state.mapPath,.002),duration:1180,essential:false});
+  }
+  state.introTimer=setTimeout(()=>{
+    overlay.classList.add('hidden');overlay.classList.remove('is-revealing');
+    if(state.path && state.map && state.screen==='route' && !state.playing)playPause();
+  },state.reducedMotion?80:1180);
 }
 function showIntro(){
   state.director?.say('intro');
-  $('cinematic-intro').classList.remove('hidden');
-  state.introTimer=setTimeout(finishIntro,state.reducedMotion?1000:3900);
+  const overlay=$('cinematic-intro');overlay.classList.remove('hidden','is-revealing');
+  state.introTimer=setTimeout(finishIntro,state.reducedMotion?800:5700);
 }
 
 function line(coords){return {type:'Feature',properties:{},geometry:{type:'LineString',coordinates:coords}};}
@@ -285,6 +293,19 @@ function journeyStage(f){
   if(f>=.08)return {index:1,message:'¡Ya he salido de Villa Pérez! ¡Allá voy!',subtitle:'Ha comenzado la aventura…'};
   return {index:0,message:'¡Mi mochila está lista! Voy a salir de la clínica.',subtitle:'El Ratón Pérez prepara la salida…'};
 }
+/** Decorative lights follow coordinates on real road geometry, not a database of lamp-posts. */
+function positionStreetMagic(progress){
+  if(!state.map||!state.mapPath)return;
+  const stage=$('map'),glows=$('street-magic').children;
+  const w=stage.clientWidth,h=stage.clientHeight;
+  for(let i=0;i<glows.length;i++){
+    const f=progress+(i-2)*.012,el=glows[i];
+    if(f<.025||f>.97||progress>.91){el.classList.remove('visible');continue;}
+    const pos=state.map.project(pointAt(state.mapPath,f).coordinate);
+    if(pos.x<12||pos.x>w-12||pos.y<22||pos.y>h-12){el.classList.remove('visible');continue;}
+    el.style.left=pos.x+'px';el.style.top=pos.y+'px';el.classList.add('visible');
+  }
+}
 function updateMilestones(progress){
   const stops=[0,.2,.74,1];
   const index=progress>=1?3:progress>=.74?2:progress>=.2?1:0;
@@ -310,6 +331,7 @@ function paintProgress(progress,force=false){
   // Only map the genuine road section that does not expose a family's front door.
   const along=pointAt(state.mapPath,state.progress);
   state.mouseMarker.setLngLat(along.coordinate);
+  if(!state.reducedMotion)positionStreetMagic(state.progress);
   const partial=along.partial.length===1?[along.partial[0],along.partial[0]]:along.partial;
   state.map.getSource('journey-completed')?.setData(line(partial));
   if(!state.reducedMotion)state.map.getSource('journey-sparks')?.setData(trailParticles(state.mapPath,state.progress,18,.0028));
@@ -331,7 +353,7 @@ function paintProgress(progress,force=false){
     if(stage.index===3)state.director?.say('halfway');
     if(stage.index===4)state.director?.say('near');
   }
-  if(state.playing && state.director?.tick(state.progress))return;
+  state.director?.tick(state.progress); // Stars earned automatically; no games or pauses.
   if(state.progress >= (state.landmark?.progress??.52) && state.progress<.87 && !state.landmarkShown && !force){
     showLandmark();
   }
@@ -358,7 +380,7 @@ function animate(t){
   if(!state.playing)return;
   const f=cinematicProgress(Math.min(1,(t-state.startTime)/state.durationMs));
   paintProgress(f);
-  if(!state.playing)return; // Challenge has paused the animation.
+  if(!state.playing)return;
   if(f>=1){finishAnimation();return;}
   state.frame=requestAnimationFrame(animate);
 }
@@ -385,7 +407,7 @@ function finishMission(){
   if(!state.path)return;
   stopAnimation();
   $('recap-distance').textContent=formatDistance(state.route.serviceMeters);
-  state.director?.updateHud();state.director?.say('done');
+  state.director?.tick(1);state.director?.updateHud();
   showScreen('arrival');
 }
 function reset(){
@@ -397,12 +419,19 @@ function reset(){
   $('destination-address').value='';$('adult-confirm').checked=false;
   $('route-message').textContent='¡Mi mochila está lista! Voy a salir de la clínica.';$('play-pause').textContent='Comenzar el viaje ▶';$('skip').textContent='Terminar misión';
   $('map-fallback').classList.add('hidden');$('follow-map').classList.add('is-selected');$('follow-map').setAttribute('aria-pressed','true');state.follow=true;
-  state.ratView=false;$('raton-view').classList.remove('is-selected');$('raton-view').setAttribute('aria-pressed','false');
-  state.cinematic=true;$('cinematic-map').classList.add('is-selected');$('cinematic-map').setAttribute('aria-pressed','true');
+  state.ratView=false;$('magic-compass').classList.remove('is-selected');$('magic-compass').setAttribute('aria-pressed','false');
+  $('magic-compass').setAttribute('aria-label','Vista ciudad. Activar vista Ratón');$('compass-label').textContent='CIUDAD';
+  for(const node of $('street-magic').children)node.classList.remove('visible');
+  state.cinematic=true;
   showScreen('welcome');
 }
 function postcardMarkup(){
-  return postcardSvg({clinicName:CFG.clinic.name,distanceMeters:state.route.serviceMeters,stars:state.director?.earned.size||0});
+  const m=state.morningData;
+  return postcardSvg({
+    clinicName:m?.clinic||CFG.clinic.name,
+    distanceMeters:m?.distanceMeters ?? state.route?.serviceMeters ?? 0,
+    stars:m?.stars ?? state.director?.earned.size ?? 0
+  });
 }
 async function postcardPng(){
   const svg=new Blob([postcardMarkup()],{type:'image/svg+xml;charset=utf-8'});
@@ -433,7 +462,7 @@ function postcardNotice(err){
   el.classList.remove('hidden');
 }
 async function downloadPostcard(){
-  if(!state.path)return;
+  if(!state.path&&!state.morningData)return;
   $('postcard-error').classList.add('hidden');
   try{downloadBlob(await postcardPng(),'recuerdo-raton-perez-villa-perez.png');}
   catch(e){
@@ -442,7 +471,7 @@ async function downloadPostcard(){
   }
 }
 async function sharePostcard(){
-  if(!state.path)return;
+  if(!state.path&&!state.morningData)return;
   $('postcard-error').classList.add('hidden');
   try{
     const blob=await postcardPng();
@@ -479,18 +508,7 @@ async function toggleSound(){
 }
 function setup(){
   updateConfig();
-  state.director=new MagicAdventure({
-    getMap:()=>state.map,
-    getPath:()=>state.mapPath,
-    onPause:()=>{
-      if(!state.playing)return;
-      state.progress=cinematicProgress(Math.min(1,(performance.now()-state.startTime)/state.durationMs));
-      stopAnimation();
-    },
-    onResume:()=>{
-      if(state.screen==='route'&&state.mapPath&&!state.playing&&state.progress<1)playPause();
-    },
-    onSound:()=>{},
+  state.director=new JourneyDirector({
     onReward:(key)=>{
       const map=state.map;
       if(!map)return;
@@ -563,10 +581,7 @@ function setup(){
         bearing:(state.ratView||state.cinematic)?routeBearing(state.mapPath,state.progress):0,duration:900,essential:false});
     }
   });
-  $('play-pause').addEventListener('click',()=>{
-    if(state.director?.active)return;
-    playPause();
-  });
+  $('play-pause').addEventListener('click',playPause);
   $('skip').addEventListener('click',()=>{
     if(!state.path)return;
     if(state.progress>=1){finishMission();return;}
