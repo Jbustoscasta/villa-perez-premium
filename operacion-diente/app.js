@@ -137,6 +137,8 @@ async function startMadridDemo(){
       'Ruta calculada sobre calles reales entre dos puntos turísticos de prueba. El movimiento del Ratón es una animación ficticia, no un GPS.';
     showScreen('route');
     await ensureMap();
+    // The demo begins moving immediately when its map is ready.
+    if(!state.playing)playPause();
   }catch(e){
     showScreen('welcome');
     $('demo-error').textContent='No se ha podido cargar el mapa. Comprueba tu conexión y vuelve a probar: '+(e?.message||'error');
@@ -157,7 +159,9 @@ function mouseNode(){
 async function ensureMap(){
   if(state.map)return;
   try{
-    const ml=await import('https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs');
+    let ml;
+    try{ml=await import('https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs');}
+    catch(e){ml=await import('https://cdn.jsdelivr.net/npm/maplibre-gl@6.16.0/dist/maplibre-gl.mjs');}
     state.ml=ml;
     const map=new ml.Map({container:'map',style:CFG.services.mapStyle,center:state.origin.coordinate,zoom:12,pitch:26,attributionControl:false,interactive:true});
     state.map=map;
