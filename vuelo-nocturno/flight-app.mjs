@@ -148,8 +148,8 @@ function setSuggestions(items){const box=$('suggestions');box.replaceChildren();
 }
 function resetSearch(){state.selection=null;$('fly').disabled=true;}
 function onSearchChanged(){clearNotify();resetSearch();state.searchAbort?.abort();clearTimeout(state.searchTimer);
- const q=$('address').value.trim();setSuggestions([]);if(q.length<4)return;
  const serial=++state.searchSerial;
+ const q=$('address').value.trim();setSuggestions([]);if(q.length<4)return;
  state.searchTimer=setTimeout(async()=>{
   const controller=new AbortController();state.searchAbort=controller;show('search-spinner');
   try{const hits=await geocode(q,controller.signal);if(serial!==state.searchSerial||controller.signal.aborted)return;setSuggestions(hits);if(!hits.length)notify('No encontramos esa dirección. Prueba con calle, número y ciudad.')}
@@ -226,14 +226,14 @@ function drawTrail(timestamp){
 }
 function updateCamera(t,force=false){
  if(!state.map||!state.childPath||!state.follow)return;
- if(!force&&t-state.lastCamera<1550)return;
+ if(!force&&t-state.lastCamera<950)return;
  state.lastCamera=t;
  const path=state.childPath,f=state.progress;
- const coord=along(path,Math.min(.995,f+.005));const base=colorNight(f);
+ const coord=along(path,Math.min(.995,f+.009));const base=colorNight(f);
  const settings=state.view==='globe'?
    {zoom:state.provider==='mapbox'?17.15:base.zoom+1.1,pitch:Math.min(77,base.pitch+2),offset:[0,105]}:
    {zoom:state.provider==='mapbox'?15.4:Math.max(14.7,base.zoom-1.1),pitch:57,offset:[0,0]};
- state.map.easeTo({center:coord,bearing:heading(path,Math.min(.995,f+.006)),duration:1850,essential:false,...settings});
+ state.map.easeTo({center:coord,bearing:heading(path,Math.min(.995,f+.006)),duration:1250,essential:false,...settings});
 }
 function renderFrame(timestamp,force=false){
  if(!state.mapReady||!state.childPath)return;
