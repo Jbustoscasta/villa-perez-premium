@@ -6,7 +6,7 @@
  */
 const METERS=111320;
 export const BALLOON_ALTITUDE=72; // above natural ground, not sea level
-const MODEL_SRC=new URL('./assets/globo-villa-perez-3d.glb',import.meta.url).href;
+const MODEL_SRC=new URL('./assets/globo-villa-perez-3d.glb?v=2',import.meta.url).href;
 const MOUSE_SRC=new URL('../perez.png',import.meta.url).href;
 export const geoDistance=(a,b)=>{
  const r=Math.PI/180,x=(b.lng-a.lng)*Math.cos((a.lat+b.lat)*r/2),y=b.lat-a.lat;
