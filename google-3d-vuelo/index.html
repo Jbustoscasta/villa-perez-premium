@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#091927">
 <meta name="description" content="Prueba de vuelo cinematográfico sobre Google Maps 3D fotorrealista para Villa Pérez.">
 <title>Google 3D · Vuelo del Ratón Pérez · Villa Pérez</title>
-<link rel="stylesheet" href="./styles.css?v=3.1.2">
-<script type="module" src="./app.mjs?v=3.1.2"></script>
+<link rel="stylesheet" href="./styles.css?v=4.0.0">
+<script type="module" src="./app.mjs?v=4.0.0"></script>
 </head>
 <body>
 <div class="app">
@@ -24,7 +24,7 @@
  <section class="setup" id="setup" aria-label="Configuración de Google Maps y ruta">
   <span class="eyebrow">PRUEBA TÉCNICA · FOTORREALISMO</span>
   <h1>Esta vez, <em>Madrid de verdad.</em></h1>
-  <p class="lead">Fotografía aérea y edificios 3D reales. Sobrevolaremos las calles con cámara cinematográfica y el globo de Villa Pérez.</p>
+  <p class="lead">Edificios reales con sus fachadas y tejados, no bloques repetidos. Sobrevolaremos Madrid con un globo de cuento y una cámara cinematográfica.</p>
   <div class="key-group" id="keyGroup">
    <div class="section-head"><span class="round">01</span><div><b>Conectar Google Maps 3D</b><small>Puedes empezar con una Demo Key gratuita</small></div></div>
    <label for="apiKey">Google Maps Demo Key o API key web</label>
@@ -51,26 +51,26 @@
   <p class="setup-tail">Prototipo independiente. No usa la dirección real de la clínica. La fotogrametría depende de la cobertura de Google y el rendimiento del iPhone.</p>
  </section>
  <div id="balloon" class="balloon" aria-label="Globo aerostático fotográfico de Villa Pérez con Ratón Pérez oficial" role="img" hidden>
-  <img class="balloon-base" src="./assets/globo-realista.png" alt="" decoding="async">
+  <div class="balloon-flare" aria-hidden="true"></div>
+  <img class="balloon-base" src="../vuelo-cine/assets/globo-premium.svg" alt="" decoding="async" draggable="false">
   <img class="official" src="../perez.png" alt="" decoding="async" draggable="false">
-  <img class="balloon-basket-front" src="./assets/globo-realista.png" alt="" decoding="async" aria-hidden="true">
-  <div class="balloon-flare"></div>
+  <img class="balloon-basket-front" src="../vuelo-cine/assets/cesta-delantera.svg" alt="" decoding="async" aria-hidden="true" draggable="false">
  </div>
  <div class="flight-overlay" id="flightUI" hidden>
   <div class="chapter"><span class="eyebrow" id="chapterEyebrow">EL VUELO DEL RATÓN PÉREZ</span><h2 id="chapterTitle">Sobre Madrid</h2><p id="chapterDescription" hidden></p></div>
   <div class="overview-tools"><button id="overviewToggle" type="button" aria-pressed="false">🗺 Ver recorrido completo</button><span id="originBadge">Origen de prueba · Puerta de Alcalá</span></div>
   <div class="flight-bar">
    <div class="bar-top"><span id="travelLabel">PUERTA DE ALCALÁ → PLAZA MAYOR</span><span id="progressLabel">0%</span></div>
-   <div class="flight-labels"><span id="routeMode">RUTA PANORÁMICA</span><button id="modelMode" type="button" aria-label="Cambiar entre globo 3D y modo compatible">PREPARANDO MODELO 3D</button></div>
+   <div class="flight-labels"><span id="routeMode">RUTA PANORÁMICA</span><span id="modelMode" aria-label="El Ratón Pérez está en un globo vectorial integrado en pantalla">GLOBO ILUSTRADO · SIEMPRE VISIBLE</span></div>
    <div class="bar-track"><div id="progressFill"></div></div>
    <div class="flight-buttons">
     <button id="pause" type="button">⏸ Pausar</button>
-    <button id="twilight" type="button" aria-pressed="false" title="Anochecer WebGL simulado: color y luces, no fotografía nocturna real">☾ Anochecer</button>
+    <button id="twilight" type="button" aria-pressed="false" title="Cambiar entre fotografía 3D real de día y la ciudad nocturna estilizada de Google">☾ Noche ilustrada</button>
     <button id="fxToggle" type="button" aria-label="Activar o desactivar efectos especiales">✨ Magia ON</button>
     <button id="restart" type="button">↺ Reiniciar</button>
    </div>
   </div>
-  <p class="flight-warning">Fotos 3D reales · noche cinematográfica simulada · vuelo ficticio, no GPS</p>
+  <p class="flight-warning">Edificios fotográficos de Google en modo real · noche estilizada opcional · vuelo ficticio</p>
  </div>
  <div id="arrival" class="arrival" hidden><div class="arrival-card"><span>✦ LA MAGIA HA LLEGADO ✦</span><h2>¡El Ratón Pérez está muy cerca!</h2><p>La cámara ha sobrevolado la ciudad a altura estable y ha rodeado el destino para enseñarte sus calles y edificios. Los últimos metros hasta casa serán un secreto.</p><button class="cta gold" id="again">Repetir el vuelo</button></div></div>
  <div id="systemMessage" class="system-message" role="status" aria-live="polite" hidden></div>
