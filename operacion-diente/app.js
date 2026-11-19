@@ -1,6 +1,7 @@
-import {APP_CONFIG as CFG} from './config.js?v=0.4.0';
-import {createPath,pointAt,validCoordinate,compactAddress,formatDistance,postcardSvg,trailParticles,routeBearing,cinematicProgress,cinematicPhase,publicFacingRoute,nearestPublicLandmark} from './route-utils.mjs?v=0.4.0';
+import {APP_CONFIG as CFG} from './config.js?v=0.5.0';
+import {createPath,pointAt,validCoordinate,compactAddress,formatDistance,postcardSvg,trailParticles,routeBearing,cinematicProgress,cinematicPhase,publicFacingRoute,nearestPublicLandmark} from './route-utils.mjs?v=0.5.0';
 
+import {applyPremiumStreetStyle,installPremiumCityLayers,premiumRoutePaint,drawGoldenRouteFx} from './premium-map.mjs?v=0.5.0';
 const $ = id => document.getElementById(id);
 const screens = ['welcome','address','route','arrival'];
 const state = {
@@ -10,7 +11,7 @@ const state = {
   map:null,ml:null,mouseMarker:null,originMarker:null,homeMarker:null,
   route:null,path:null,mapPath:null,isDemo:false,landmark:null,landmarkShown:false,landmarkTimer:0,introTimer:0,arrivalShown:false,
   soundOn:false,audioCtx:null,durationMs:CFG.stageDurationSeconds*1000,progress:0,
-  playing:false,startTime:0,frame:0,follow:true,cinematic:true,lastPaint:0,lastStage:-1,lastCamera:0,
+  playing:false,startTime:0,frame:0,follow:true,cinematic:true,lastPaint:0,lastFx:0,lastStage:-1,lastCamera:0,
   reducedMotion:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches??false
 };
 
@@ -229,16 +230,10 @@ async function ensureMap(){
       const timer=setTimeout(()=>reject(new Error('El mapa no responde.')),20000);
       map.once('load',()=>{clearTimeout(timer);resolve();});
     });
-    // 3D buildings only when the live tile style includes a compatible vector building layer.
-    // Keep every map provider's required attribution visible.
-    const building=(map.getStyle()?.layers||[]).find(l=>l.type==='fill'&&/building/i.test(l.id)&&l['source-layer']&&map.getSource(l.source));
-    if(building){
-      try{map.addLayer({id:'villa-city-3d',type:'fill-extrusion',source:building.source,'source-layer':building['source-layer'],minzoom:14,
-        paint:{'fill-extrusion-color':'#365761','fill-extrusion-opacity':.53,
-        'fill-extrusion-height':['coalesce',['to-number',['get','render_height']],['to-number',['get','height']],12],
-        'fill-extrusion-base':0}});}
-      catch(err){console.warn('Edificios 3D no disponibles para este estilo:',err);}
-    }
+    // High-contrast roads, readable street labels and actual OSM buildings.
+    const appearance=applyPremiumStreetStyle(map);
+    const city=installPremiumCityLayers(map);
+    console.info('[Villa Pérez] Vista premium',appearance,city);
     const full=line(state.mapPath.points);
     map.addSource('journey-route',{type:'geojson',data:full});
     map.addSource('journey-completed',{type:'geojson',data:line(state.mapPath.points.slice(0,2))});
@@ -250,6 +245,7 @@ async function ensureMap(){
     map.addLayer({id:'route-gold',type:'line',source:'journey-completed',paint:{'line-color':'#fff0ba','line-width':4.5},layout:{'line-cap':'round','line-join':'round'}});
     map.addLayer({id:'route-sparkle-aura',type:'circle',source:'journey-sparks',paint:{'circle-radius':['get','size'],'circle-color':'#ffdf91','circle-opacity':['get','alpha'],'circle-blur':.68}});
     map.addLayer({id:'route-sparkle-core',type:'circle',source:'journey-sparks',paint:{'circle-radius':2,'circle-color':'#fff9d2','circle-opacity':['get','alpha']}});
+    premiumRoutePaint(map);
     state.originMarker=new ml.Marker({element:pin('✦ Villa Pérez')}).setLngLat(state.mapPath.points[0]).addTo(map);
     state.homeMarker=new ml.Marker({element:pin(state.isDemo?'⌂ Fin de prueba':'✧ Cerca de casa',true)}).setLngLat(state.mapPath.points.at(-1)).addTo(map);
     state.mouseMarker=new ml.Marker({element:mouseNode(),anchor:'bottom'}).setLngLat(state.mapPath.points[0]).addTo(map);
@@ -265,7 +261,7 @@ async function ensureMap(){
 function fitMap(){
   if(!state.map||!state.ml||!state.mapPath)return;
   const bounds=new state.ml.LngLatBounds();for(const p of state.mapPath.points)bounds.extend(p);
-  state.map.fitBounds(bounds,{padding:{top:160,bottom:95,left:38,right:38},maxZoom:15.8,duration:state.reducedMotion?0:900});
+  state.map.fitBounds(bounds,{padding:{top:155,bottom:95,left:30,right:30},maxZoom:16,duration:state.reducedMotion?0:900});
 }
 function journeyStage(f){
   if(f>=1)return {index:5,message:'¡He llegado! Ahora puedes terminar la misión.',subtitle:'Tu viaje ya está completo.'};
@@ -293,6 +289,10 @@ function paintProgress(progress,force=false){
   const now=performance.now();
   if(!force&&now-state.lastPaint<95)return;
   state.lastPaint=now;
+  if(!state.reducedMotion && (force || now-state.lastFx>42)){
+    state.lastFx=now;
+    drawGoldenRouteFx(state.map,state.mapPath,state.progress,$('route-fx'),now,false);
+  }
   // Only map the genuine road section that does not expose a family's front door.
   const along=pointAt(state.mapPath,state.progress);
   state.mouseMarker.setLngLat(along.coordinate);
@@ -302,7 +302,7 @@ function paintProgress(progress,force=false){
   if(state.follow && state.playing && !state.reducedMotion && (force||now-state.lastCamera>1350) && state.progress<.92){
     state.lastCamera=now;
     const lookAhead=pointAt(state.mapPath,Math.min(.99,state.progress+.012)).coordinate;
-    const options={center:lookAhead,zoom:state.cinematic?15.15:Math.max(13.3,Math.min(15,state.map.getZoom())),
+    const options={center:lookAhead,zoom:state.cinematic?16.15:Math.max(14.1,Math.min(16.1,state.map.getZoom())),
       pitch:state.cinematic?(state.progress<.12?45:state.progress>.84?35:58):27,duration:1600,essential:false};
     if(state.cinematic)options.bearing=routeBearing(state.mapPath,Math.min(.99,state.progress+.009));
     state.map.easeTo(options);
@@ -356,7 +356,7 @@ function playPause(){
   $('skip').textContent='Terminar misión';
   if(state.follow&&!state.reducedMotion){
     const position=pointAt(state.mapPath,state.progress).coordinate;
-    state.map.flyTo({center:position,zoom:14.7,pitch:state.cinematic?53:28,
+    state.map.flyTo({center:position,zoom:16.05,pitch:state.cinematic?54:30,
       bearing:state.cinematic?routeBearing(state.mapPath,state.progress):0,duration:1650,essential:false});
     state.lastCamera=performance.now();
   }
@@ -372,7 +372,7 @@ function reset(){
   clearTimeout(state.introTimer);clearTimeout(state.landmarkTimer);
   stopAnimation();state.map?.remove();state.map=null;state.mouseMarker=null;state.originMarker=null;state.homeMarker=null;state.path=null;state.mapPath=null;state.route=null;state.landmark=null;state.landmarkShown=false;state.arrivalShown=false;state.isDemo=false;
   $('cinematic-intro').classList.add('hidden');$('landmark-panel').classList.add('hidden');$('final-curtain').classList.add('hidden');
-  state.progress=0;state.lastStage=-1;state.lastPaint=0;state.lastCamera=0;state.destination={label:'',coordinate:null};
+  state.progress=0;state.lastStage=-1;state.lastPaint=0;state.lastFx=0;state.lastCamera=0;const fx=$('route-fx');fx?.getContext('2d')?.clearRect(0,0,fx.width,fx.height);state.destination={label:'',coordinate:null};
   $('destination-address').value='';$('adult-confirm').checked=false;
   $('route-message').textContent='¡Mi mochila está lista! Voy a salir de la clínica.';$('play-pause').textContent='Comenzar el viaje ▶';$('skip').textContent='Terminar misión';
   $('map-fallback').classList.add('hidden');$('follow-map').classList.add('is-selected');$('follow-map').setAttribute('aria-pressed','true');state.follow=true;
@@ -436,7 +436,7 @@ function setup(){
   $('follow-map').addEventListener('click',()=>{
     state.follow=!state.follow;
     $('follow-map').classList.toggle('is-selected',state.follow);$('follow-map').setAttribute('aria-pressed',String(state.follow));
-    if(state.follow&&state.map&&state.mapPath)state.map.easeTo({center:pointAt(state.mapPath,state.progress).coordinate,zoom:14.8,pitch:state.cinematic?58:34,duration:550});
+    if(state.follow&&state.map&&state.mapPath)state.map.easeTo({center:pointAt(state.mapPath,state.progress).coordinate,zoom:16,pitch:state.cinematic?58:34,duration:550});
   });
   $('cinematic-map').addEventListener('click',()=>{
     state.cinematic=!state.cinematic;$('cinematic-map').classList.toggle('is-selected',state.cinematic);
