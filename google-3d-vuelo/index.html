@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#091927">
 <meta name="description" content="Prueba de vuelo cinematográfico sobre Google Maps 3D fotorrealista para Villa Pérez.">
 <title>Google 3D · Vuelo del Ratón Pérez · Villa Pérez</title>
-<link rel="stylesheet" href="./styles.css?v=2.0.1">
-<script type="module" src="./app.mjs?v=2.0.1"></script>
+<link rel="stylesheet" href="./styles.css?v=3.0.0">
+<script type="module" src="./app.mjs?v=3.0.0"></script>
 </head>
 <body>
 <div class="app">
@@ -15,6 +15,7 @@
   <div class="unloaded-map" id="beforeMap" aria-hidden="true"><div class="unloaded-orbit"></div><div class="unloaded-star">✦</div><div class="unloaded-text">EL CIELO DE MADRID NOS ESPERA</div></div>
  </div>
  <div class="cinema-grade" id="cinemaGrade" aria-hidden="true"></div>
+ <canvas class="night-cinema" id="nightCanvas" aria-hidden="true" hidden></canvas>
  <div class="dust-layer" id="dustLayer" aria-hidden="true"></div>
  <header class="topline">
   <div class="logo"><div class="logo-mark">✦</div><div><span>VILLA PÉREZ · LABORATORIO</span><strong>El vuelo imposible</strong></div></div>
@@ -57,12 +58,12 @@
    <div class="bar-track"><div id="progressFill"></div></div>
    <div class="flight-buttons">
     <button id="pause" type="button">⏸ Pausar</button>
-    <button id="twilight" type="button">☾ Oscurecer</button>
+    <button id="twilight" type="button" aria-pressed="false" title="Simulación cinematográfica WebGL, no fotografía nocturna de Google">☾ Anochecer</button>
     <button id="fxToggle" type="button" aria-label="Activar o desactivar efectos especiales">✨ Magia ON</button>
     <button id="restart" type="button">↺ Reiniciar</button>
    </div>
   </div>
-  <p class="flight-warning">Vuelo de fantasía sobre cartografía real · efectos 3D y recorrido aproximado cuando Google Routes no está habilitado · no es seguimiento GPS.</p>
+  <p class="flight-warning">Fotos 3D reales · noche cinematográfica simulada · vuelo ficticio, no GPS</p>
  </div>
  <div id="arrival" class="arrival" hidden><div class="arrival-card"><span>✦ LA MAGIA HA LLEGADO ✦</span><h2>¡El Ratón Pérez está muy cerca!</h2><p>La cámara ha sobrevolado la ciudad a altura estable y ha rodeado el destino para enseñarte sus calles y edificios. Los últimos metros hasta casa serán un secreto.</p><button class="cta gold" id="again">Repetir el vuelo</button></div></div>
  <div id="systemMessage" class="system-message" role="status" aria-live="polite" hidden></div>
