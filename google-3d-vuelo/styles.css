@@ -12,7 +12,12 @@ button:focus-visible,input:focus-visible{outline:3px solid #f4d383;outline-offse
 .unloaded-text{position:absolute;top:60%;font-size:10px;color:#d1c5a8;letter-spacing:.25em}
 @keyframes pulse{to{opacity:.4;transform:scale(.9)}}
 .cinema-grade{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 55% 37%,transparent 31%,rgba(6,21,36,.27) 99%);opacity:1;transition:background .6s}
-.cinema-grade.twilight{background:linear-gradient(180deg,rgba(9,22,49,.36),rgba(21,38,64,.09) 42%,rgba(7,17,36,.38)),radial-gradient(ellipse at 50% 43%,transparent 18%,rgba(7,17,37,.39))}
+.cinema-grade.twilight{
+  background:
+    linear-gradient(180deg,rgba(7,20,42,.55) 0%,rgba(10,24,46,.3) 36%,rgba(3,11,29,.65) 100%),
+    radial-gradient(ellipse at 50% 40%,rgba(27,51,81,.09),rgba(4,11,30,.52) 100%);
+  backdrop-filter:brightness(.78) saturate(.85);
+}
 .dust-layer{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden}
 .dust-layer i{position:absolute;border-radius:50%;width:3px;height:3px;background:#ffe3a3;box-shadow:0 0 10px #ffe19a;animation:drift 3s ease-in-out infinite alternate;opacity:.5}
 @keyframes drift{to{transform:translate3d(16px,-19px,0);opacity:0}}
@@ -49,11 +54,32 @@ input::placeholder{color:#a9bbb9}
 .micro{margin:7px 0 12px}
 .form-error{font-size:11px;color:#ffccaf;margin:7px 0 12px}
 .setup-tail{border-top:1px solid rgba(255,255,255,.11);padding-top:10px;margin:13px 0 0}
-.balloon{position:absolute;top:43%;left:50%;z-index:5;transform:translate(-50%,-40%);filter:drop-shadow(0 21px 16px rgba(0,0,0,.55));pointer-events:none}
-.balloon svg{width:122px;height:173px;animation:bob 2.3s ease-in-out infinite alternate}
-.balloon .official{position:absolute;left:45px;top:121px;width:30px;height:36px;object-fit:contain;transform:scale(.85);filter:drop-shadow(0 0 3px rgba(255,217,149,.3))}
-.balloon-flare{position:absolute;z-index:-1;left:12px;top:27px;width:106px;height:115px;background:radial-gradient(circle,rgba(255,227,161,.3),transparent 70%);filter:blur(10px)}
-@keyframes bob{to{transform:translateY(9px) rotate(2deg)}}
+
+/* High-detail transparent PNG shell plus untouched official character PNG.
+   Keep independent layers: the character is never regenerated or repainted. */
+.balloon{
+  position:absolute;top:46%;left:50%;width:146px;height:184px;
+  z-index:5;pointer-events:none;transform:translate(-50%,-50%);
+  filter:drop-shadow(0 18px 14px rgba(0,0,0,.38));
+}
+.balloon-base{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+  animation:bob 2.7s ease-in-out infinite alternate;
+  filter:drop-shadow(0 0 9px rgba(255,198,118,.18));
+}
+.balloon .official{
+  position:absolute;left:52px;top:147px;
+  width:42px;height:36px;object-fit:contain;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.4));
+  animation:passenger 2.7s ease-in-out infinite alternate;
+}
+.balloon-flare{
+  position:absolute;z-index:-1;left:26px;top:80px;width:100px;height:87px;
+  background:radial-gradient(circle,rgba(255,213,130,.35),transparent 74%);
+  filter:blur(10px);pointer-events:none;
+}
+@keyframes bob{from{transform:translateY(-5px) rotate(-1.6deg)}to{transform:translateY(6px) rotate(1.6deg)}}
+@keyframes passenger{from{transform:translateY(-5px)}to{transform:translateY(6px)}}
 .flight-overlay{position:absolute;inset:0;z-index:8;pointer-events:none}
 .chapter{position:absolute;top:108px;left:27px;max-width:min(480px,70vw);text-shadow:0 2px 19px #09121e}
 .chapter h2{font-size:clamp(33px,5vw,55px);line-height:1.04;color:#ffefca;margin:10px 0}
@@ -77,13 +103,14 @@ input::placeholder{color:#a9bbb9}
 .setup{left:0;bottom:0;width:100%;max-height:82dvh;border-radius:24px 24px 0 0;padding:20px 21px calc(16px + env(safe-area-inset-bottom));border-left:0;border-right:0}
 h1{font-size:30px;margin:8px 0}.lead{font-size:12px;margin-bottom:12px}
 .key-group{padding:11px 14px;margin-bottom:10px}.section-head{margin-bottom:10px}
-.balloon{top:42%}.balloon svg{width:95px;height:137px}.balloon .official{left:34px;top:95px;width:24px;height:28px}
+.balloon{top:45%;width:117px;height:148px}
+.balloon .official{left:42px;top:118px;width:34px;height:30px}
 .chapter{top:100px;left:19px;right:14px;max-width:calc(100% - 33px)}
 .chapter h2{font-size:33px}.chapter p{font-size:12px;max-width:290px}
 .flight-bar{bottom:max(64px,calc(env(safe-area-inset-bottom) + 50px));padding:14px 16px}
 .flight-warning{font-size:9px;bottom:16px}
 }
-@media(prefers-reduced-motion:reduce){.balloon svg,.dust-layer i,.unloaded-star{animation:none}}
+@media(prefers-reduced-motion:reduce){.balloon-base,.balloon .official,.dust-layer i,.unloaded-star{animation:none}}
 
 /* Preserve the Google logo/copyright at the lower edge after the map is connected. */
 .setup.ready{top:102px;bottom:auto;max-height:min(70dvh,630px)}
