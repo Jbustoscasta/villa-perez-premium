@@ -37,6 +37,7 @@ function updateConfig(){
   $('origin-address').value=CFG.clinic.originLabel.replace(' · ORIGEN DE PRUEBA','');
   $('origin-demo-hint').textContent=CFG.clinic.demo?'Punto provisional de prueba.':'Dirección de clínica configurada.';
   $('clinic-origin-status').textContent=CFG.clinic.demo?'⚠ DEMOSTRACIÓN: salida provisional desde Puerta de Alcalá, no desde la clínica.':'Salida fija configurada · '+CFG.clinic.originLabel;
+  $('site-mode').textContent=CFG.clinic.demo?'DEMO · SALIDA PROVISIONAL EN MADRID':'EXPERIENCIA PERSONALIZADA VILLA PÉREZ';
   const facade=$('facade');facade.src=CFG.assets.facade;facade.onerror=()=>{facade.style.display='none';};
 }
 
@@ -235,6 +236,7 @@ function finishIntro(){
   }
   state.introTimer=setTimeout(()=>{
     overlay.classList.add('hidden');overlay.classList.remove('is-revealing');
+    $('screen-route').classList.remove('intro-active');
     if(state.path && state.map && state.screen==='route' && !state.playing)playPause();
   },state.reducedMotion?80:1180);
 }
@@ -242,7 +244,7 @@ function showIntro(){
   // Narration starts with the cinematic shot, not with the prior settings button.
   state.director?.say('intro',true);
   playChime('sparkle');
-  const overlay=$('cinematic-intro');overlay.classList.remove('hidden','is-revealing');
+  const overlay=$('cinematic-intro');$('screen-route').classList.add('intro-active');overlay.classList.remove('hidden','is-revealing');
   state.introTimer=setTimeout(finishIntro,state.reducedMotion?800:5700);
 }
 
@@ -476,7 +478,7 @@ function reset(){
   state.director?.reset();
   state.morningData=null;
   stopAnimation();state.map?.remove();state.map=null;state.mouseMarker=null;state.originMarker=null;state.homeMarker=null;state.path=null;state.mapPath=null;state.route=null;state.landmark=null;state.landmarkShown=false;state.arrivalShown=false;state.isDemo=false;
-  $('cinematic-intro').classList.add('hidden');$('landmark-panel').classList.add('hidden');$('final-curtain').classList.add('hidden');
+  $('cinematic-intro').classList.add('hidden');$('screen-route').classList.remove('intro-active');$('landmark-panel').classList.add('hidden');$('final-curtain').classList.add('hidden');
   state.progress=0;state.scenicUntil=0;state.lastStage=-1;state.lastPaint=0;state.lastFx=0;state.lastCamera=0;const fx=$('route-fx');fx?.getContext('2d')?.clearRect(0,0,fx.width,fx.height);state.destination={label:'',coordinate:null};
   $('destination-address').value='';state.streetSegments=[];state.streetName='';state.magicEventIndex=-1;$('street-locator').classList.add('hidden');$('magic-event').classList.remove('visible');
   $('route-message').textContent='¡Mi mochila está lista! Voy a salir de la clínica.';$('play-pause').textContent='Comenzar el viaje ▶';$('skip').textContent='Terminar misión';
