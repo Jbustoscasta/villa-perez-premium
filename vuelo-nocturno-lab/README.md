@@ -10,6 +10,9 @@ Un test interactivo mobile-first de *En busca del diente perdido*. Diseñado par
 - Interfaz adaptable para Safari iPhone, pausa/repetición y velocidades de vuelo.
 - Demo sin claves API: origen `Puerta del Sol, Madrid`, destino `Plaza de España, Madrid`.
 
+## Corrección de compatibilidad — 19/11/2026
+La primera versión apuntaba erróneamente a `dist/maplibre-gl.js` de MapLibre v6, archivo clásico que **ya no existe** en dicha versión. Se ha sustituido por `dist/maplibre-gl.mjs` mediante importación ES module, con dos CDNs y dos estilos cartográficos alternativos. Verificados en un ensayo de navegador con servicios simulados (flujo de vuelo y fallbacks); **no se ha verificado la descarga real de servicios externos desde Safari**.
+
 ## Cómo probar
 1. Publicar el contenido de la carpeta en un hosting HTTPS estático (por ejemplo, GitHub Pages) o abrir `index.html` en un navegador con conexión. Para pruebas locales con rutas relativas, ejecutar `python3 -m http.server 8000` y abrir `http://localhost:8000`.
 2. Pulsar **Comenzar el vuelo**.
@@ -17,8 +20,8 @@ Un test interactivo mobile-first de *En busca del diente perdido*. Diseñado par
 4. En Safari iPhone, mantener la pantalla en primer plano mientras se reproduce la animación.
 
 ## Dependencias externas
-- MapLibre GL JS 6.19.0 desde unpkg.com
-- OpenFreeMap https://openfreemap.org/ (estilo `dark`)
+- MapLibre GL JS 6.19.0 en formato ES module (`maplibre-gl.mjs`), con CDN principal jsDelivr y respaldo unpkg
+- OpenFreeMap https://openfreemap.org/ (estilo `dark`); respaldo CARTO Dark Matter si falla el mapa
 - Photon demo https://photon.komoot.io/
 - OSRM demo https://router.project-osrm.org/
 - Datos © OpenStreetMap contributors, OpenMapTiles, OpenFreeMap.
