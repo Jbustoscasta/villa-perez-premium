@@ -178,6 +178,34 @@ export function drawGoldenRouteFx(map,path,progress,canvas,time,reducedMotion=fa
     ctx.shadowColor='#ffe0a0';ctx.shadowBlur=16;
     ctx.beginPath();ctx.arc(marker.x,marker.y,r,0,Math.PI*2);ctx.stroke();
   }
+  // Tiny luminous footsteps and city-reaction halos, projected strictly on the REAL road trace.
+  // No individual lamppost locations are claimed or fabricated.
+  for(let j=0;j<9;j++){
+    const frac=f-.014-j*.007;
+    if(frac<=0)break;
+    const p=map.project(pointAt(path,frac).coordinate);
+    const q=map.project(pointAt(path,Math.min(1,frac+.0015)).coordinate);
+    if(!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<0||p.y<0||p.x>w||p.y>h)continue;
+    const dx=q.x-p.x,dy=q.y-p.y,d=Math.hypot(dx,dy)||1;
+    const nx=-dy/d,ny=dx/d,side=j%2?1:-1;
+    const x=p.x+nx*side*5,y=p.y+ny*side*5;
+    ctx.save();ctx.globalAlpha=Math.max(.16,.74-j*.071);
+    ctx.fillStyle='#fff3bb';ctx.shadowColor='#ffc05d';ctx.shadowBlur=12;
+    ctx.beginPath();ctx.arc(x,y,1.9,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(x+nx*side*2-dx/d*2,y+ny*side*2-dy/d*2,.95,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+  // Golden pulses travel through the actual intersections along the route ahead.
+  for(let j=1;j<=3;j++){
+    const aheadF=Math.min(.99,f+j*.016),p=map.project(pointAt(path,aheadF).coordinate);
+    if(!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<-20||p.x>w+20||p.y<-20||p.y>h+20)continue;
+    const cycle=(t*.75+j*.29)%1;
+    ctx.save();ctx.globalAlpha=(1-cycle)*.56;
+    ctx.strokeStyle='#ffdb8f';ctx.lineWidth=1.2;
+    ctx.shadowColor='#ffd17c';ctx.shadowBlur=11;
+    ctx.beginPath();ctx.arc(p.x,p.y,5+cycle*19,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+  }
   ctx.globalCompositeOperation='source-over';
   ctx.shadowBlur=0;ctx.globalAlpha=1;
 }
