@@ -41,3 +41,20 @@ body:not(.day) #map .maplibregl-canvas{filter:contrast(1.075) saturate(1.18) bri
 .mood-haze{background:linear-gradient(180deg,rgba(9,18,42,.09),transparent 28%,transparent 75%,rgba(10,19,41,.12)),
  radial-gradient(ellipse at 50% 38%,rgba(232,157,82,.055),transparent 47%)}
 @media(max-width:700px){.city-status{font-size:9px;margin-top:9px;padding:7px 9px}}
+
+.real-3d-cta{
+ display:flex;align-items:center;justify-content:space-between;gap:11px;
+ border:1px solid #f4daa2;border-radius:13px;padding:13px 15px;
+ color:#21251f!important;text-decoration:none!important;
+ background:linear-gradient(120deg,#fff2c8,#e6bc7c);
+ box-shadow:0 8px 30px rgba(219,157,73,.3);
+ margin:13px 0 8px;
+}
+.real-3d-icon{display:grid;place-items:center;width:37px;height:37px;border-radius:10px;
+ background:#554137;color:#ffe7aa;font-size:23px;flex:none}
+.real-3d-cta strong,.real-3d-cta small{display:block}
+.real-3d-cta strong{font-size:13px;font-weight:850}
+.real-3d-cta small{font-size:10px;opacity:.77;line-height:1.35;margin-top:4px}
+.real-3d-cta>span:last-child{font-size:23px;font-weight:800}
+.real-3d-footnote{font-size:10px!important;color:#bacdd1!important;line-height:1.45!important;margin-bottom:14px!important}
+@media(max-width:700px){.real-3d-cta{margin:10px 0 6px;padding:10px 12px}.real-3d-cta strong{font-size:12px}}
