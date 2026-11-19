@@ -40,6 +40,7 @@
 .inputWrap input:focus{border-color:#f0cb86;box-shadow:0 0 0 3px rgba(229,195,122,.1)}.inputWrap input::placeholder{color:#c4cac8}
 .btnMain{border:1px solid #fff4d1;background:linear-gradient(180deg,#ffe2a4,#e8bd78);color:#32251a;font-size:13px;font-weight:700;border-radius:12px;min-height:51px;padding:0 18px;box-shadow:0 6px 28px rgba(233,172,66,.2);transition:filter .15s}
 .btnMain:active{filter:brightness(.86)}.btnMain:disabled{opacity:.55;cursor:wait}.btnMain svg{vertical-align:middle;margin-left:8px}
+#compatBtn{width:100%;margin-top:9px;border:0;background:transparent;color:#dddbd5;padding:9px 12px;font-size:11px;text-decoration:underline;text-underline-offset:4px}
 #launch{width:100%;margin-top:15px}.panel .privacy{font-size:10px;color:#a8bbb7;line-height:1.5;margin-top:13px}
 .preset{margin:12px 0 2px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}.preset span{font-size:10px;color:#c4d1d2;margin-right:5px}
 .preset button{background:rgba(255,255,255,.085);border:1px solid rgba(255,255,255,.14);padding:7px 9px;color:#e8f0ea;font-size:10px;border-radius:50px}.preset button:hover{border-color:#f6db95}
@@ -98,6 +99,7 @@
  <div class="inputWrap"><input id="home" value="Plaza Mayor, Madrid" placeholder="Calle, número, ciudad" autocomplete="off"></div>
  <div class="preset"><span>Prueba rápida:</span><button data-preset="mayor">Plaza Mayor</button><button data-preset="bernabeu">Bernabéu</button><button data-preset="fresno">Arroyo Fresno</button></div>
  <button id="launch" class="btnMain">✦ Iniciar vuelo cinematográfico <span aria-hidden="true">↗</span></button>
+ <button id="compatBtn" type="button">¿No se ve el mapa? Usar modo compatible 2D</button>
  <div id="error" role="alert"></div>
  <div class="privacy">El globo es un elemento ilustrado 2,5D; los edificios y las calles proceden del mapa real. Si introduces una dirección, la consulta se envía a Photon (Komoot), servicio externo de demostración. No se almacena.</div>
 </section>
@@ -231,6 +233,7 @@ function toggleMode(){
 document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.preset)));
 el('home').addEventListener('input',()=>{el('error').style.display='none';});
 el('launch').addEventListener('click',start);
+el('compatBtn').addEventListener('click',()=>recoverMap('modo compatible elegido por el usuario',true));
 el('pauseBtn').addEventListener('click',()=>{
  if(!playing)return;
  if(paused){paused=false;started=performance.now()-passed;el('pauseBtn').textContent='⏸ Pausar';frame=requestAnimationFrame(tick);}
@@ -246,6 +249,7 @@ document.addEventListener('visibilitychange',()=>{
 /* If WebGL, a font, or a map style fails on iOS, automatically fall back to a
    raster Leaflet map. The geographical route and flight remain functional. */
 let fallbackMap=null,rasterTiles=null,fallbackStarted=false,mapWatchdog=null;
+let tileErrorCount=0;
 const rasterAttribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 function setLoadingMessage(message){const m=el('loadingMessage');if(m)m.textContent=message;}
 function failAllMaps(message){
@@ -285,8 +289,8 @@ function setRasterStyle(){
     }
   });
 }
-async function recoverMap(reason){
- if(fallbackStarted||loaded)return;
+async function recoverMap(reason,force=false){
+ if(fallbackStarted||(loaded&&!force))return;
  fallbackStarted=true;
  clearTimeout(mapWatchdog);
  console.warn('Villa Pérez: switching to 2D raster map because:',reason);
@@ -354,6 +358,9 @@ if(!window.maplibregl){
        const message=String(e?.error?.message||e?.message||'error de mapa');
        console.warn('MapLibre map diagnostic:',message);
        if(!loaded&&(/style|fetch|network|failed|404|403/i.test(message)))recoverMap(message);
+       if(loaded&&!fallbackStarted&&(/403|404|cors|failed to fetch|networkerror/i.test(message))&&++tileErrorCount>=5){
+         recoverMap('fallos repetidos descargando cartografía: '+message,true);
+       }
      });
      map.on('webglcontextlost',()=>recoverMap('WebGL context lost'));
      balloonMarker=new maplibregl.Marker({element:genBalloon(),anchor:'bottom',offset:[0,-4]})
