@@ -29,22 +29,22 @@ const FRAG=[
 '  air=mix(air,vec3(.32,.18,.18),horizon*(.25+.12*(1.-t)));',
 '  air=mix(air,vec3(.62,.30,.14),sunset*.12*(1.-t));',
 '  float vignette=pow(length((xy-.5)*vec2(1.,.9)),1.25);',
-'  float alpha=t*(.25+.13*(1.-sky)+vignette*.13);',
+'  float alpha=t*(.38+.09*(1.-sky)+vignette*.15);',
 '  vec2 grid=vec2(xy.x*45.,xy.y*23.);',
 '  vec2 id=floor(grid);',
 '  vec2 center=fract(grid)-.5;',
 '  float seed=hash21(id+vec2(12.,33.));',
 '  float lightsRegion=1.-smoothstep(.22,.52,xy.y);',
-'  float lightMask=step(.984,seed)*lightsRegion;',
+'  float lightMask=step(.948,seed)*lightsRegion;',
 '  vec2 jitter=vec2(hash21(id+4.12)-.5,hash21(id+8.39)-.5)*.57;',
 '  float bokeh=lightMask*glow(center-jitter,.028);',
-'  float roadGlimmer=bokeh*(.84+.16*sin(u_time*.7+seed*21.))*t;',
+'  float roadGlimmer=bokeh*(.78+.22*sin(u_time*.7+seed*21.))*t;',
 '  air=mix(air,vec3(1.,.68,.33),clamp(roadGlimmer*.84,0.,1.));',
 '  alpha=max(alpha,roadGlimmer*.62);',
 '  vec2 st=xy*vec2(70.,41.);',
 '  vec2 sid=floor(st);',
 '  float starN=hash21(sid+15.7);',
-'  float star=step(.993,starN)*step(.63,xy.y);',
+'  float star=step(.979,starN)*step(.62,xy.y);',
 '  vec2 local=fract(st)-.5;',
 '  float point=glow(local-vec2(hash21(sid+2.)-.5,hash21(sid+3.)-.5)*.5,.012);',
 '  float sparkle=star*point*(.72+.28*sin(u_time*.42+starN*17.))*smoothstep(.45,.94,t);',
@@ -52,7 +52,7 @@ const FRAG=[
 '  alpha=max(alpha,sparkle*.75);',
 '  float drift=sin((xy.x*.9+xy.y*.36)*14.+u_time*.065+u_motion*.2);',
 '  alpha+=t*.013*drift*horizon;',
-'  gl_FragColor=vec4(clamp(air,0.,1.),clamp(alpha,0.,.79));',
+'  gl_FragColor=vec4(clamp(air,0.,1.),clamp(alpha,0.,.74));',
 '}'
 ].join('\n');
 export class CinemaNight {
@@ -104,6 +104,7 @@ export class CinemaNight {
    gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
    gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
    gl.disable(gl.DEPTH_TEST);
+   document.documentElement.classList.remove('night-css-fallback');
    this.resize();return true;
   }catch(e){console.warn('Night WebGL fallback:',e);this.disabled=true;this.useFallback();return false}
  }
@@ -124,6 +125,7 @@ export class CinemaNight {
   if(this.disabled){this.useFallback();return}
   // Safari reports 0px when the canvas has [hidden]; reveal before sizing.
   this.canvas.hidden=false;
+  document.documentElement.classList.remove('night-css-fallback');
   if(!this.gl&&!this.init())return;
   this.resize();this.last=0;this.lastDraw=0;this.run();
  }
