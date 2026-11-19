@@ -4,27 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#091927">
-<meta name="description" content="Prueba de vuelo cinematográfico sobre Google Maps 3D fotorrealista para Villa Pérez.">
-<title>Google 3D · Vuelo del Ratón Pérez · Villa Pérez</title>
-<link rel="stylesheet" href="./styles.css?v=4.0.0">
-<script type="module" src="./app.mjs?v=4.0.0"></script>
+<meta name="description" content="Sobrevuela las calles reales de tu barrio con el Ratón Pérez en un globo mágico.">
+<title>Villa Pérez · Vuelo mágico sobre tu barrio</title>
+<link rel="stylesheet" href="./styles.css?v=5.0.0">
+<script type="module" src="./app.mjs?v=5.0.0"></script>
 </head>
 <body>
 <div class="app">
  <div class="map-host" id="mapHost" aria-label="Google Maps 3D fotorrealista de Madrid">
   <div class="unloaded-map" id="beforeMap" aria-hidden="true"><div class="unloaded-orbit"></div><div class="unloaded-star">✦</div><div class="unloaded-text">EL CIELO DE MADRID NOS ESPERA</div></div>
  </div>
- <div class="cinema-grade" id="cinemaGrade" aria-hidden="true"></div>
- <canvas class="night-cinema" id="nightCanvas" aria-hidden="true" hidden></canvas>
  <div class="dust-layer" id="dustLayer" aria-hidden="true"></div>
  <header class="topline">
   <div class="logo"><img class="header-perez" src="../perez.png" alt="" width="26" height="30" loading="lazy"><div><span>VILLA PÉREZ · LABORATORIO</span><strong>El vuelo imposible</strong></div></div>
-  <div class="live-indicator"><i></i><span id="mapState">PREPARADO PARA GOOGLE 3D</span></div>
+  <div class="live-indicator"><i></i><span id="mapState">MAPA 3D REAL</span></div>
  </header>
  <section class="setup" id="setup" aria-label="Configuración de Google Maps y ruta">
-  <span class="eyebrow">PRUEBA TÉCNICA · FOTORREALISMO</span>
-  <h1>Esta vez, <em>Madrid de verdad.</em></h1>
-  <p class="lead">Edificios reales con sus fachadas y tejados, no bloques repetidos. Sobrevolaremos Madrid con un globo de cuento y una cámara cinematográfica.</p>
+  <span class="eyebrow">EN BUSCA DEL DIENTE PERDIDO</span>
+  <h1>El Ratón Pérez <em>volará por tu barrio.</em></h1>
+  <p class="lead">Sigue su globo por calles y edificios reales, desde la clínica hasta muy cerca de casa.</p>
   <div class="key-group" id="keyGroup">
    <div class="section-head"><span class="round">01</span><div><b>Conectar Google Maps 3D</b><small>Puedes empezar con una Demo Key gratuita</small></div></div>
    <label for="apiKey">Google Maps Demo Key o API key web</label>
@@ -34,24 +32,29 @@
    <p class="small-note">La Demo Key no requiere tarjeta si tu cuenta personal es elegible. Para una clave de producción, limita el uso a Maps JavaScript API y a este dominio. La clave no se publica en GitHub.</p>
   </div>
   <div class="route-group">
-   <div class="section-head"><span class="round">02</span><div><b>Clínica de origen</b><small id="clinicHelp">Indica la dirección real una sola vez</small></div></div>
-   <label for="clinicName">Nombre de la clínica</label>
-   <input id="clinicName" type="text" autocomplete="organization" value="Clínica del Doctor Abreu" maxlength="100">
-   <label for="clinicAddress">Dirección de la clínica</label>
-   <input id="clinicAddress" type="text" autocomplete="street-address" placeholder="Calle y número, Madrid" maxlength="180">
-   <p class="micro">Se conserva en este navegador. Si la dejas vacía, el mapa usa Puerta de Alcalá como origen de demostración, sin atribuírselo a la clínica.</p>
-   <div class="section-head section-destination"><span class="round">03</span><div><b>Destino del vuelo</b><small>Elige un lugar o escribe una dirección</small></div></div>
+   <details class="clinic-config" id="clinicConfig">
+    <summary><span class="clinic-symbol">✚</span><span><strong>Clínica de salida</strong><small id="clinicSummary">Origen de prueba · Puerta de Alcalá</small></span><span class="clinic-edit">Configurar</span></summary>
+    <div class="clinic-fields">
+     <label for="clinicName">Nombre de la clínica</label>
+     <input id="clinicName" type="text" autocomplete="organization" value="Clínica del Doctor Abreu" maxlength="100">
+     <label for="clinicAddress">Dirección de la clínica</label>
+     <input id="clinicAddress" type="text" autocomplete="street-address" placeholder="Calle y número, Madrid" maxlength="180">
+     <p class="micro">Se guarda en este navegador. Para una clínica real, el origen se configurará previamente; los padres solo introducirán su destino.</p>
+    </div>
+   </details>
+   <div class="section-head section-destination"><span class="round">01</span><div><b>¿Adónde volará Pérez?</b><small>Escribe el destino o prueba un lugar de Madrid</small></div></div>
    <div class="destination-chips"><button class="chip active" data-route="plaza" type="button">Plaza Mayor</button><button class="chip" data-route="bernabeu" type="button">Bernabéu</button><button class="chip" data-route="arroyofresno" type="button">Arroyo Fresno</button></div>
-   <label for="address">O indica una dirección (opcional)</label>
+   <label for="address">Dirección del niño</label>
    <input id="address" autocomplete="street-address" placeholder="Calle, número, municipio" maxlength="220">
-   <p class="micro">El origen es de prueba. Para introducir un domicilio hay que habilitar Geocoding; para seguir calles reales, Google Routes. El destino se procesa en Google y el vuelo termina antes de los últimos 180 m.</p>
+   <p class="micro">Para domicilios se necesitan Geocoding y Routes de Google habilitados. El vuelo terminará antes de llegar a la puerta.</p>
    <p class="form-error" id="error" role="alert" hidden></p>
-   <button class="cta gold" id="launch" type="button" disabled>✦ Despegar sobre Madrid</button>
+   <button class="cta gold" id="launch" type="button" disabled>✦ Comenzar vuelo mágico</button>
   </div>
-  <p class="setup-tail">Prototipo independiente. No usa la dirección real de la clínica. La fotogrametría depende de la cobertura de Google y el rendimiento del iPhone.</p>
+  <p class="setup-tail">Experiencia de prueba: las zonas con cobertura 3D muestran edificios reales de Google; otras zonas pueden tener menor detalle.</p>
  </section>
  <div id="balloon" class="balloon" aria-label="Globo aerostático fotográfico de Villa Pérez con Ratón Pérez oficial" role="img" hidden>
   <div class="balloon-flare" aria-hidden="true"></div>
+  <div class="balloon-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <img class="balloon-base" src="../vuelo-cine/assets/globo-premium.svg" alt="" decoding="async" draggable="false">
   <img class="official" src="../perez.png" alt="" decoding="async" draggable="false">
   <img class="balloon-basket-front" src="../vuelo-cine/assets/cesta-delantera.svg" alt="" decoding="async" aria-hidden="true" draggable="false">
@@ -61,16 +64,14 @@
   <div class="overview-tools"><button id="overviewToggle" type="button" aria-pressed="false">🗺 Ver recorrido completo</button><span id="originBadge">Origen de prueba · Puerta de Alcalá</span></div>
   <div class="flight-bar">
    <div class="bar-top"><span id="travelLabel">PUERTA DE ALCALÁ → PLAZA MAYOR</span><span id="progressLabel">0%</span></div>
-   <div class="flight-labels"><span id="routeMode">RUTA PANORÁMICA</span><span id="modelMode" aria-label="El Ratón Pérez está en un globo vectorial integrado en pantalla">GLOBO ILUSTRADO · SIEMPRE VISIBLE</span></div>
+   <div class="flight-labels"><span id="routeMode">PREPARANDO RECORRIDO</span></div>
    <div class="bar-track"><div id="progressFill"></div></div>
    <div class="flight-buttons">
     <button id="pause" type="button">⏸ Pausar</button>
-    <button id="twilight" type="button" aria-pressed="false" title="Cambiar entre fotografía 3D real de día y la ciudad nocturna estilizada de Google">☾ Noche ilustrada</button>
     <button id="fxToggle" type="button" aria-label="Activar o desactivar efectos especiales">✨ Magia ON</button>
     <button id="restart" type="button">↺ Reiniciar</button>
    </div>
   </div>
-  <p class="flight-warning">Edificios fotográficos de Google en modo real · noche estilizada opcional · vuelo ficticio</p>
  </div>
  <div id="arrival" class="arrival" hidden><div class="arrival-card"><span>✦ LA MAGIA HA LLEGADO ✦</span><h2>¡El Ratón Pérez está muy cerca!</h2><p>La cámara ha sobrevolado la ciudad a altura estable y ha rodeado el destino para enseñarte sus calles y edificios. Los últimos metros hasta casa serán un secreto.</p><button class="cta gold" id="again">Repetir el vuelo</button></div></div>
  <div id="systemMessage" class="system-message" role="status" aria-live="polite" hidden></div>
