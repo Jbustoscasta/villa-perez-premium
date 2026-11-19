@@ -122,8 +122,10 @@ export class CinemaNight {
  setNight(on){
   this.target=on?1:0;
   if(this.disabled){this.useFallback();return}
+  // Safari reports 0px when the canvas has [hidden]; reveal before sizing.
+  this.canvas.hidden=false;
   if(!this.gl&&!this.init())return;
-  this.canvas.hidden=false;this.last=0;this.lastDraw=0;this.run();
+  this.resize();this.last=0;this.lastDraw=0;this.run();
  }
  setProgress(v){this.phase=Number.isFinite(v)?Math.max(0,Math.min(1,v)):0}
  run(){if(!this.raf)this.raf=requestAnimationFrame(this.frameBound)}
