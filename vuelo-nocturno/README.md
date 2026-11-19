@@ -1,3 +1,27 @@
+# Vuelo Nocturno v2 · Fotorrealismo Aéreo
+
+La webapp sigue siendo **independiente de Foto con Pérez**. No se ha modificado la aplicación original. Abre la misma demo que v1, con parámetro de caché:
+- https://jbustoscasta.github.io/villa-perez-premium/vuelo-nocturno/?demo=1&v=2.0.0
+
+## Novedades reales implementadas en v2
+
+1. **Mapbox Standard Satellite** ofrece fotos aéreas reales con iluminación virtual `lightPreset: night` y opción de crepúsculo mediante un botón en la pantalla del vuelo. Necesita un token **público** `pk.`, restringido al origen HTTPS; se introduce en la interfaz y NO se almacena, publica ni adjunta a URLs. Sin token continúa el mapa vectorial 3D (no fotorrealista).
+2. **Globo 3D procedimental** en `balloon-3d.mjs` mediante Three.js en una capa WebGL custom de Mapbox: doce paños de envoltura, costuras de latón, cesta real con cuerdas y luces cálidas. El personaje `../perez.png` aparece como una capa texturizada con los píxeles originales, sin reinterpretar su aspecto. Si falla Three.js, queda el SVG original como alternativa.
+3. **Georreferenciación 3D real:** el globo utiliza `MercatorCoordinate.fromLngLat` con altitud variable de 85–120 m sobre la ruta de verdad. La dirección de la cesta sigue el rumbo; bamboleo y balanceo sutiles. Cámara dron cercana y panorámica con actualizaciones más frecuentes.
+4. **Fotografía tratada de noche:** color grading CSS para tonos azul petróleo, reducción de exposición y bruma, y luces Mapbox sobre los edificios donde estén disponibles. **No son fotografías captadas de noche** y no podemos garantizar que cada ventana esté iluminada físicamente; el fotorrealismo depende de la cobertura satélite/3D de Mapbox.
+5. **Controles móviles:** botón `☾ NOCHE` / `☀ CREPÚSCULO`, opciones de calidad sin guardar tokens, seguimiento fluido del globo y la estela en calles reales.
+6. **Privacidad:** la dirección del domicilio se procesa en geocodificación/enrutamiento y luego se evita mostrar el último tramo residencial en el visor infantil. No se guarda en localStorage ni se añade a la URL.
+
+**Limitaciones no resueltas:** no está validada la ejecución visual en un iPhone físico. Mapbox exige token, crédito y condiciones de licencia; para lanzamiento comercial consultar costes, cuotas y compatibilidad con menores. Google 3D Tiles sigue fuera del prototipo. El globo usa geometría 3D real pero no se ha creado un rig 3D del Ratón oficial: la imagen original queda como plano dentro de la cesta.
+
+## Compatibilidad
+
+- Primera opción: iPhone Safari actualizado con WebGL 2 y token Mapbox válido
+- Modo reserva: MapLibre + OpenFreeMap sin token
+- Tests: `node --test vuelo-nocturno/tests/*.test.mjs` y `node --check vuelo-nocturno/flight-app.mjs`.
+
+---
+
 # Vuelo nocturno · prototipo FUNCIONAL independiente
 
 **Directorio:** `/vuelo-nocturno/`. La app de Foto con Pérez, en la raíz del repositorio, y `operacion-diente/` permanecen sin modificaciones.
