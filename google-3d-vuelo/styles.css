@@ -68,10 +68,16 @@ input::placeholder{color:#a9bbb9}
   filter:drop-shadow(0 0 9px rgba(255,198,118,.18));
 }
 .balloon .official{
-  position:absolute;left:52px;top:147px;
-  width:42px;height:36px;object-fit:contain;
-  filter:drop-shadow(0 2px 2px rgba(0,0,0,.4));
+  position:absolute;left:52px;top:126px;z-index:1;
+  width:42px;height:48px;object-fit:contain;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.52));
   animation:passenger 2.7s ease-in-out infinite alternate;
+}
+.balloon-basket-front{
+  position:absolute;inset:0;width:100%;height:100%;z-index:2;
+  object-fit:contain;clip-path:inset(81% 0 0 0);
+  pointer-events:none;
+  animation:bob 2.7s ease-in-out infinite alternate;
 }
 .balloon-flare{
   position:absolute;z-index:-1;left:26px;top:80px;width:100px;height:87px;
@@ -104,13 +110,13 @@ input::placeholder{color:#a9bbb9}
 h1{font-size:30px;margin:8px 0}.lead{font-size:12px;margin-bottom:12px}
 .key-group{padding:11px 14px;margin-bottom:10px}.section-head{margin-bottom:10px}
 .balloon{top:45%;width:117px;height:148px}
-.balloon .official{left:42px;top:118px;width:34px;height:30px}
+.balloon .official{left:41px;top:100px;width:35px;height:42px}
 .chapter{top:100px;left:19px;right:14px;max-width:calc(100% - 33px)}
 .chapter h2{font-size:33px}.chapter p{font-size:12px;max-width:290px}
 .flight-bar{bottom:max(64px,calc(env(safe-area-inset-bottom) + 50px));padding:14px 16px}
 .flight-warning{font-size:9px;bottom:16px}
 }
-@media(prefers-reduced-motion:reduce){.balloon-base,.balloon .official,.dust-layer i,.unloaded-star{animation:none}}
+@media(prefers-reduced-motion:reduce){.balloon-base,.balloon .official,.balloon-basket-front,.dust-layer i,.unloaded-star{animation:none}}
 
 /* Preserve the Google logo/copyright at the lower edge after the map is connected. */
 .setup.ready{top:102px;bottom:auto;max-height:min(70dvh,630px)}
