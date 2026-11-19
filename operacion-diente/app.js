@@ -66,7 +66,7 @@ function setupAutocomplete(field,box,key) {
     debounce=setTimeout(async()=>{
       const controller=new AbortController();ongoing=controller;
       try {
-        const url=new URL(CFG.services.geocoder);url.searchParams.set('q',value);url.searchParams.set('limit','5');url.searchParams.set('lang','es');
+        const url=new URL(CFG.services.geocoder);url.searchParams.set('q',value);url.searchParams.set('limit','5');
         // Sesgo geográfico: sirve para España, sin obligar a vivir junto a la clínica.
         if(validCoordinate(state.origin.coordinate)) {url.searchParams.set('lat',String(state.origin.coordinate[1]));url.searchParams.set('lon',String(state.origin.coordinate[0]));}
         const json=await fetchJson(url.toString(),8500,controller.signal);
@@ -110,7 +110,7 @@ async function calculateRoute(){
     const typed=$('destination-address').value.trim();
     if(typed.length<8) throw new Error('Escribe tu calle, número y localidad.');
     const url=new URL(CFG.services.geocoder);
-    url.searchParams.set('q',typed);url.searchParams.set('limit','5');url.searchParams.set('lang','es');
+    url.searchParams.set('q',typed);url.searchParams.set('limit','5');
     url.searchParams.set('lat',String(state.origin.coordinate[1]));
     url.searchParams.set('lon',String(state.origin.coordinate[0]));
     const found=(await fetchJson(url.toString(),10500)).features||[];
