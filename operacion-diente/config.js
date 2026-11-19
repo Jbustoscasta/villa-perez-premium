@@ -17,6 +17,15 @@ export const APP_CONFIG = {
   defaultCenter: [-3.68845, 40.42016],
   defaultZoom: 12,
   stageDurationSeconds: 105,
+  // When original approved audio files exist, put their same-origin relative paths here.
+  // Never impersonate the official voice using browser speech synthesis.
+  narrationAudio: {
+    // intro: './audio/raton-oficial-intro.mp3',
+    // lights: './audio/raton-oficial-estrellas.mp3',
+    // chase: './audio/raton-oficial-estrella-traviesa.mp3',
+    // portal: './audio/raton-oficial-portal.mp3',
+    // done: './audio/raton-oficial-final.mp3'
+  },
   // En producción las imágenes son las mismas que en la app de Foto con Pérez.
   assets: { facade: '../villa-hero.webp', character: '../perez.png' }
 };
