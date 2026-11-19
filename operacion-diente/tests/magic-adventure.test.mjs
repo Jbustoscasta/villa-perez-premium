@@ -60,6 +60,7 @@ test('three mini games pause, award stars and resume route on real clipped path'
   const director=new MagicAdventure({
     getMap:()=>map,getPath:()=>path,
     onPause:()=>events.push('pause'),onResume:()=>events.push('resume'),
+    onReward:(key)=>events.push('reward:'+key),
     getAudioUrls:()=>({})
   });
   try{
@@ -74,7 +75,7 @@ test('three mini games pause, award stars and resume route on real clipped path'
     assert.equal(director.tick(.71),true);
     director.portalDone();director.finish(true);
     assert.deepEqual([...director.earned],['lights','chase','portal']);
-    assert.deepEqual(events,['pause','resume','pause','resume','pause','resume']);
+    assert.deepEqual(events,['pause','reward:lights','resume','pause','reward:chase','resume','pause','reward:portal','resume']);
     assert.equal(director.tick(.99),false);
     director.reset();
     assert.equal(director.earned.size,0);
