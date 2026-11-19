@@ -33,7 +33,10 @@ const routes={
 const state={
  loaded:false,map:null,Polyline3DElement:null,mapLoading:false,route:'plaza',
  custom:false,points:[],end:null,segment:0,flightToken:0,animationCleanup:null,
- playing:false,paused:false,activeDestination:null,timeout:null,dusk:false,apiKey:''
+ playing:false,paused:false,activeDestination:null,timeout:null,dusk:false,apiKey:'',
+ phase:'idle',progressMs:0,routeDurationMs:72000,orbitDurationMs:22000,
+ orbitElapsedMs:0,frameId:0,lastFrame:0,lastPaint:0,filteredHeading:null,
+ routeDistances:[],routeLength:0,orbitStartHeading:0,orbitView:-1,busy:false
 };
 const R=Earth=>Earth*Math.PI/180;
 function distance(a,b){
@@ -115,7 +118,7 @@ async function connectGoogle(){
    state.Polyline3DElement=Polyline3DElement;
    const map=new Map3DElement({
      center:{lat:START.lat,lng:START.lng,altitude:755},
-     heading:244,tilt:70,range:900,mode:'SATELLITE',
+     heading:244,tilt:73,range:620,mode:'SATELLITE',
      qualityMode:'FIDELITY',defaultUIHidden:true
    });
    state.map=map;
@@ -180,129 +183,225 @@ function makePolyline(points){
   line.id='vpRoute3d';state.map.append(line);
  }catch(e){console.warn('Ruta dibujada no disponible en esta versión de Maps 3D',e)}
 }
-function camera(point,next,index,total){
- // Madrid lies ~600–750m above sea level. Reducing altitude to 300m would
- // push the 3D camera target BELOW the city's ground. We lower the flight
- // visually by reducing camera RANGE, keeping a safe altitude above terrain.
- const bearing=heading(point,next||point);
- const last=index===total-1,first=index<2;
- return {
-   center:{lat:point.lat,lng:point.lng,altitude:755},
-   heading:(bearing+347)%360,
-   tilt:last?68:72,
-   range:last?565:first?830:650
- };
-}
+/*
+ * Google flyCameraTo uses an arcing, parabolic trajectory. On every waypoint
+ * this appeared as an unwanted repeated rise-and-fall. For the route we now
+ * interpolate the map camera directly at a constant RANGE and TILT.
+ * The panorama ends with an orbit on the same fixed camera distance.
+ */
+const CAMERA={altitude:755,range:620,tilt:73};
+const ORBIT_CHAPTERS=[
+ ['Primera vista del destino','Los tejados y las calles aparecen justo bajo el globo.'],
+ ['Desde el otro lado','Giramos suavemente para reconocer los edificios desde otro ángulo.'],
+ ['La ciudad desde el cielo','La cámara rodea el barrio sin perder la altura del vuelo.'],
+ ['La última mirada','Una última panorámica antes de que Pérez continúe en secreto.']
+];
+function clamp01(v){return Math.max(0,Math.min(1,v))}
+function normHeading(v){return (v%360+360)%360}
+function shortestTurn(from,to){return ((to-from+540)%360)-180}
+function getNow(){return performance.now()}
+function stopFrame(){if(state.frameId){cancelAnimationFrame(state.frameId);state.frameId=0}}
 function resetCamera(){
+ if(!state.map)return;
  try{
   state.map.stopCameraAnimation();
-  state.map.center={lat:START.lat,lng:START.lng,altitude:755};
-  state.map.range=900;state.map.heading=244;state.map.tilt=70;
- }catch(e){console.warn('Camera reset not available:',e)}
+  state.map.center={lat:START.lat,lng:START.lng,altitude:CAMERA.altitude};
+  state.map.range=CAMERA.range;
+  state.map.heading=244;
+  state.map.tilt=CAMERA.tilt;
+ }catch(e){console.warn('Camera reset unavailable:',e)}
+}
+function setCamera(point,headingAngle){
+ if(!state.map)return;
+ // Keep height AND distance strictly constant; no keyframed zooms or vertical bobs.
+ try{
+  state.map.center={lat:point.lat,lng:point.lng,altitude:CAMERA.altitude};
+  state.map.heading=normHeading(headingAngle);
+  // Only set these when necessary so Safari does not request needless redraws.
+  if(Math.abs(state.map.range-CAMERA.range)>0.5)state.map.range=CAMERA.range;
+  if(Math.abs(state.map.tilt-CAMERA.tilt)>0.1)state.map.tilt=CAMERA.tilt;
+ }catch(e){
+  console.warn('3D camera could not update:',e);
+  if(!state.cameraFaulted){state.cameraFaulted=true;info('No se ha podido actualizar la cámara 3D. Prueba reiniciar el vuelo.')}
+ }
+}
+function buildRouteLengths(points){
+ state.routeDistances=[0];
+ for(let i=1;i<points.length;i++){
+  const d=Math.max(.1,distance(points[i-1],points[i]));
+  state.routeDistances.push(state.routeDistances[i-1]+d);
+ }
+ state.routeLength=state.routeDistances[state.routeDistances.length-1]||1;
+}
+function catmullRom(a,b,c,d,t){
+ // C1-continuous interpolation for cinematic transitions between waypoints.
+ const v=x=>.5*((2*b[x])+(-a[x]+c[x])*t+
+  (2*a[x]-5*b[x]+4*c[x]-d[x])*t*t+
+  (-a[x]+3*b[x]-3*c[x]+d[x])*t*t*t);
+ return {lat:v('lat'),lng:v('lng')};
+}
+function routePosition(progress){
+ const points=state.points;
+ if(!points?.length)return START;
+ const p=clamp01(progress);
+ if(p===0)return points[0];
+ if(p===1)return points[points.length-1];
+ const meters=p*state.routeLength;
+ let i=0;
+ while(i<points.length-2&&meters>state.routeDistances[i+1])i++;
+ const leg=state.routeDistances[i+1]-state.routeDistances[i]||1;
+ const u=clamp01((meters-state.routeDistances[i])/leg);
+ return catmullRom(points[Math.max(0,i-1)],points[i],points[i+1],points[Math.min(points.length-1,i+2)],u);
 }
 function progress(n,total){
- const pct=Math.round(n/Math.max(1,total)*100);
+ const pct=Math.round(clamp01(n/Math.max(1,total))*100);
  $('progressLabel').textContent=pct+'%';
  $('progressFill').style.width=pct+'%';
 }
 function scene(n,total){
- const names=state.custom?['Despegamos de Villa Pérez','Madrid desde lo alto','Rumbo a tus calles','Luces en el camino','¿Reconoces el barrio?','Últimos metros secretos']:routes[state.route].chapters;
- const chapter=Math.min(names.length-1,Math.floor(n/Math.max(1,total)*names.length));
+ const names=state.custom
+  ?['Despegamos de Madrid','Sobre las avenidas','Rumbo a tus calles','Luces en el camino','¿Reconoces el barrio?','Últimos metros secretos']
+  :routes[state.route].chapters;
+ const chapter=Math.min(names.length-1,Math.floor(clamp01(n/Math.max(1,total))*names.length));
  $('chapterEyebrow').textContent='EN BUSCA DEL DIENTE · CAPÍTULO '+(chapter+1);
  $('chapterTitle').textContent=names[chapter];
  $('chapterDescription').textContent=[
-  'Volamos sobre calles, tejados y edificios reales.',
-  'El globo avanza sobre la geografía de Madrid.',
-  'Mira cómo cambia la perspectiva al girar la cámara.',
-  'Ya se distinguen nuevas avenidas y edificios.',
-  'Muy pronto reconocerás las calles del destino.',
-  'El último tramo será invisible por privacidad.'
+  'Volamos a baja altura sobre calles, tejados y edificios reales.',
+  'La cámara acompaña el globo con una altura constante.',
+  '¿Reconoces los parques y los cruces de tu ciudad?',
+  'Los edificios aparecen cada vez más cerca.',
+  'El Ratón Pérez está reconociendo las últimas calles.',
+  'Por privacidad, los últimos metros serán un secreto.'
  ][chapter];
 }
-function waitAnimation(duration,token){
- return new Promise(resolve=>{
-  let done=false,timeout;
-  function finish(){
-   if(done)return;done=true;clearTimeout(timeout);
-   state.map?.removeEventListener('gmp-animationend',finish);
-   if(state.animationCleanup===finish)state.animationCleanup=null;
-   resolve();
+function renderRoute(t){
+ const p=clamp01(t);
+ const here=routePosition(p);
+ const before=routePosition(Math.max(0,p-.003));
+ const after=routePosition(Math.min(1,p+.003));
+ const desired=heading(before,after);
+ if(state.filteredHeading===null||!Number.isFinite(state.filteredHeading))state.filteredHeading=desired;
+ else state.filteredHeading=normHeading(state.filteredHeading+shortestTurn(state.filteredHeading,desired)*.19);
+ setCamera(here,state.filteredHeading+350);
+ progress(p*.82,1);
+ scene(p,1);
+}
+function renderOrbit(t){
+ const p=clamp01(t);
+ const waypoint=state.points[state.points.length-1];
+ // Four recognizable perspectives, one full turn, no height/range changes.
+ setCamera(waypoint,state.orbitStartHeading+p*360);
+ const view=Math.min(3,Math.floor(p*4));
+ if(view!==state.orbitView){
+  state.orbitView=view;
+  $('chapterEyebrow').textContent='LLEGADA · PANORÁMICA '+(view+1)+' DE 4';
+  $('chapterTitle').textContent=ORBIT_CHAPTERS[view][0];
+  $('chapterDescription').textContent=ORBIT_CHAPTERS[view][1];
+  $('travelLabel').textContent='ÓRBITA FINAL · VISTA '+(view+1)+' DE 4';
+  status('VUELO 3D · VISTAS DEL DESTINO');
+ }
+ progress(.82+.18*p,1);
+}
+function finishFlight(){
+ stopFrame();state.playing=false;state.paused=false;state.phase='done';
+ state.progressMs=state.routeDurationMs;state.orbitElapsedMs=state.orbitDurationMs;
+ progress(1,1);
+ $('balloon').hidden=true;
+ $('flightUI').hidden=true;
+ $('arrival').hidden=false;
+ $('pause').textContent='⏸ Pausar';
+ status('MISIÓN COMPLETADA');
+}
+function renderTick(now){
+ state.frameId=0;
+ if(!state.playing||state.paused)return;
+ let delta=Math.max(0,now-state.lastFrame);
+ // Safari sometimes backgrounds a frame for seconds: prevent skipping the film.
+ delta=Math.min(90,delta);
+ state.lastFrame=now;
+ if(state.phase==='route'){
+  state.progressMs=Math.min(state.routeDurationMs,state.progressMs+delta);
+  if(state.progressMs>=state.routeDurationMs){
+   const end=state.points[state.points.length-1];
+   renderRoute(1);
+   state.phase='orbit';state.orbitElapsedMs=0;state.orbitView=-1;
+   state.orbitStartHeading=normHeading(state.filteredHeading+350);
+   state.lastPaint=0;renderOrbit(0);
+  }else if(now-state.lastPaint>=35){
+   state.lastPaint=now;
+   renderRoute(state.progressMs/state.routeDurationMs);
   }
-  state.animationCleanup=finish;
-  state.map.addEventListener('gmp-animationend',finish,{once:true});
-  timeout=setTimeout(finish,duration+1800);
- });
+ }else if(state.phase==='orbit'){
+  state.orbitElapsedMs=Math.min(state.orbitDurationMs,state.orbitElapsedMs+delta);
+  if(state.orbitElapsedMs>=state.orbitDurationMs){
+   renderOrbit(1);finishFlight();return;
+  }else if(now-state.lastPaint>=35){
+   state.lastPaint=now;
+   renderOrbit(state.orbitElapsedMs/state.orbitDurationMs);
+  }
+ }
+ if(state.playing&&!state.paused)state.frameId=requestAnimationFrame(renderTick);
+}
+function flightStart(){
+ stopFrame();
+ state.progressMs=0;state.orbitElapsedMs=0;state.filteredHeading=null;state.orbitView=-1;
+ state.cameraFaulted=false;
+ state.phase='route';state.playing=true;state.paused=false;
+ state.routeDurationMs=Math.max(44000,Math.min(98000,state.routeLength/22*1000));
+ state.orbitDurationMs=21000;
+ state.lastFrame=getNow();state.lastPaint=0;
+ $('pause').textContent='⏸ Pausar';
+ renderRoute(0);
+ state.frameId=requestAnimationFrame(renderTick);
 }
 async function fly(){
- if(!state.loaded){error('Debes conectar primero Google Maps 3D.');return;}
- if(state.playing)return;
- clearError();$('launch').disabled=true;$('launch').textContent='Buscando destino…';
+ if(!state.loaded){error('Debes conectar primero Google Maps 3D.');return}
+ if(state.playing||state.paused||state.busy)return;
+ state.busy=true;clearError();
+ $('launch').disabled=true;$('launch').textContent='Preparando el destino…';
  let destination;
- try{destination=await getDestination();}
- catch(e){error('No se ha podido localizar el destino: '+(e.message||String(e)));$('launch').textContent='✦ Despegar sobre Madrid';$('launch').disabled=false;return;}
- const token=++state.flightToken;
- state.playing=true;state.paused=false;state.points=destination.points;
- state.activeDestination=destination;
- state.segment=0;
- $('setup').classList.add('off');$('flightUI').hidden=false;
- $('balloon').hidden=false;$('arrival').hidden=true;
+ try{destination=await getDestination()}
+ catch(e){
+  error('No se ha podido localizar el destino: '+(e.message||String(e)));
+  $('launch').textContent='✦ Despegar sobre Madrid';
+  $('launch').disabled=false;state.busy=false;return;
+ }
+ state.busy=false;state.flightToken++;
+ state.points=destination.points;state.activeDestination=destination;
+ state.custom=!!destination.custom;
+ buildRouteLengths(state.points);
+ $('setup').classList.add('off');
+ $('flightUI').hidden=false;$('balloon').hidden=false;$('arrival').hidden=true;
  $('launch').textContent='✦ Despegar sobre Madrid';
  $('launch').disabled=false;
  $('travelLabel').textContent='PUERTA DE ALCALÁ → '+destination.label.toUpperCase();
- makePolyline(destination.points);
- resetCamera();progress(0,destination.points.length-1);scene(0,destination.points.length-1);
- status('VUELO 3D · EN CURSO');
- await flyFrom(0,token);
-}
-async function flyFrom(from,token){
- const list=state.points;
- for(let i=from;i<list.length-1;i++){
-  if(!state.playing||state.paused||token!==state.flightToken)return;
-  state.segment=i;scene(i,list.length-1);progress(i,list.length-1);
-  const endCamera=camera(list[i+1],list[i+2]||list[i+1],i+1,list.length);
-  const d=distance(list[i],list[i+1]);
-  const duration=Math.min(16000,Math.max(6800,d/2.2*1000)); // geographical camera flight, not real travel speed
-  try{
-   const end=waitAnimation(duration,token);
-   await state.map.flyCameraTo({endCamera,durationMillis:duration});
-   await end;
-  }catch(e){
-   console.warn('Google camera flyCameraTo failure',e);
-   if(state.playing&&!state.paused&&token===state.flightToken){
-    try{state.map.center=endCamera.center;state.map.heading=endCamera.heading;state.map.range=endCamera.range;state.map.tilt=endCamera.tilt;}catch{}
-   }
-  }
- }
- if(token===state.flightToken&&state.playing&&!state.paused){
-  progress(list.length-1,list.length-1);
-  state.playing=false;state.paused=false;
-  $('balloon').hidden=true;$('flightUI').hidden=true;$('arrival').hidden=false;
-  status('MISIÓN COMPLETADA');
- }
+ makePolyline(state.points);
+ try{state.map.stopCameraAnimation()}catch(e){}
+ status('VUELO 3D · ALTURA ESTABLE');
+ flightStart();
 }
 function pause(){
- if(!state.playing&&!state.paused)return;
+ if(!state.playing)return;
  if(!state.paused){
-  state.paused=true;state.playing=false;state.flightToken++;
-  try{state.map.stopCameraAnimation()}catch{}
-  state.animationCleanup?.();
+  state.paused=true;stopFrame();
   $('pause').textContent='▶ Continuar';status('VUELO EN PAUSA');
  }else{
-  state.paused=false;state.playing=true;
-  $('pause').textContent='⏸ Pausar';status('VUELO 3D · EN CURSO');
-  const token=++state.flightToken;
-  // Resume from the most recently completed waypoint.
-  flyFrom(state.segment,token);
+  state.paused=false;state.lastFrame=getNow();state.lastPaint=0;
+  $('pause').textContent='⏸ Pausar';
+  status(state.phase==='orbit'?'VISTAS DEL DESTINO':'VUELO 3D · ALTURA ESTABLE');
+  state.frameId=requestAnimationFrame(renderTick);
  }
 }
 function restart(){
- state.flightToken++;state.playing=false;state.paused=false;
- try{state.map?.stopCameraAnimation()}catch{}
- state.animationCleanup?.();
+ stopFrame();
+ state.flightToken++;state.playing=false;state.paused=false;state.busy=false;
+ state.phase='idle';state.progressMs=0;state.orbitElapsedMs=0;
+ state.filteredHeading=null;state.orbitView=-1;
  $('pause').textContent='⏸ Pausar';
  $('balloon').hidden=true;$('flightUI').hidden=true;$('arrival').hidden=true;
- $('setup').classList.remove('off');
- if(state.loaded){resetCamera();status('GOOGLE MAPS · FOTOGRAFÍA 3D');}
+ $('setup').classList.remove('off');$('launch').disabled=!state.loaded;
+ $('travelLabel').textContent='PUERTA DE ALCALÁ → '+(state.activeDestination?.label||routes[state.route].label).toUpperCase();
+ if(state.loaded){resetCamera();status('GOOGLE MAPS · FOTOGRAFÍA 3D')}
  progress(0,1);
 }
 function toggleTwilight(){
@@ -319,7 +418,7 @@ $('restart').addEventListener('click',restart);
 $('again').addEventListener('click',restart);
 $('twilight').addEventListener('click',toggleTwilight);
 document.addEventListener('visibilitychange',()=>{
- if(document.hidden&&state.playing)pause();
+ if(document.hidden&&state.playing&&!state.paused)pause();
 });
 for(let i=0;i<27;i++){
  const el=document.createElement('i');
