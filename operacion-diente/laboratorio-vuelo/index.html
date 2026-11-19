@@ -7,6 +7,7 @@
 <title>Laboratorio de vuelo · Villa Pérez</title>
 <meta name="description" content="Prueba interactiva de vuelo mágico sobre cartografía real de Madrid.">
 <link href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
 :root{--gold:#f6d798;--ink:#06121f;--cream:#fff8eb;--line:rgba(255,235,183,.25)}
@@ -17,7 +18,10 @@
 .starfield{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;opacity:.9}
 .starfield i{display:block;position:absolute;width:2px;height:2px;border-radius:100%;background:#ffefd0;box-shadow:0 0 10px 2px rgba(255,221,143,.8);animation:twinkle 3s ease-in-out infinite alternate}
 @keyframes twinkle{from{opacity:.08;transform:scale(.5)}to{opacity:.86;transform:scale(1.4)}}
-#map{z-index:1}.maplibregl-control-container{z-index:8}.maplibregl-ctrl-attrib{font-size:9px!important;background:rgba(8,15,30,.8)!important;color:#d4e0e1!important}.maplibregl-ctrl-attrib a{color:#e5dbc6!important}
+#map{z-index:1}#map.leaflet-container{background:#142537;font-family:"DM Sans",system-ui,sans-serif}
+#map .leaflet-control-attribution{font-size:9px;background:rgba(8,15,30,.82);color:#e3e5e1}
+#map .leaflet-control-attribution a{color:#ffe0a0}
+.maplibregl-control-container{z-index:8}.maplibregl-ctrl-attrib{font-size:9px!important;background:rgba(8,15,30,.8)!important;color:#d4e0e1!important}.maplibregl-ctrl-attrib a{color:#e5dbc6!important}
 .brand{position:fixed;z-index:12;left:26px;top:max(21px,env(safe-area-inset-top));display:flex;align-items:center;gap:11px;text-shadow:0 2px 16px #09131e}
 .brand .crest{height:36px;width:36px;border:1px solid rgba(245,220,155,.55);border-radius:12px;background:rgba(17,35,45,.6);display:grid;place-items:center;font-size:22px;color:var(--gold)}
 .brand small{display:block;letter-spacing:.24em;font-size:9px;font-weight:700;color:#eac987}.brand strong{display:block;letter-spacing:.09em;font-weight:700;font-size:15px}
@@ -82,8 +86,8 @@
 </div>
 <div class="brand"><span class="crest">✦</span><div><small>LABORATORIO DE VUELO</small><strong>VILLA PÉREZ</strong></div></div>
 <div id="statusPill">CARTOGRAFÍA REAL · DEMO</div>
-<div id="loading">✦<div>Abriendo el mapa de Madrid…</div></div>
-<div id="errorOverlay"><div><h2>El mapa no ha podido abrirse</h2><p>Esta experiencia necesita internet, WebGL y acceso a OpenFreeMap. Comprueba la conexión y prueba Safari actualizado.</p></div></div>
+<div id="loading">✦<div id="loadingMessage">Abriendo el mapa de Madrid…</div></div>
+<div id="errorOverlay"><div><h2>El mapa no ha podido abrirse</h2><p>El mapa principal y su alternativa no pudieron cargar. Comprueba tu conexión o vuelve a abrir la página.</p></div></div>
 <section class="panel" id="welcome" aria-label="Preparar recorrido">
  <div class="ornament">✦ · ✧ · ✦</div>
  <div class="eyebrow">Experiencia experimental · gratis</div>
@@ -221,7 +225,8 @@ function reset(){
 }
 function toggleMode(){
  dark=!dark;el('world').classList.toggle('bright',!dark);el('modeBtn').textContent=dark?'☾ Modo noche':'☀ Modo claro';
- map.setStyle('https://tiles.openfreemap.org/styles/'+(dark?'dark':'liberty'));
+ if(fallbackMap){setRasterStyle();return;}
+ if(map)map.setStyle('https://tiles.openfreemap.org/styles/'+(dark?'dark':'liberty'));
 }
 document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.preset)));
 el('home').addEventListener('input',()=>{el('error').style.display='none';});
@@ -237,17 +242,127 @@ el('modeBtn').addEventListener('click',toggleMode);
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden&&playing&&!paused){paused=true;passed=progress*TIME;cancelAnimationFrame(frame);el('pauseBtn').textContent='▶ Continuar';}
 });
-if(!window.maplibregl){el('loading').classList.add('done');el('errorOverlay').classList.add('show');return;}
+
+/* If WebGL, a font, or a map style fails on iOS, automatically fall back to a
+   raster Leaflet map. The geographical route and flight remain functional. */
+let fallbackMap=null,rasterTiles=null,fallbackStarted=false,mapWatchdog=null;
+const rasterAttribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+function setLoadingMessage(message){const m=el('loadingMessage');if(m)m.textContent=message;}
+function failAllMaps(message){
+  console.error('Villa Pérez flight: unable to load either map engine:',message);
+  el('loading').classList.add('done');
+  el('errorOverlay').classList.add('show');
+  const p=el('errorOverlay').querySelector('p');if(p)p.textContent=message+' Comprueba la conexión y prueba de nuevo.';
+}
+function scriptFromMirrors(urls,index=0){
+  return new Promise((resolve,reject)=>{
+    function next(i){
+      if(i>=urls.length){reject(new Error('No ha cargado la librería alternativa desde los CDN.'));return;}
+      const script=document.createElement('script');
+      const timer=setTimeout(()=>{script.onload=script.onerror=null;script.remove();next(i+1);},6500);
+      script.src=urls[i];script.async=true;
+      script.onload=()=>{clearTimeout(timer);resolve();};
+      script.onerror=()=>{clearTimeout(timer);script.remove();next(i+1);};
+      document.head.appendChild(script);
+    }
+    next(index);
+  });
+}
+function setRasterStyle(){
+  if(!fallbackMap||!window.L)return;
+  if(rasterTiles){fallbackMap.removeLayer(rasterTiles);rasterTiles=null;}
+  const url=dark?'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png':'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+  let failed=0;
+  rasterTiles=L.tileLayer(url,{maxZoom:19,subdomains:dark?'abcd':'abc',attribution:rasterAttribution,crossOrigin:true}).addTo(fallbackMap);
+  rasterTiles.on('tileerror',()=>{
+    if(++failed>=4&&dark&&fallbackMap){
+      failed=-999;console.warn('Night tiles unavailable; switching to OSM standard raster');
+      fallbackMap.removeLayer(rasterTiles);
+      rasterTiles=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+        maxZoom:19,attribution:'&copy; OpenStreetMap contributors'
+      }).addTo(fallbackMap);
+      el('world').classList.add('bright');
+    }
+  });
+}
+async function recoverMap(reason){
+ if(fallbackStarted||loaded)return;
+ fallbackStarted=true;
+ clearTimeout(mapWatchdog);
+ console.warn('Villa Pérez: switching to 2D raster map because:',reason);
+ setLoadingMessage('Activando mapa alternativo para Safari…');
+ try{
+   if(map&&typeof map.remove==='function'){try{map.remove();}catch(e){console.warn('MapLibre cleanup',e)}}
+   el('map').innerHTML='';
+   if(!window.L)await scriptFromMirrors([
+     'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js',
+     'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+     'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js'
+   ]);
+   if(!window.L)throw new Error('La librería Leaflet no está disponible.');
+   fallbackMap=L.map('map',{zoomControl:false,attributionControl:true,zoomSnap:.25,preferCanvas:true});
+   setRasterStyle();
+   const toLatLng=p=>[p[1],p[0]];
+   const initialRoute=L.polyline(points.map(toLatLng),{color:'#d8c49c',weight:3,dashArray:'4 10',opacity:.88}).addTo(fallbackMap);
+   const completedRoute=L.polyline([toLatLng(ORIGIN),toLatLng(ORIGIN)],{color:'#ffe6a6',weight:6,opacity:.98}).addTo(fallbackMap);
+   const wrapLine=line=>({setData(feature){let coords=feature?.geometry?.coordinates;if(Array.isArray(coords)&&coords.length>0)line.setLatLngs(coords.map(toLatLng));}});
+   const leafletBalloon=L.marker(toLatLng(ORIGIN),{icon:L.divIcon({html:genBalloon().outerHTML,className:'',iconSize:[95,135],iconAnchor:[47,135]})}).addTo(fallbackMap);
+   const leafletEnd=L.marker(toLatLng(active.end),{icon:L.divIcon({html:'<div class="pin">⌂</div>',className:'',iconSize:[30,30],iconAnchor:[15,15]})}).addTo(fallbackMap);
+   balloonMarker={setLngLat(p){leafletBalloon.setLatLng(toLatLng(p));}};
+   endMarker={setLngLat(p){leafletEnd.setLatLng(toLatLng(p));}};
+   map={
+     getSource(id){if(id==='flight-route')return wrapLine(initialRoute);if(id==='flight-passed')return wrapLine(completedRoute);return null;},
+     jumpTo(o){fallbackMap.setView(toLatLng(o.center),Math.min(17.3,Math.max(10,o.zoom||15)),{animate:false});},
+     fitBounds(b,o={}){fallbackMap.fitBounds([toLatLng(b[0]),toLatLng(b[1])],{padding:[30,110],maxZoom:o.maxZoom||13.4,animate:true,duration:.8});},
+     setStyle(){setRasterStyle();}
+   };
+   loaded=true;
+   el('loading').classList.add('done');el('errorOverlay').classList.remove('show');
+   el('statusPill').textContent='MAPA REAL 2D · MODO COMPATIBLE';
+   el('statusPill').title='Modo compatible. Los edificios 3D solo aparecen cuando funciona WebGL.';
+   map.fitBounds([ORIGIN,active.end],{maxZoom:13.4});
+ }catch(err){
+   console.error(err);
+   failAllMaps('La librería de mapas alternativa tampoco ha podido iniciarse.');
+ }
+}
 points=routePoints(active);
-try{
- map=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/dark',center:ORIGIN,zoom:12.5,pitch:55,bearing:-12,canvasContextAttributes:{antialias:true},attributionControl:true});
- map.on('style.load',()=>{install();if(!loaded){loaded=true;el('loading').classList.add('done');map.fitBounds([ORIGIN,active.end],{padding:{left:80,right:80,top:90,bottom:260},maxZoom:13.4,duration:1100});}});
- const b=genBalloon();
- balloonMarker=new maplibregl.Marker({element:b,anchor:'bottom',offset:[0,-4]}).setLngLat(ORIGIN).addTo(map);
- const end=document.createElement('div');end.className='pin';end.textContent='⌂';
- endMarker=new maplibregl.Marker({element:end,anchor:'center'}).setLngLat(active.end).addTo(map);
- setTimeout(()=>{if(!loaded){el('loading').classList.add('done');el('errorOverlay').classList.add('show');}},16000);
- }catch(e){console.error(e);el('loading').classList.add('done');el('errorOverlay').classList.add('show');}
+mapWatchdog=setTimeout(()=>recoverMap('tiempo de inicialización agotado'),10500);
+if(!window.maplibregl){
+ recoverMap('MapLibre no disponible (CDN o WebGL)');
+} else {
+ try{
+   if(typeof maplibregl.supported==='function'&&!maplibregl.supported({failIfMajorPerformanceCaveat:false})){
+     recoverMap('WebGL no compatible en este dispositivo');
+   }else{
+     map=new maplibregl.Map({
+       container:'map',style:'https://tiles.openfreemap.org/styles/dark',
+       center:ORIGIN,zoom:12.5,pitch:55,bearing:-12,
+       canvasContextAttributes:{antialias:true},attributionControl:true
+     });
+     map.on('style.load',()=>{
+       if(fallbackStarted)return;
+       try{
+         install();
+         if(!loaded){
+           loaded=true;clearTimeout(mapWatchdog);el('loading').classList.add('done');
+           map.fitBounds([ORIGIN,active.end],{padding:{left:80,right:80,top:90,bottom:260},maxZoom:13.4,duration:1100});
+         }
+       }catch(e){console.error('Map layer installation failed',e);recoverMap('fallo de capas del mapa');}
+     });
+     map.on('error',e=>{
+       const message=String(e?.error?.message||e?.message||'error de mapa');
+       console.warn('MapLibre map diagnostic:',message);
+       if(!loaded&&(/style|fetch|network|failed|404|403/i.test(message)))recoverMap(message);
+     });
+     map.on('webglcontextlost',()=>recoverMap('WebGL context lost'));
+     balloonMarker=new maplibregl.Marker({element:genBalloon(),anchor:'bottom',offset:[0,-4]})
+       .setLngLat(ORIGIN).addTo(map);
+     const end=document.createElement('div');end.className='pin';end.textContent='⌂';
+     endMarker=new maplibregl.Marker({element:end,anchor:'center'}).setLngLat(active.end).addTo(map);
+   }
+ }catch(e){console.error('MapLibre constructor error',e);recoverMap(String(e?.message||e));}
+}
 })();
 </script>
 </body></html>
