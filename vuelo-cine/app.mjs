@@ -320,12 +320,18 @@ function activateRescue(reason=''){
  }
 }
 function loadMap(){
- // Always keep the Start button interactive, even while optional maps load.
+ if(ctx.rescue||ctx.phase!=='idle')return;
+ // Give the cinematic 3D engine a short chance to load before reverting
+ // to the permanently functional 2.5D Safari rescue renderer.
  $('start').disabled=false;
- status('PREPARANDO VUELO · PUEDES DESPEGAR');
+ status('PREPARANDO EDIFICIOS 3D · PUEDES DESPEGAR');
  if(!window.maplibregl){
-  // A blocked CDN must never block the full app or its main button.
-  activateRescue('MapLibre external JS not loaded');return;
+  if(ctx.mapRetry++<12){
+   setTimeout(loadMap,220);
+   return;
+  }
+  activateRescue('MapLibre external JS not loaded after retry');
+  return;
  }
  try{
   if(!window.maplibregl.supported()){activateRescue('WebGL unsupported');return}
