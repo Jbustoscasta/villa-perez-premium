@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+  <meta name="theme-color" content="#071c2c">
+  <meta name="description" content="Un globo mágico sobrevolando calles auténticas. Prototipo de vuelo nocturno de Villa Pérez.">
+  <title>Vuelo nocturno · Operación Diente Perdido</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="./styles.css?v=1.0.0">
+</head>
+<body>
+  <div id="world">
+    <div id="map" role="application" aria-label="Vista aérea tridimensional de Madrid sobre cartografía real"></div>
+    <div class="night-tone" aria-hidden="true"></div>
+    <div class="horizon" aria-hidden="true"><span class="moon"></span><i class="star s1"></i><i class="star s2"></i><i class="star s3"></i><i class="star s4"></i></div>
+    <canvas id="trail" aria-hidden="true"></canvas>
+    <div id="balloon" class="balloon hidden" aria-label="Globo aerostático mágico del Ratón Pérez" role="img">
+      <div class="balloon-bob">
+        <svg class="balloon-art" viewBox="0 0 218 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <radialGradient id="env" cx=".27" cy=".30" r=".83"><stop offset="0" stop-color="#fff3cf"/><stop offset=".33" stop-color="#d9b980"/><stop offset=".68" stop-color="#598d8d"/><stop offset="1" stop-color="#15374b"/></radialGradient>
+            <linearGradient id="basket" x1="0" x2="1"><stop stop-color="#624222"/><stop offset=".45" stop-color="#be915a"/><stop offset="1" stop-color="#553b22"/></linearGradient>
+            <radialGradient id="lamp"><stop stop-color="#fff9d9"/><stop offset=".35" stop-color="#ffd17e"/><stop offset="1" stop-color="#efa456" stop-opacity="0"/></radialGradient>
+            <filter id="glow"><feGaussianBlur stdDeviation="5"/></filter>
+          </defs>
+          <ellipse cx="109" cy="112" rx="91" ry="109" fill="url(#env)" stroke="#f7d998" stroke-width="3"/>
+          <path d="M109 3C76 7 52 49 53 108s19 100 56 112M109 3c33 4 56 46 56 105s-19 100-56 112" stroke="#ffe6af" stroke-opacity=".75" stroke-width="2.4" fill="none"/>
+          <path d="M20 92Q109 142 198 92M25 133Q109 161 193 133" fill="none" stroke="#edcf89" stroke-opacity=".75" stroke-width="2.3"/>
+          <path d="M26 58Q109 98 191 58" fill="none" stroke="#1e5d63" stroke-width="13" stroke-opacity=".72"/>
+          <path d="M45 174Q109 208 174 174" fill="none" stroke="#e3c18d" stroke-width="9" stroke-opacity=".6"/>
+          <ellipse cx="109" cy="132" rx="31" ry="32" fill="#113b4b" stroke="#ffebbb" stroke-width="5"/>
+          <path d="M98 117Q91 115 94 130L99 147Q105 153 109 142Q113 153 119 147L124 130Q127 115 119 117Q110 122 109 121Q108 122 98 117Z" fill="#fff2c9"/>
+          <g fill="#fce5ae" opacity=".96"><path d="M43 112l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><path d="M177 112l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></g>
+          <path d="M54 197L77 270M164 197L141 270M89 216L92 267M129 216L126 267" stroke="#eed8a0" stroke-width="3"/>
+          <ellipse cx="109" cy="261" rx="56" ry="18" fill="#ffd77c" opacity=".75" filter="url(#glow)"/>
+          <ellipse cx="109" cy="262" rx="49" ry="15" fill="#5f4b32" stroke="#f6d58a" stroke-width="4"/>
+          <path d="M60 266Q60 299 79 307Q109 317 139 307Q158 299 158 266Z" fill="url(#basket)" stroke="#ffdc95" stroke-width="3"/>
+          <path d="M66 278Q109 298 152 278M70 292Q109 311 148 292" fill="none" stroke="#e5b371" stroke-width="2" opacity=".85"/>
+          <path d="M85 267V306M109 271V311M133 267V306" stroke="#633e22" stroke-width="1.8" opacity=".75"/>
+          <ellipse cx="109" cy="266" rx="51" ry="11" fill="none" stroke="#ffd58b" stroke-width="4"/>
+          <circle cx="52" cy="259" r="17" fill="url(#lamp)"/><circle cx="166" cy="259" r="17" fill="url(#lamp)"/>
+          <path d="M109 5L109 -4M106 -4L115 -4" stroke="#f6cf76" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <img class="official-raton" src="../perez.png" alt="" draggable="false">
+      </div>
+      <div class="balloon-glow"></div>
+    </div>
+    <div class="topbar">
+      <div class="wordmark"><span class="toothmark">✦</span><div><small>VILLA PÉREZ PRESENTA</small><strong>Vuelo nocturno</strong></div></div>
+      <div id="mode-pill" class="mode-pill">3D · MAPA REAL</div>
+    </div>
+    <div id="setup" class="setup-panel glass" role="region" aria-label="Preparar un vuelo">
+      <div class="setup-star" aria-hidden="true">✦</div>
+      <div class="eyebrow">OPERACIÓN DIENTE PERDIDO</div>
+      <h1>Un viaje por<br><em>tu ciudad de verdad</em></h1>
+      <p>El Ratón Pérez despega en su globo. Elige un destino y contempla la ciudad desde el cielo.</p>
+      <div class="origin-row"><span class="origin-dot">⌖</span><span><small>SALIDA · CLÍNICA DE PRUEBA</small><strong>Puerta de Alcalá, Madrid</strong></span></div>
+      <label for="address">Dirección de destino</label>
+      <div class="search-wrap"><span class="search-symbol">⌕</span><input id="address" type="search" autocomplete="off" autocapitalize="words" placeholder="Escribe calle, número y ciudad" aria-controls="suggestions" aria-expanded="false"><span class="search-spinner hidden" id="search-spinner"></span></div>
+      <div id="suggestions" class="suggestions hidden" role="listbox"></div>
+      <div id="input-error" class="field-error hidden" role="alert"></div>
+      <button id="fly" class="primary-btn" disabled>Despegar hacia ese destino <span>↗</span></button>
+      <button id="quick-demo" class="demo-btn">▶ Ver vuelo de Madrid sin poner dirección</button>
+      <div class="setup-foot">La demo usa una clínica de prueba. La ruta real depende del servicio cartográfico. En viajes personalizados, ocultamos el último tramo del domicilio.</div>
+      <details class="provider-settings"><summary><span>✧</span> Mejorar realismo con satélite 3D</summary>
+        <p>Para una vista aérea fotográfica similar a HELLO se necesita un token público de <b>Mapbox</b>. Se usa solo en tu navegador para cargar <b>Standard Satellite · Night</b>.</p>
+        <label for="mapbox-key">Token público Mapbox (empieza por pk.)</label>
+        <input type="text" id="mapbox-key" placeholder="pk.eyJ..." spellcheck="false" autocomplete="off">
+        <button id="apply-provider" class="provider-btn">Activar satélite fotorrealista 3D</button>
+        <small id="provider-info" class="provider-info">Sin token se utiliza una vista real 3D de edificios y calles, no imágenes satelitales.</small>
+      </details>
+    </div>
+    <div id="loading" class="loading glass hidden" role="status"><span class="loading-orb"></span><strong id="loading-title">Preparando el vuelo…</strong><small id="loading-subtitle">Buscando las calles del camino</small></div>
+    <div id="flight-ui" class="flight-ui hidden">
+      <div class="flight-actions">
+        <button id="back" aria-label="Volver a preparar otra ruta" title="Nueva ruta">←</button>
+        <button id="view" aria-label="Cambiar a vista panorámica" title="Cambiar perspectiva">◈ <small id="view-label">SEGUIR</small></button>
+      </div>
+      <div id="flight-banner" class="flight-banner glass"><span>✦</span><div><small>OPERACIÓN DIENTE PERDIDO</small><strong id="flight-caption">¡El globo está en camino!</strong></div></div>
+      <div class="flight-bottom glass">
+        <div class="progress-line"><div class="flight-title"><strong>Vuelo del Ratón Pérez</strong><small id="flight-status">Sobrevolando Madrid</small></div><strong id="percent">0 %</strong></div>
+        <div class="track"><div id="track-fill"></div><i class="track-star">✦</i></div>
+        <div class="journey-info"><span id="distance">— km</span><span id="route-indicator">Ruta real a pie · vuelo ficticio</span></div>
+        <div class="flight-controls"><button id="pause" class="control-main">Pausar <span>Ⅱ</span></button><button id="restart" class="control-minor">Repetir ↺</button><button id="finish" class="control-minor">Ver llegada →</button></div>
+      </div>
+    </div>
+    <div id="arrival" class="arrival hidden glass" role="status"><div class="arrival-constellation">✧ ✦ ✧</div><div class="arrival-house">⌂</div><h2>¡Estoy muy cerca!</h2><p>Los últimos metros son secretos. El globo ha seguido calles reales de tu ciudad.</p><button id="again" class="primary-btn">Volver a volar ✦</button></div>
+    <div class="map-attribution-note" id="map-warning">Modo 3D: edificios cartográficos · no es fotografía aérea</div>
+  </div>
+  <script type="module" src="./flight-app.mjs?v=1.0.0"></script>
+</body>
+</html>
