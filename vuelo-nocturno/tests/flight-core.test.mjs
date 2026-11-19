@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {START,DEMO_END,pathFromPoints,along,heading,meters,shortenForHome,easing,sanitizePhoton,displayDistance,samplePath} from '../flight-core.mjs';
+test('real-world Madrid coordinates are valid and distinct',()=>{assert.ok(meters(START.coordinates,DEMO_END.coordinates)>1000)});
+test('distance interpolator follows geographic path vertices',()=>{const p=pathFromPoints([[-3.7,40.4],[-3.7,40.41],[-3.69,40.41]]);assert.deepEqual(along(p,0),[-3.7,40.4]);assert.deepEqual(along(p,1),[-3.69,40.41]);assert.ok(along(p,.75)[0]>-3.7);assert.equal(samplePath(p,10).length,11)});
+test('flight heading is true tangent to path',()=>{const p=pathFromPoints([[0,0],[0,.02],[.02,.02]]);assert.ok(heading(p,.2)<5);assert.ok(heading(p,.8)>85&&heading(p,.8)<95)});
+test('private home coordinates are removed from child-facing path',()=>{const p=pathFromPoints([[-3.7,40.4],[-3.69,40.41],[-3.68,40.42]]);const q=shortenForHome(p);assert.ok(q.length<p.length-100);assert.notDeepEqual(q.points.at(-1),p.points.at(-1));});
+test('very short path is not artificially clipped',()=>{const p=pathFromPoints([[0,0],[0,.001]]);assert.equal(shortenForHome(p),p)});
+test('smooth cinematic progress is finite and bounded',()=>{assert.equal(easing(0),0);assert.equal(easing(1),1);assert.equal(easing(-5),0);assert.equal(easing(8),1);assert.ok(easing(.35)>.2)});
+test('photon geocoder parses only valid point geometries',()=>{assert.equal(sanitizePhoton({geometry:{type:'LineString',coordinates:[]}}),null);assert.deepEqual(sanitizePhoton({geometry:{type:'Point',coordinates:[-3.7,40.4]},properties:{name:'Madrid'}}).coordinates,[-3.7,40.4])});
+test('distance is readable in Spanish',()=>{assert.equal(displayDistance(1200),'1,2 km')});
