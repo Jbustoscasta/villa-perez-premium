@@ -86,8 +86,8 @@ export class RescueMap{
    img.alt='';img.decoding='async';img.loading='eager';img.draggable=false;
    img.className='rescue-tile';img.style.position='absolute';img.style.width='256px';img.style.height='256px';
    img.src='https://tile.openstreetmap.org/'+z+'/'+wrap+'/'+y+'.png';
-   img.onload=()=>{this.hasTiles=true;this.caption.textContent='© OpenStreetMap contributors · calles reales (vista compatible)'};
-   img.onerror=()=>{this.tileFailures++;img.style.opacity='0'};
+   img.onload=()=>{this.hasTiles=true;this.caption.textContent='© OpenStreetMap contributors · calles reales (vista compatible)';this.schedule()};
+   img.onerror=()=>{this.tileFailures++;img.style.opacity='0';this.schedule()};
    this.images.set(key,img);this.tiles.append(img);
   }
   return img;
