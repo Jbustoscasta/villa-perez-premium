@@ -43,22 +43,35 @@ export function formatDistance(meters) {
 export function escapeXml(input) {
   return String(input ?? '').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
 }
-/** Svg postcard deliberately avoids home coordinates, addresses and map screenshots. */
+/** Points on the ACTUAL walked route behind the current position, to render magical sparks on the map. */
+export function trailParticles(path, progress, count=13, spacing=.0035) {
+  if (!path?.points || !Number.isFinite(path.total) || path.total <= 0) return {type:'FeatureCollection',features:[]};
+  const fraction = Math.min(1,Math.max(0,Number(progress)||0));
+  const features=[];
+  for(let i=0;i<count;i++) {
+    const f = fraction - i*spacing;
+    if (f < 0 || (fraction===0 && i===0)) continue;
+    features.push({type:'Feature',properties:{size:Math.max(2,7-i*.34),alpha:Math.max(.12,.95-i*.058)},geometry:{type:'Point',coordinates:pointAt(path,f).coordinate}});
+  }
+  return {type:'FeatureCollection',features};
+}
+/** Compass bearing following the route's true geometry; bearing is for map camera only. */
+export function routeBearing(path,progress) {
+  if(!path?.points)return 0;
+  const f=Math.max(0,Math.min(1,Number(progress)||0));
+  const a=pointAt(path,Math.max(0,f-.002)).coordinate;
+  const b=pointAt(path,Math.min(1,f+.002)).coordinate;
+  const lat=(a[1]+b[1])/2*Math.PI/180;
+  const dx=(b[0]-a[0])*Math.cos(lat),dy=b[1]-a[1];
+  return Math.atan2(dx,dy)*180/Math.PI;
+}
+/** SVG postcard uses a NON-GEOGRAPHIC, generic fantasy path: never embed home street geometry. */
 export function postcardSvg({clinicName='Tu clínica dental',distanceMeters=0, date=new Date(), points=[]}={}) {
   const shortClinic=escapeXml(String(clinicName).slice(0,60));
   const d= date instanceof Date && Number.isFinite(date.getTime()) ? date : new Date();
   const dateStr=escapeXml(new Intl.DateTimeFormat('es-ES',{dateStyle:'long'}).format(d));
   const dist = escapeXml(formatDistance(distanceMeters));
-  let routePath='M 124 832 C 224 720 370 805 475 640 S 660 504 748 385 S 820 235 940 190';
-  if (points.length>=2 && points.every(validCoordinate)) {
-    const xs=points.map(p=>p[0]), ys=points.map(p=>p[1]);
-    const minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys);
-    if (maxX>minX && maxY>minY) {
-      const sx=800/(maxX-minX), sy=610/(maxY-minY), scale=Math.min(sx,sy);
-      const offsetX=124+(800-(maxX-minX)*scale)/2, offsetY=172+(610-(maxY-minY)*scale)/2;
-      const sampled=points.filter((_,i)=>i%Math.max(1,Math.floor(points.length/160))===0||i===points.length-1);
-      routePath=sampled.map((p,i)=>`${i?'L':'M'} ${(offsetX+(p[0]-minX)*scale).toFixed(1)} ${(offsetY+(maxY-p[1])*scale).toFixed(1)}`).join(' ');
-    }
-  }
+  // Never project actual route geometry into a shareable souvenir. Reveals home area even without labels.
+  const routePath='M 124 832 C 246 690 325 866 452 674 S 658 538 758 429 S 823 262 940 190';
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350"><defs><linearGradient id="night" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0b2936"/><stop offset="1" stop-color="#224b4c"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="9"/></filter></defs><rect width="1080" height="1350" fill="url(#night)"/><rect x="34" y="34" width="1012" height="1282" rx="36" fill="none" stroke="#dcbf7f" stroke-width="6"/><g fill="#dfca8a">${Array.from({length:34},(_,i)=>`<circle cx="${68+(i*79)%944}" cy="${85+(i*137)%1070}" r="${i%4?2:3}" opacity=".65"/>`).join('')}</g><text x="540" y="120" text-anchor="middle" font-family="Georgia,serif" font-size="33" fill="#d9c38c" letter-spacing="4">VILLA PÉREZ</text><text x="540" y="182" text-anchor="middle" font-family="Georgia,serif" font-size="59" font-weight="bold" fill="#fff0c8">¡Misión completada!</text><text x="540" y="246" text-anchor="middle" font-family="Arial,sans-serif" font-size="27" fill="#e8e4cd">El viaje mágico del Ratón Pérez</text><path d="${routePath}" fill="none" stroke="#f2cf75" opacity=".35" stroke-width="31" filter="url(#glow)"/><path d="${routePath}" fill="none" stroke="#f2d791" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 21" stroke-width="10"/><circle cx="124" cy="832" r="23" fill="#f5d98e"/><circle cx="940" cy="190" r="23" fill="#f5d98e"/><rect x="75" y="1000" width="930" height="200" rx="28" fill="#fff0d1"/><text x="540" y="1060" text-anchor="middle" font-family="Georgia,serif" font-size="32" fill="#24464a">Desde ${shortClinic}</text><text x="540" y="1110" text-anchor="middle" font-family="Arial,sans-serif" font-size="28" fill="#35515a">hasta tu casa · ${dist}</text><text x="540" y="1156" text-anchor="middle" font-family="Arial,sans-serif" font-size="23" fill="#586363">${dateStr}</text><text x="540" y="1258" text-anchor="middle" font-family="Arial,sans-serif" font-size="25" fill="#dfc995">Un recuerdo de Ilusiono · Sin dirección de casa</text></svg>`;
 }
