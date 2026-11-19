@@ -117,7 +117,7 @@ function addLayerSafe(layer,before){
  try{ctx.map.addLayer(layer,before)}catch(e){console.warn('Layer unavailable',layer.id,e)}
 }
 function mapLayerSetup(){
- const map=ctx.map;if(!map||!map.isStyleLoaded())return;
+ const map=ctx.map;if(!map||!map.getStyle()?.sources)return;
  const source=getSourceId(map);
  const firstLabel=map.getStyle().layers?.find(l=>l.type==='symbol')?.id;
  const dark=!ctx.day;
@@ -185,12 +185,12 @@ function mapLayerSetup(){
  refreshRouteLayers();scheduleWindows();
 }
 function setCollection(id,feature){
- if(!ctx.map?.isStyleLoaded())return;
+ if(!ctx.map)return;
  const source=ctx.map.getSource(id);
  if(source)source.setData({type:'FeatureCollection',features:feature?[feature]:[]});
 }
 function setPoints(id,coords){
- if(!ctx.map?.isStyleLoaded())return;
+ if(!ctx.map)return;
  const source=ctx.map.getSource(id);if(!source)return;
  source.setData({type:'FeatureCollection',features:coords.map(c=>point(c[0],c[1]))});
 }
@@ -217,7 +217,7 @@ function scheduleWindows(){
  clearTimeout(ctx.nightWindowTimer);
  if(ctx.day)return;
  ctx.nightWindowTimer=setTimeout(()=>{
-  if(!ctx.map||!ctx.map.isStyleLoaded()||ctx.map.getZoom()<14.8){setPoints('vp-windows',[]);return}
+  if(!ctx.map||!ctx.map.getStyle()?.sources||ctx.map.getZoom()<14.8){setPoints('vp-windows',[]);return}
   try{
    const b=ctx.map.getBounds();const source=getSourceId(ctx.map);
    const features=ctx.map.querySourceFeatures(source,{sourceLayer:'building'});
