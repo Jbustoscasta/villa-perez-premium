@@ -28,3 +28,16 @@ body.day .starscape{opacity:0}body.day .mood-haze{opacity:.15}body.day .setup{ba
 .rescue-credits{position:absolute;right:5px;bottom:max(3px,env(safe-area-inset-bottom));z-index:7;background:rgba(9,26,43,.74);color:#e2dcd3;font-size:9px;padding:3px 6px;border-radius:4px;pointer-events:none}
 .rescue-map .city-pin{min-width:100px}
 .rescue-map .balloon{transform:none;will-change:left,top}
+
+/* v2 cinema city identity – mapped streets with architectural scenery. */
+.city-status{display:inline-flex;max-width:100%;align-items:center;gap:7px;
+ margin-top:12px;padding:8px 11px;border-radius:10px;
+ background:linear-gradient(90deg,rgba(238,177,95,.14),rgba(67,133,137,.12));
+ border:1px solid rgba(237,202,149,.32);color:#ffe1ad;
+ font-size:10px;font-weight:750;letter-spacing:.025em}
+.city-status::before{content:'◆';color:#f3c77d;font-size:10px}
+body:not(.day) #map .maplibregl-canvas{filter:contrast(1.075) saturate(1.18) brightness(1.08)}
+/* atmospheric architecture glows, not an opaque mask */
+.mood-haze{background:linear-gradient(180deg,rgba(9,18,42,.09),transparent 28%,transparent 75%,rgba(10,19,41,.12)),
+ radial-gradient(ellipse at 50% 38%,rgba(232,157,82,.055),transparent 47%)}
+@media(max-width:700px){.city-status{font-size:9px;margin-top:9px;padding:7px 9px}}
