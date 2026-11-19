@@ -227,3 +227,44 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
  .balloon .official{left:41%;top:65%;width:21%;height:22%}
  .flight-labels #modelMode{font-size:8px;padding:5px}
 }
+
+/* Villa Pérez v5 — film-first, photorealistic daylight only, no night filters. */
+#mapHost{filter:none!important}
+.clinic-config{margin:3px 0 17px;border:1px solid rgba(250,223,173,.28);background:rgba(250,228,174,.045);border-radius:13px}
+.clinic-config summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:12px 13px;touch-action:manipulation}
+.clinic-config summary::-webkit-details-marker{display:none}
+.clinic-config summary>span:nth-child(2){flex:1;min-width:0}
+.clinic-config summary strong,.clinic-config summary small{display:block}
+.clinic-config summary strong{font-size:12px;color:#f7dfb8}
+.clinic-config summary small{font-size:10px;color:#b6c7c9;margin-top:2px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clinic-config .clinic-symbol{display:grid;place-items:center;flex:none;width:31px;height:31px;border:1px solid #cfb178;border-radius:10px;color:#fee2aa;font-size:18px}
+.clinic-config .clinic-edit{font-size:10px;color:#f7d09a;font-weight:750}
+.clinic-fields{padding:0 13px 12px}
+.clinic-config[open]{border-color:#f2ca89}
+.setup.ready{max-height:min(68dvh,610px)}
+.setup.ready .clinic-config{margin-bottom:8px}
+.setup.ready .section-destination{margin-top:8px;padding-top:9px}
+.flight-labels{margin:0 0 7px!important}
+.flight-labels span{font-size:9px;color:#cfe2db}
+.flight-buttons{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.flight-bar{padding:13px 15px!important}
+.chapter{max-width:50vw!important}
+.chapter h2{font-size:clamp(20px,3.3vw,30px)!important}
+.balloon-sparkles{position:absolute;z-index:0;left:2%;right:0;top:30%;bottom:2%;pointer-events:none}
+.balloon-sparkles i{position:absolute;left:22%;top:62%;border-radius:50%;width:5px;height:5px;background:#fff5cb;box-shadow:0 0 8px #ffca72,0 0 17px #ffb34b;animation:magicalEmbers 2.9s linear infinite}
+.balloon-sparkles i:nth-child(2){left:10%;top:72%;animation-delay:-.5s;width:3px;height:3px}
+.balloon-sparkles i:nth-child(3){left:37%;top:84%;animation-delay:-1.3s;width:4px;height:4px}
+.balloon-sparkles i:nth-child(4){left:6%;top:50%;animation-delay:-2s;width:2px;height:2px}
+.balloon-sparkles i:nth-child(5){left:43%;top:66%;animation-delay:-2.6s;width:2px;height:2px}
+.balloon-sparkles i:nth-child(6){left:25%;top:45%;animation-delay:-.9s;width:3px;height:3px}
+@keyframes magicalEmbers{0%{opacity:0;transform:translate3d(25px,-4px,0) scale(.55)}18%{opacity:1}85%{opacity:.65}100%{opacity:0;transform:translate3d(-49px,32px,0) scale(.1)}}
+.dust-layer{opacity:.24}
+.dust-layer.fx-off,.balloon.fx-off .balloon-sparkles{opacity:0!important}
+@media(max-width:700px){
+ .setup.ready{max-height:55dvh;top:max(78px,calc(env(safe-area-inset-top) + 60px))}
+ .chapter{top:max(99px,calc(env(safe-area-inset-top) + 74px))!important}
+ .chapter h2{font-size:17px!important}
+ .flight-buttons button{font-size:10px}
+ .flight-labels span{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){.balloon-sparkles i{animation:none}}
