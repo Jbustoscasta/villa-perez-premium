@@ -49,3 +49,7 @@
 .welcome-sound{appearance:none;display:block;margin:9px auto 2px;border:1px solid #edcb8678;border-radius:999px;background:#1c4850a8;color:#ffedc1;min-height:38px;padding:8px 17px;font-size:12px;font-weight:650;line-height:1.3}
 .welcome-sound.is-selected{background:#e8cb8f;color:#1c4350}
 .welcome-sound:focus-visible{outline:3px solid #fff0c6;outline-offset:3px}
+
+.magic-game.quest-success:before{content:'✦ ✧ ✦';position:absolute;inset:0;display:grid;place-items:center;font-size:60px;letter-spacing:24px;color:#fff2ae;text-shadow:0 0 20px #f6d07c,0 0 50px #ffc66c;pointer-events:none;background:radial-gradient(circle at center,rgba(252,210,119,.26),transparent 68%);animation:questSuccess 1.1s ease-out both}
+@keyframes questSuccess{from{opacity:0;transform:scale(.55)}40%{opacity:1}to{opacity:0;transform:scale(1.35)}}
+@media(prefers-reduced-motion:reduce){.magic-game.quest-success:before{animation:none;display:none}}
