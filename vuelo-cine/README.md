@@ -49,3 +49,33 @@ Documentación:
 - https://openfreemap.org/
 - https://project-osrm.org/docs/
 - https://cloud.google.com/terms/maps-platform/eea
+
+
+## v2 · Ciudad tridimensional cinematográfica
+
+Se mantiene la misma URL pública y el flujo de ruta, pero se incorpora un nuevo motor de arquitectura.
+
+**Cuando MapLibre 3D funciona:**
+- `cinema-city.mjs`: capa WebGL tridimensional propia sobre el **mismo contexto** de MapLibre. Sin un segundo lienzo WebGL ni dependencia de Three.js.
+- Edificios reales en la geometría: `building` de OpenMapTiles/OSM; extrusiones con altura según datos existentes y alturas de referencia cuando faltan.
+- Las fachadas utilizan un patrón de textura procedimental (marcos, plantas y ventanas); los tejados inclinados se añaden como geometría tridimensional, con colores de terracota, cobre, verde petróleo y pizarra.
+- Las ventanas amarillas se dibujan en las fachadas **3D** de cada edificio, no como puntos colocados sobre una fotografía.
+- Donde el callejero tiene pocos edificios mapeados, se incorporan casas de cuento adicionales a los lados del vuelo. Son **escenografía ficticia declarada** que no sustituye la ubicación de las calles ni los puntos de origen/destino.
+- La cámara pasa a zoom ~17 y pitch ~71° durante el vuelo para ver volúmenes, cubiertas y fachadas, y mantiene su panorámica completa de la ruta al principio.
+- Se añade cielo azul noche y niebla si la versión de MapLibre permite `setSky`.
+
+**Cuando Safari no admite MapLibre WebGL:**
+- `rescue.mjs` dibuja **arquitectura pseudo-3D mediante Canvas 2D**, con tejados, fachadas y ventanas iluminadas, sobre teselas raster de OpenStreetMap cuando pueden cargarse.
+- Sigue siendo un **modo compatible 2,5D**, no arquitectura 3D interactiva ni fotogrametría. El vuelo continúa funcionando aunque falten bibliotecas WebGL.
+- Se ha corregido el repintado al recibir teselas raster: las calles ya no deberían quedar ocultas indefinidamente por el fondo provisional.
+
+**Pruebas realizadas:** sintaxis de los tres módulos, simulación del motor GL con geometría finita y comprobación del vuelo completo, pausa, órbita y reinicio con la arquitectura activada. **La apariencia real y la fluidez en Safari físico siguen pendientes de validación con el dispositivo.**
+
+### Qué fidelidad cabe esperar
+
+**Es una ciudad 3D de cuento con calles auténticas, no una réplica fotográfica.** Las huellas reales disponibles se respetan; los materiales, luces y algunas edificaciones son creaciones artísticas. Para un resultado próximo a un videojuego cinematográfico de alta gama harán falta modelos arquitectónicos y materiales PBR mejor detallados, así como probar su rendimiento en móviles. La fantasía nunca se presenta como una imagen real de la vivienda del niño.
+
+Documentación MapLibre usada:
+- https://maplibre.org/maplibre-gl-js/docs/API/interfaces/CustomLayerInterface/
+- https://maplibre.org/maplibre-gl-js/docs/examples/display-buildings-in-3d/
+- https://maplibre.org/maplibre-gl-js/docs/examples/sky-fog-terrain/
