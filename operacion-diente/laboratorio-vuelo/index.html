@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071222">
+<title>Laboratorio de vuelo · Villa Pérez</title>
+<meta name="description" content="Prueba interactiva de vuelo mágico sobre cartografía real de Madrid.">
+<link href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+:root{--gold:#f6d798;--ink:#06121f;--cream:#fff8eb;--line:rgba(255,235,183,.25)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--cream);font-family:"DM Sans",system-ui,sans-serif}button,input{font:inherit}button{cursor:pointer}#map{position:absolute;inset:0}
+#world{position:fixed;inset:0;overflow:hidden;background:#071222}
+#world:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 47%,transparent 15%,rgba(3,9,22,.56) 100%),linear-gradient(180deg,rgba(3,9,20,.28),transparent 28%,rgba(2,8,21,.23));z-index:4}
+#world.bright:after{background:linear-gradient(180deg,rgba(8,16,32,.26),transparent 24%,rgba(3,9,22,.17))}#world.bright .starfield{opacity:.2}
+.starfield{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;opacity:.9}
+.starfield i{display:block;position:absolute;width:2px;height:2px;border-radius:100%;background:#ffefd0;box-shadow:0 0 10px 2px rgba(255,221,143,.8);animation:twinkle 3s ease-in-out infinite alternate}
+@keyframes twinkle{from{opacity:.08;transform:scale(.5)}to{opacity:.86;transform:scale(1.4)}}
+#map{z-index:1}.maplibregl-control-container{z-index:8}.maplibregl-ctrl-attrib{font-size:9px!important;background:rgba(8,15,30,.8)!important;color:#d4e0e1!important}.maplibregl-ctrl-attrib a{color:#e5dbc6!important}
+.brand{position:fixed;z-index:12;left:26px;top:max(21px,env(safe-area-inset-top));display:flex;align-items:center;gap:11px;text-shadow:0 2px 16px #09131e}
+.brand .crest{height:36px;width:36px;border:1px solid rgba(245,220,155,.55);border-radius:12px;background:rgba(17,35,45,.6);display:grid;place-items:center;font-size:22px;color:var(--gold)}
+.brand small{display:block;letter-spacing:.24em;font-size:9px;font-weight:700;color:#eac987}.brand strong{display:block;letter-spacing:.09em;font-weight:700;font-size:15px}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:.18em;color:#ecc98d;text-transform:uppercase}
+#statusPill{position:fixed;top:max(24px,env(safe-area-inset-top));right:23px;z-index:12;background:rgba(7,20,32,.78);border:1px solid var(--line);border-radius:60px;padding:10px 14px;color:#f2e8d6;font-size:10px;letter-spacing:.06em;backdrop-filter:blur(12px)}
+#statusPill:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#a8e6c6;margin-right:8px;box-shadow:0 0 8px #a8e6c6}
+.panel{position:fixed;z-index:16;left:24px;bottom:27px;width:min(420px,calc(100% - 48px));padding:30px 31px 26px;border:1px solid rgba(245,218,157,.38);border-radius:23px;background:linear-gradient(140deg,rgba(16,35,47,.97),rgba(9,20,32,.97));box-shadow:0 20px 70px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.09);backdrop-filter:blur(25px);transition:transform .55s ease,opacity .5s ease}
+.panel.hidden{opacity:0;transform:translateY(110%);pointer-events:none}
+.panel .ornament{font-size:23px;color:#f8d99e;letter-spacing:.22em;margin-bottom:7px}
+.panel h1{font:600 clamp(29px,3.3vw,43px)/1.1 "Playfair Display",Georgia,serif;letter-spacing:-.03em;margin:11px 0 13px;color:#fff7e7}
+.panel h1 em{font-style:normal;color:#f8d89a}.panel p{line-height:1.55;color:#d0d7d5;font-size:13px;margin:0 0 20px}
+.fieldLabel{font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:#e1ba78;margin-bottom:9px;display:block}
+.fixedOrigin{padding:12px 13px 14px;border-radius:12px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);margin-bottom:13px}
+.fixedOrigin small{color:#a9bbba;display:block;font-size:10px;margin-bottom:5px}.fixedOrigin strong{font-size:13px;font-weight:600}
+.inputWrap{position:relative}.inputWrap input{height:51px;width:100%;border-radius:11px;outline:none;background:rgba(255,255,255,.09);border:1px solid rgba(255,243,209,.28);padding:0 14px;color:#fff;font-size:13px}
+.inputWrap input:focus{border-color:#f0cb86;box-shadow:0 0 0 3px rgba(229,195,122,.1)}.inputWrap input::placeholder{color:#c4cac8}
+.btnMain{border:1px solid #fff4d1;background:linear-gradient(180deg,#ffe2a4,#e8bd78);color:#32251a;font-size:13px;font-weight:700;border-radius:12px;min-height:51px;padding:0 18px;box-shadow:0 6px 28px rgba(233,172,66,.2);transition:filter .15s}
+.btnMain:active{filter:brightness(.86)}.btnMain:disabled{opacity:.55;cursor:wait}.btnMain svg{vertical-align:middle;margin-left:8px}
+#launch{width:100%;margin-top:15px}.panel .privacy{font-size:10px;color:#a8bbb7;line-height:1.5;margin-top:13px}
+.preset{margin:12px 0 2px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}.preset span{font-size:10px;color:#c4d1d2;margin-right:5px}
+.preset button{background:rgba(255,255,255,.085);border:1px solid rgba(255,255,255,.14);padding:7px 9px;color:#e8f0ea;font-size:10px;border-radius:50px}.preset button:hover{border-color:#f6db95}
+#error{margin-top:11px;font-size:12px;color:#ffd1b8;display:none}
+#flightHUD{position:fixed;inset:0;pointer-events:none;z-index:11;opacity:0;transition:opacity .7s ease}#flightHUD.show{opacity:1}
+#routeChapter{position:absolute;top:102px;left:26px;text-shadow:0 2px 10px rgba(0,0,0,.65)}
+#routeChapter h2{font:600 clamp(30px,5vw,53px)/1.04 "Playfair Display",Georgia,serif;margin:8px 0;color:#ffefcf;max-width:500px}
+#routeChapter p{max-width:420px;margin:0;color:#e6e8db;font-size:14px}
+#nowStreet{position:absolute;right:25px;top:109px;border:1px solid rgba(255,233,168,.27);border-radius:13px;padding:13px 15px;background:rgba(8,23,32,.68);backdrop-filter:blur(10px);max-width:240px}
+#nowStreet small{display:block;letter-spacing:.16em;color:#e9c78a;font-size:9px;margin-bottom:7px}#nowStreet b{font-size:13px}
+#flightControls{position:absolute;pointer-events:auto;bottom:max(32px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(630px,calc(100% - 35px));padding:18px 20px 16px;border:1px solid rgba(255,232,172,.3);border-radius:17px;background:rgba(8,24,33,.9);box-shadow:0 8px 30px rgba(0,0,0,.4);backdrop-filter:blur(14px)}
+#flightMeta{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:11px;color:#e5ddd0;margin-bottom:11px}#flightMeta strong{font-weight:600;color:#fff0ca}
+#progressBase{height:5px;border-radius:8px;background:rgba(255,255,255,.17);overflow:hidden}#progress{height:100%;width:0;background:linear-gradient(90deg,#bd8243,#ffe4a7);border-radius:8px;box-shadow:0 0 12px #ffcc80}
+.controlsRow{display:flex;justify-content:space-between;gap:9px;margin-top:14px;align-items:center}.controlsRow button{font-size:11px;font-weight:600;border-radius:9px;padding:10px 11px;background:rgba(255,255,255,.08);color:#fff5de;border:1px solid rgba(255,255,255,.17)}
+.controlsRow #pauseBtn{background:rgba(249,213,137,.18);border-color:#e8ce8e}.controlsRow button:active{background:rgba(255,255,255,.2)}
+.balloon{width:95px;height:135px;position:relative;filter:drop-shadow(0 16px 12px rgba(6,12,22,.55));animation:bob 2.4s ease-in-out infinite alternate;pointer-events:none}
+.balloon svg{width:100%;height:100%;overflow:visible}
+@keyframes bob{from{transform:translateY(-6px) rotate(-2deg)}to{transform:translateY(7px) rotate(2deg)}}
+.balloon:before{content:"";position:absolute;inset:4px 1px 32px;border-radius:50%;box-shadow:0 0 42px 16px rgba(253,183,67,.32);z-index:-1}
+.pin{width:30px;height:30px;display:grid;place-items:center;font-size:18px;border-radius:100%;background:#ffdb93;border:3px solid #fff8d3;box-shadow:0 0 0 6px rgba(251,208,132,.15),0 0 25px #f8b860;color:#193039}
+#endCurtain{position:fixed;z-index:20;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,rgba(15,38,48,.91),rgba(3,11,26,.97));opacity:0;pointer-events:none;transition:opacity .7s}
+#endCurtain.show{opacity:1;pointer-events:auto}.endCard{max-width:430px;text-align:center;padding:35px}.endCard .door{font-size:76px;display:block;filter:drop-shadow(0 0 28px #ebba6b)}.endCard h2{font:600 40px/1.1 "Playfair Display",serif;color:#ffe3a9;margin:12px 0}.endCard p{font-size:15px;line-height:1.55;color:#dfebe6;margin-bottom:25px}
+#loading{position:fixed;z-index:15;inset:0;background:rgba(5,14,25,.9);display:grid;place-items:center;text-align:center;padding:25px;color:#f5ddaa;font:500 16px/1.5 "Playfair Display";transition:opacity .6s}
+#loading.done{opacity:0;pointer-events:none}#errorOverlay{position:fixed;z-index:25;inset:0;display:none;place-items:center;background:#0b1928;padding:25px;text-align:center}#errorOverlay.show{display:grid}#errorOverlay h2{font:500 25px "Playfair Display";color:#ffdf9c}
+#tinyNote{position:fixed;right:23px;bottom:24px;z-index:9;color:#d5ddd7;font-size:10px;opacity:.9;text-shadow:0 2px 6px #000}
+@media(max-width:680px){
+.brand{left:16px;top:max(15px,env(safe-area-inset-top))}.brand strong{font-size:12px}.brand .crest{width:31px;height:31px}
+#statusPill{right:12px;top:max(19px,env(safe-area-inset-top));padding:8px;font-size:9px}
+.panel{left:0;bottom:0;width:100%;border-radius:24px 24px 0 0;padding:19px 22px calc(18px + env(safe-area-inset-bottom));max-height:85dvh;overflow:auto}
+.panel .ornament{display:none}.panel h1{font-size:30px;margin:7px 0 9px}.panel p{font-size:12px;margin-bottom:10px}.fixedOrigin{padding:8px 12px;margin-bottom:8px}.inputWrap input{height:43px}.panel .privacy{font-size:9px;margin-top:8px}
+#launch{margin-top:10px;min-height:45px}.preset{margin:9px 0 0}
+#routeChapter{top:82px;left:18px;right:18px}#routeChapter h2{font-size:31px;margin:7px 0}#routeChapter p{font-size:12px}
+#nowStreet{right:15px;top:195px;max-width:165px;padding:10px}#nowStreet b{font-size:11px}
+#flightControls{bottom:max(12px,env(safe-area-inset-bottom));width:calc(100% - 24px);padding:14px 16px}.controlsRow button{padding:9px 10px}#tinyNote{display:none}
+.balloon{width:76px;height:108px}
+}
+@media(prefers-reduced-motion:reduce){.starfield i,.balloon{animation:none}}
+</style>
+</head>
+<body>
+<div id="world">
+ <div id="map" aria-label="Cartografía geográfica real de Madrid con edificios tridimensionales"></div>
+ <div id="starfield" class="starfield" aria-hidden="true"></div>
+</div>
+<div class="brand"><span class="crest">✦</span><div><small>LABORATORIO DE VUELO</small><strong>VILLA PÉREZ</strong></div></div>
+<div id="statusPill">CARTOGRAFÍA REAL · DEMO</div>
+<div id="loading">✦<div>Abriendo el mapa de Madrid…</div></div>
+<div id="errorOverlay"><div><h2>El mapa no ha podido abrirse</h2><p>Esta experiencia necesita internet, WebGL y acceso a OpenFreeMap. Comprueba la conexión y prueba Safari actualizado.</p></div></div>
+<section class="panel" id="welcome" aria-label="Preparar recorrido">
+ <div class="ornament">✦ · ✧ · ✦</div>
+ <div class="eyebrow">Experiencia experimental · gratis</div>
+ <h1>Un viaje que <em>sobrevuela</em> tus calles</h1>
+ <p>Prueba un vuelo de cine con cartografía y edificios reales. Hoy vemos hasta dónde podemos llegar sin pagar Google Maps 3D.</p>
+ <div class="fixedOrigin"><small>DESPEGUE · ORIGEN PÚBLICO DE PRUEBA</small><strong>Puerta de Alcalá, Madrid</strong></div>
+ <label class="fieldLabel" for="home">DESTINO · TU CALLE O UNA UBICACIÓN DE EJEMPLO</label>
+ <div class="inputWrap"><input id="home" value="Plaza Mayor, Madrid" placeholder="Calle, número, ciudad" autocomplete="off"></div>
+ <div class="preset"><span>Prueba rápida:</span><button data-preset="mayor">Plaza Mayor</button><button data-preset="bernabeu">Bernabéu</button><button data-preset="fresno">Arroyo Fresno</button></div>
+ <button id="launch" class="btnMain">✦ Iniciar vuelo cinematográfico <span aria-hidden="true">↗</span></button>
+ <div id="error" role="alert"></div>
+ <div class="privacy">El globo es un elemento ilustrado 2,5D; los edificios y las calles proceden del mapa real. Si introduces una dirección, la consulta se envía a Photon (Komoot), servicio externo de demostración. No se almacena.</div>
+</section>
+<div id="flightHUD" aria-live="polite">
+ <div id="routeChapter"><div class="eyebrow" id="chapterKicker">MISIÓN DEL RATÓN · CAPÍTULO 1</div><h2 id="chapterTitle">La ciudad despierta</h2><p id="chapterDesc">Sobrevolamos los tejados de Madrid siguiendo la luz del camino.</p></div>
+ <div id="nowStreet"><small>ESTAMOS SOBREVOLANDO</small><b id="zoneText">Madrid</b></div>
+ <div id="flightControls">
+   <div id="flightMeta"><strong>✦ VUELO MÁGICO · MADRID</strong><span id="pct">0 %</span></div>
+   <div id="progressBase"><div id="progress"></div></div>
+   <div class="controlsRow"><button id="pauseBtn">⏸ Pausar</button><button id="modeBtn">☾ Modo noche</button><button id="resetBtn">↺ Reiniciar</button></div>
+ </div>
+</div>
+<div id="endCurtain"><div class="endCard"><span class="eyebrow">MISIÓN COMPLETADA</span><span class="door">✧</span><h2>¡Hemos llegado!</h2><p>Estas sí son calles reales. El viaje del Ratón Pérez puede seguir este recorrido, pero con su personaje oficial, su propia historia y una cartografía 3D todavía más realista.</p><button class="btnMain" id="again">Volver a sobrevolar Madrid ↗</button></div></div>
+<div id="tinyNote">Vista experimental · vuelo ficticio · datos © OpenStreetMap</div>
+<script src="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.js"></script>
+<script>
+(function(){
+'use strict';
+const ORIGIN=[-3.68845,40.42016], choices={
+ mayor:{name:'Plaza Mayor, Madrid',end:[-3.70737,40.41536],stops:[[-3.69265,40.41932],[-3.69819,40.41837],[-3.70399,40.41825]]},
+ bernabeu:{name:'Estadio Santiago Bernabéu, Madrid',end:[-3.68832,40.45306],stops:[[-3.68918,40.42612],[-3.68922,40.43656],[-3.68934,40.4471]]},
+ fresno:{name:'Arroyo Fresno, Madrid',end:[-3.7347,40.4787],stops:[[-3.69478,40.4316],[-3.71148,40.4495],[-3.72774,40.4634]]}
+};
+let active=choices.mayor, selected='mayor', lastInput=choices.mayor.name;
+const el=id=>document.getElementById(id);
+let map,balloonMarker,endMarker,points=[],playing=false,paused=false,progress=0,started=0,passed=0,frame=null,dark=true,loaded=false;
+const TIME=44000;
+const stars=el('starfield');
+for(let i=0;i<44;i++){let s=document.createElement('i');s.style.left=((i*73+17)%100)+'%';s.style.top=((i*37+11)%94)+'%';s.style.animationDelay=(-(i*.37))+'s';s.style.opacity=.15+(i%5)*.13;stars.appendChild(s);}
+function interpolate(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]}
+function routePoints(obj) {
+ let nodes=[ORIGIN].concat(obj.stops||[]).concat([obj.end]),out=[];
+ for(let j=0;j<nodes.length-1;j++)for(let i=0;i<55;i++)out.push(interpolate(nodes[j],nodes[j+1],i/55));
+ out.push(obj.end);return out;
+}
+function geo(p){return {type:'Feature',geometry:{type:'LineString',coordinates:p},properties:{}};}
+function setSrc(id,points){if(map&&map.getSource(id))map.getSource(id).setData(geo(points));}
+function genBalloon(){
+ const div=document.createElement('div');div.className='balloon';
+ div.setAttribute('aria-label','Globo mágico de Villa Pérez');
+ div.innerHTML='<svg viewBox="0 0 104 151" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="canopy" x2="1" y2=".1"><stop stop-color="#bb643e"/><stop offset=".5" stop-color="#ffe4a6"/><stop offset="1" stop-color="#b65e42"/></linearGradient><linearGradient id="stripe" x2="1" y2=".5"><stop stop-color="#127176"/><stop offset=".55" stop-color="#71b1a4"/><stop offset="1" stop-color="#0d5668"/></linearGradient></defs><path d="M51 7 C23 7 4 32 8 59 C13 89 41 102 46 111 L58 111 C67 99 95 77 95 55 C96 28 78 7 51 7Z" fill="url(#canopy)" stroke="#ffe6bb" stroke-width="2"/><path d="M51 7 C33 12 23 40 28 65 C33 86 44 102 46 111L58 111 C66 89 74 71 74 55 C75 32 66 15 51 7Z" fill="url(#stripe)" opacity=".97"/><path d="M51 7 C43 13 40 31 39 52 C40 78 45 100 46 111 L58 111 C62 86 66 66 65 51 C64 27 60 13 51 7Z" fill="#f5c87e"/><path d="M48 111L40 135M56 111L64 135M51 110L51 133" stroke="#dec499" stroke-width="1.7"/><path d="M36 130L68 130L63 147L42 147Z" fill="#9b613b" stroke="#f6daaa" stroke-width="2"/><path d="M40 136L64 136M44 142L61 142" stroke="#e6b87e" stroke-width="1.4"/><circle cx="52" cy="53" r="8" fill="#ffebb5" opacity=".85"/><path d="M52 41L55 50L65 53L55 56L52 65L49 56L39 53L49 50Z" fill="#fffdf2"/></svg>';
+ return div;
+}
+function install(){
+ const style=map.getStyle(), labels=style.layers.find(x=>x.type==='symbol'&&x.layout&&x.layout['text-field']);
+ if(!map.getSource('flight-planet')) map.addSource('flight-planet',{type:'vector',url:'https://tiles.openfreemap.org/planet'});
+ if(!map.getLayer('flight-buildings')){
+  try{map.addLayer({id:'flight-buildings',type:'fill-extrusion',source:'flight-planet','source-layer':'building',minzoom:14.8,filter:['!=',['get','hide_3d'],true],paint:{'fill-extrusion-color':dark?'#b29a7c':'#d2c6ae','fill-extrusion-opacity':.85,'fill-extrusion-height':['interpolate',['linear'],['zoom'],14.8,0,16,['to-number',['get','render_height'],12]],'fill-extrusion-base':['to-number',['get','render_min_height'],0]}},labels&&labels.id)}catch(e){console.warn('3D buildings unavailable',e)}
+ }
+ if(!map.getSource('flight-route'))map.addSource('flight-route',{type:'geojson',data:geo(points)});
+ if(!map.getSource('flight-passed'))map.addSource('flight-passed',{type:'geojson',data:geo([ORIGIN,ORIGIN])});
+ if(!map.getLayer('flight-halo'))map.addLayer({id:'flight-halo',type:'line',source:'flight-route',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#f3ce87','line-width':10,'line-blur':9,'line-opacity':.62}});
+ if(!map.getLayer('flight-dashes'))map.addLayer({id:'flight-dashes',type:'line',source:'flight-route',paint:{'line-color':'#efd7a0','line-width':2.3,'line-opacity':.75,'line-dasharray':[1.5,2.6]}});
+ if(!map.getLayer('flight-gold'))map.addLayer({id:'flight-gold',type:'line',source:'flight-passed',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#ffe5a4','line-width':5,'line-opacity':1}});
+}
+function setError(message){el('error').style.display='block';el('error').textContent=message;el('launch').disabled=false;}
+function choose(name){selected=name;active=choices[name];lastInput=active.name;el('home').value=active.name;el('error').style.display='none';points=routePoints(active);if(map&&loaded){setSrc('flight-route',points);map.fitBounds([ORIGIN,active.end],{padding:{left:80,right:80,top:90,bottom:260},maxZoom:13.4,duration:800});}}
+async function resolveAddress(q){
+ let u='https://photon.komoot.io/api/?q='+encodeURIComponent(q)+'&limit=5&lat=40.42&lon=-3.70';
+ let response=await fetch(u,{headers:{Accept:'application/json'}});
+ if(!response.ok)throw new Error('El servicio de búsqueda no está disponible.');
+ let data=await response.json(),fs=Array.isArray(data.features)?data.features:[];
+ let f=fs.find(x=>x.geometry&&Array.isArray(x.geometry.coordinates)&&x.properties?.countrycode==='ES'&&(/Madrid/i.test(x.properties.city||'')||/Madrid/i.test(x.properties.state||'')))||fs.find(x=>x.geometry&&x.properties?.countrycode==='ES');
+ if(!f)throw new Error('No encuentro esa dirección española. Prueba indicando calle, número y municipio.');
+ let coords=f.geometry.coordinates;
+ if(!Number.isFinite(coords[0])||!Number.isFinite(coords[1]))throw new Error('No se han recibido coordenadas válidas.');
+ return coords;
+}
+function prepareCustom(end,name){
+ const delta=[end[0]-ORIGIN[0],end[1]-ORIGIN[1]],bend=Math.min(.003,Math.hypot(...delta)*.08);
+ const cross=Math.atan2(delta[1],delta[0])+Math.PI/2;
+ active={name,end,stops:[
+ [ORIGIN[0]+delta[0]*.25+Math.cos(cross)*bend,ORIGIN[1]+delta[1]*.25+Math.sin(cross)*bend],
+ [ORIGIN[0]+delta[0]*.5+Math.cos(cross)*bend*.55,ORIGIN[1]+delta[1]*.5+Math.sin(cross)*bend*.55],
+ [ORIGIN[0]+delta[0]*.76,ORIGIN[1]+delta[1]*.76]
+ ]};selected='custom';
+}
+function posAt(t){return points[Math.max(0,Math.min(points.length-1,Math.round(t*(points.length-1))))];}
+function bearing(a,b){let d=(b[0]-a[0])*Math.cos(a[1]*Math.PI/180),y=b[1]-a[1];return (Math.atan2(d,y)*180/Math.PI+360)%360;}
+const scenes=[
+ {at:0,title:'La ciudad despierta',text:'La aventura comienza sobre los tejados. Mira con atención: esas son calles de verdad.',zone:'Puerta de Alcalá'},
+ {at:.21,title:'Luces en el camino',text:'El globo gira suavemente mientras reconocemos plazas, esquinas y edificios.',zone:'Tejados de Madrid'},
+ {at:.47,title:'Siguiendo la estrella',text:'Una estela dorada señala nuestro recorrido por la ciudad.',zone:'Calles del recorrido'},
+ {at:.74,title:'¡Estamos muy cerca!',text:'¿Reconoces estas calles? La cámara desciende para descubrir los detalles.',zone:'Barrio del destino'},
+ {at:.93,title:'La última luz',text:'El Ratón Pérez seguirá los últimos metros en secreto.',zone:'Cerca del destino'}
+];
+let lastScene=-1;
+function draw(t){
+ progress=t;const i=Math.max(1,Math.floor(t*(points.length-1))),part=points.slice(0,i+1);setSrc('flight-passed',part);
+ const p=posAt(t),next=posAt(Math.min(1,t+.01)),b=bearing(p,next),zoom=15.9+(t>.78?.7:0)+(.25*Math.sin(Math.PI*t));
+ map.jumpTo({center:p,zoom:zoom,pitch:64,bearing:b-13});
+ if(balloonMarker)balloonMarker.setLngLat(p);
+ el('progress').style.width=(t*100).toFixed(1)+'%';el('pct').textContent=Math.round(t*100)+' %';
+ let scene=0;for(let j=0;j<scenes.length;j++)if(t>=scenes[j].at)scene=j;
+ if(scene!==lastScene){lastScene=scene;const s=scenes[scene];el('chapterKicker').textContent='MISIÓN MÁGICA · CAPÍTULO '+(scene+1);el('chapterTitle').textContent=s.title;el('chapterDesc').textContent=s.text;el('zoneText').textContent=s.zone;}
+}
+function tick(now){
+ if(!playing||paused)return;
+ let t=Math.max(0,Math.min(1,(now-started)/TIME));
+ draw(t);
+ if(t>=1){playing=false;el('flightHUD').classList.remove('show');el('endCurtain').classList.add('show');return;}
+ frame=requestAnimationFrame(tick);
+}
+async function start(){
+ if(!loaded){setError('El mapa aún está cargando. Comprueba la conexión.');return;}
+ el('error').style.display='none';el('launch').disabled=true;el('launch').textContent='Preparando el vuelo…';
+ const query=el('home').value.trim();
+ if(!query){setError('Escribe una dirección o selecciona una ubicación de ejemplo.');return;}
+ if(query!==lastInput){
+  try{const end=await resolveAddress(query);prepareCustom(end,query);lastInput=query;}
+  catch(e){setError(e.message||'No se ha podido localizar el destino.');el('launch').textContent='✦ Iniciar vuelo cinematográfico ↗';return;}
+ }
+ points=routePoints(active);setSrc('flight-route',points);setSrc('flight-passed',[ORIGIN,ORIGIN]);
+ if(endMarker)endMarker.setLngLat(active.end);
+ playing=true;paused=false;lastScene=-1;draw(0);
+ el('welcome').classList.add('hidden');el('flightHUD').classList.add('show');
+ el('launch').disabled=false;el('launch').textContent='✦ Iniciar vuelo cinematográfico ↗';
+ el('pauseBtn').textContent='⏸ Pausar';
+ passed=0;started=performance.now();frame=requestAnimationFrame(tick);
+}
+function reset(){
+ if(frame)cancelAnimationFrame(frame);playing=false;paused=false;progress=0;passed=0;
+ el('endCurtain').classList.remove('show');el('flightHUD').classList.remove('show');el('welcome').classList.remove('hidden');
+ if(map&&loaded){setSrc('flight-passed',[ORIGIN,ORIGIN]);map.fitBounds([ORIGIN,active.end],{padding:{left:80,right:80,top:90,bottom:260},maxZoom:13.4,duration:900});if(balloonMarker)balloonMarker.setLngLat(ORIGIN);}
+}
+function toggleMode(){
+ dark=!dark;el('world').classList.toggle('bright',!dark);el('modeBtn').textContent=dark?'☾ Modo noche':'☀ Modo claro';
+ map.setStyle('https://tiles.openfreemap.org/styles/'+(dark?'dark':'liberty'));
+}
+document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.preset)));
+el('home').addEventListener('input',()=>{el('error').style.display='none';});
+el('launch').addEventListener('click',start);
+el('pauseBtn').addEventListener('click',()=>{
+ if(!playing)return;
+ if(paused){paused=false;started=performance.now()-passed;el('pauseBtn').textContent='⏸ Pausar';frame=requestAnimationFrame(tick);}
+ else{paused=true;passed=progress*TIME;cancelAnimationFrame(frame);el('pauseBtn').textContent='▶ Continuar';}
+});
+el('resetBtn').addEventListener('click',reset);
+el('again').addEventListener('click',reset);
+el('modeBtn').addEventListener('click',toggleMode);
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden&&playing&&!paused){paused=true;passed=progress*TIME;cancelAnimationFrame(frame);el('pauseBtn').textContent='▶ Continuar';}
+});
+if(!window.maplibregl){el('loading').classList.add('done');el('errorOverlay').classList.add('show');return;}
+points=routePoints(active);
+try{
+ map=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/dark',center:ORIGIN,zoom:12.5,pitch:55,bearing:-12,canvasContextAttributes:{antialias:true},attributionControl:true});
+ map.on('style.load',()=>{install();if(!loaded){loaded=true;el('loading').classList.add('done');map.fitBounds([ORIGIN,active.end],{padding:{left:80,right:80,top:90,bottom:260},maxZoom:13.4,duration:1100});}});
+ const b=genBalloon();
+ balloonMarker=new maplibregl.Marker({element:b,anchor:'bottom',offset:[0,-4]}).setLngLat(ORIGIN).addTo(map);
+ const end=document.createElement('div');end.className='pin';end.textContent='⌂';
+ endMarker=new maplibregl.Marker({element:end,anchor:'center'}).setLngLat(active.end).addTo(map);
+ setTimeout(()=>{if(!loaded){el('loading').classList.add('done');el('errorOverlay').classList.add('show');}},16000);
+ }catch(e){console.error(e);el('loading').classList.add('done');el('errorOverlay').classList.add('show');}
+})();
+</script>
+</body></html>
