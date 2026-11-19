@@ -43,10 +43,19 @@ function getBuildings(map,src,focus){
 function makeFantasy(focus,route,existing){
  const count=existing>90?0:existing>55?20:58,blocks=[];
  const seed=Math.round(focus[0]*10000)+Math.round(focus[1]*10000);
+ // Pick street segments actually near the visible camera instead of random
+ // streets miles away along a long destination route.
+ const near=[];
+ if(route?.length>2){
+  const stride=Math.max(1,Math.floor(route.length/500));
+  for(let j=0;j<route.length-1;j+=stride){
+   if(meters(route[j],focus)<580)near.push(j);
+  }
+ }
  for(let i=0;i<count;i++){
   let p,angle=0;
-  if(route&&route.length>2){
-   const k=Math.floor(hash(i*5,seed)*Math.max(1,route.length-1));
+  if(near.length){
+   const k=near[Math.floor(hash(i*5,seed)*near.length)];
    const a=route[k],b=route[k+1]||route[k];
    const d=meters(a,b);
    if(d<8||meters(a,focus)>540)continue;
@@ -202,6 +211,9 @@ export function createCinemaCity(map,{getRoute=()=>[],getSource=()=>null,onStats
    gl.depthMask(true);
    gl.disable(gl.CULL_FACE);
    gl.drawArrays(gl.TRIANGLES,0,this.count);
+   gl.disableVertexAttribArray(this.ap);
+   gl.disableVertexAttribArray(this.ac);
+   gl.bindBuffer(gl.ARRAY_BUFFER,null);
   },
   onRemove(m,gl){
    try{gl?.deleteBuffer(this.buffer);gl?.deleteProgram(this.program)}catch(e){}
