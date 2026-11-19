@@ -35,3 +35,12 @@ El producto es una **aventura geográfica real**, no un mapa de fantasía. Se mu
 - Las rutas dependen de proveedores comunitarios de prueba; errores no deben disfrazarse como rutas reales.
 - No almacenar ni añadir domicilios a analytics, logs, URL o postales.
 - El QR y la suscripción serán resueltos en backend antes del lanzamiento.
+
+
+## Actualización v0.7 — SIN MINIJUEGOS (decisión del cliente)
+
+No incluir retos de tocar estrellas, persecuciones, arrastrar llaves, puntuaciones por habilidad ni pausas para jugar. La magia sucede automáticamente sobre las calles reales. Las tres estrellas de la postal representan momentos del viaje y se obtienen sin acción infantil.
+
+**Storyboard técnico:** llegada del aviso → 5,7 s de casa iluminándose / chispita / campanilla opcional → transición aérea al mapa real → ciudad reactiva (estelas, huellas y ondas) → 1 pausa en lugar real verificado → botón flotante CIUDAD/RATÓN → bruma y puerta al ocultar último tramo de casa → pantalla nocturna para padres → recuerdo que se desbloquea mañana a las 06:00 (o previsualización de demo).
+
+La marca original `../perez.png` y la fachada `../villa-hero.webp` se utilizan intactas. Para la narración oficial subir clips aprobados; hasta entonces la voz del navegador se etiqueta como prueba. El recuerdo opcional se guarda solo en localStorage, no en backend, sin direcciones ni coordenadas. No existe envío push automático al día siguiente.
