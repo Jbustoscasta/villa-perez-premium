@@ -122,6 +122,8 @@ export async function installBalloon3D(map,mapboxgl,{imageUrl='../perez.png'}={}
     }
   };
   let active=false;
+  // Mapbox Standard uses slot='top'; standard MapLibre styles do not have slots.
+  if(!map.getStyle()?.imports?.length)delete layer.slot;
   if(map.getLayer(layer.id))map.removeLayer(layer.id);
   map.addLayer(layer);
   return {
