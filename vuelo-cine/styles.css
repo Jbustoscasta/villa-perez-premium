@@ -16,3 +16,15 @@ body.day .starscape{opacity:0}body.day .mood-haze{opacity:.15}body.day .setup{ba
 }
 @media(prefers-reduced-motion:reduce){.balloon .balloon-shell,.balloon .official-mouse,.balloon .basket-front,.balloon-spark i,.starscape{animation:none}}
 [hidden]{display:none!important}
+
+/* The offline-safe renderer uses real OpenStreetMap street tiles where available. */
+.rescue-map{position:absolute;inset:0;overflow:hidden;background:#112841}
+.rescue-tiles,.rescue-line,.rescue-overlay{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.rescue-tiles{z-index:1;filter:invert(.91) hue-rotate(173deg) brightness(.76) saturate(.75)}
+.rescue-tiles.rescue-day{filter:none}
+.rescue-tiles img{max-width:none;border:0;image-rendering:auto}
+.rescue-line{z-index:3}
+.rescue-overlay{z-index:4}
+.rescue-credits{position:absolute;right:5px;bottom:max(3px,env(safe-area-inset-bottom));z-index:7;background:rgba(9,26,43,.74);color:#e2dcd3;font-size:9px;padding:3px 6px;border-radius:4px;pointer-events:none}
+.rescue-map .city-pin{min-width:100px}
+.rescue-map .balloon{transform:none;will-change:left,top}
