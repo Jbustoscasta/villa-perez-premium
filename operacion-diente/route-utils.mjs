@@ -65,6 +65,54 @@ export function routeBearing(path,progress) {
   const dx=(b[0]-a[0])*Math.cos(lat),dy=b[1]-a[1];
   return Math.atan2(dx,dy)*180/Math.PI;
 }
+
+/** Storyboarding curve: natural departures, scenic pause, and slow arrival. Monotone and deterministic. */
+export function cinematicProgress(phase) {
+  const x=Math.max(0,Math.min(1,Number(phase)||0));
+  const stops=[[0,0],[.11,.05],[.28,.29],[.42,.47],[.56,.54],[.77,.86],[.9,.96],[1,1]];
+  for(let i=1;i<stops.length;i++){
+    const [t1,p1]=stops[i],[t0,p0]=stops[i-1];
+    if(x<=t1) {
+      const u=(x-t0)/(t1-t0);
+      const ease=u*u*(3-2*u);
+      return p0+(p1-p0)*ease;
+    }
+  }
+  return 1;
+}
+/** Inverse of cinematicProgress for exact resume/pause, duration changes and playback. */
+export function cinematicPhase(progress) {
+  const target=Math.max(0,Math.min(1,Number(progress)||0));
+  if(target===0||target===1)return target;
+  let lo=0,hi=1;
+  for(let i=0;i<35;i++){const mid=(lo+hi)/2;if(cinematicProgress(mid)<target)lo=mid;else hi=mid;}
+  return (lo+hi)/2;
+}
+/** Keep the genuine road geometry until near home, but never display the final private street/portal. */
+export function publicFacingRoute(path,{demo=false,concealMeters=160}={}) {
+  if(!path?.points||!path.total)throw Error('Ruta no válida');
+  if(demo)return path;
+  const remaining=Math.max(60,Math.min(concealMeters,path.total*.65));
+  const endF=Math.max(.15,Math.min(.97,1-remaining/path.total));
+  return createPath(pointAt(path,endF).partial);
+}
+/** A public landmark is named only when the ACTUAL route crosses near it. */
+export function nearestPublicLandmark(path,landmarks,maxMeters=130) {
+  if(!path?.points || !Array.isArray(landmarks))return null;
+  let winner=null;
+  for(const candidate of landmarks){
+    if(!validCoordinate(candidate.coordinate))continue;
+    for(let i=1;i<path.points.length-1;i++){
+      const fraction=path.cumulative[i]/path.total;
+      if(fraction<.18||fraction>.8)continue;
+      const d=haversineMeters(path.points[i],candidate.coordinate);
+      if(d<=maxMeters && (!winner||d<winner.distanceMeters))
+        winner={...candidate,distanceMeters:d,progress:fraction};
+    }
+  }
+  return winner;
+}
+
 /** SVG postcard uses a NON-GEOGRAPHIC, generic fantasy path: never embed home street geometry. */
 export function postcardSvg({clinicName='Tu clínica dental',distanceMeters=0, date=new Date(), points=[]}={}) {
   const shortClinic=escapeXml(String(clinicName).slice(0,60));
