@@ -108,3 +108,15 @@
   .compass-btn small{font-size:7px}
   .map-heading{right:90px}
 }
+
+/* Keep every control reachable on shorter iPhones. */
+@media(max-height:740px){
+  .screen--arrival,.screen--morning{justify-content:flex-start;overflow-y:auto;overscroll-behavior:contain}
+  .screen--arrival{padding-top:22px}
+  .screen--morning{padding-top:22px}
+  .screen--arrival .arrival-icon{width:84px;height:84px;font-size:49px;margin-bottom:0}
+  .screen--arrival h1{font-size:28px}
+  .screen--arrival .letter{padding:12px 14px}
+  .morning-scroll{padding:12px 13px;gap:7px}
+  .morning-sun{top:34px}
+}
