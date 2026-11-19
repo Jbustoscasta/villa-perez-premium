@@ -1,5 +1,5 @@
 import {APP_CONFIG as CFG} from './config.js';
-import {createPath,pointAt,validCoordinate,compactAddress,formatDistance,postcardSvg,trailParticles,routeBearing} from './route-utils.mjs';
+import {createPath,pointAt,validCoordinate,compactAddress,formatDistance,postcardSvg,trailParticles,routeBearing,cinematicProgress,cinematicPhase,publicFacingRoute,nearestPublicLandmark} from './route-utils.mjs';
 
 const $ = id => document.getElementById(id);
 const screens = ['welcome','address','route','arrival'];
@@ -8,8 +8,9 @@ const state = {
   origin:{label:CFG.clinic.originLabel,coordinate:CFG.clinic.origin?.slice()||null},
   destination:{label:'',coordinate:null},
   map:null,ml:null,mouseMarker:null,originMarker:null,homeMarker:null,
-  route:null,path:null,durationMs:CFG.stageDurationSeconds*1000,progress:0,
-  playing:false,startTime:0,frame:0,follow:true,cinematic:false,lastPaint:0,lastStage:-1,lastCamera:0,
+  route:null,path:null,mapPath:null,isDemo:false,landmark:null,landmarkShown:false,landmarkTimer:0,introTimer:0,arrivalShown:false,
+  soundOn:false,audioCtx:null,durationMs:CFG.stageDurationSeconds*1000,progress:0,
+  playing:false,startTime:0,frame:0,follow:true,cinematic:true,lastPaint:0,lastStage:-1,lastCamera:0,
   reducedMotion:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches??false
 };
 
@@ -129,6 +130,7 @@ async function startMadridDemo(){
       state.route={path,serviceMeters:path.total,serviceSeconds:null,demoFallback:true};
     }
     state.path=state.route.path;
+    prepareJourney(true);
     state.progress=0;state.lastStage=-1;
     $('distance').textContent=formatDistance(state.route.serviceMeters);
     $('route-mode-label').textContent=state.route.demoFallback?'Trazado ilustrativo · no validado en calles':'Ruta a pie real · simulación mágica';
@@ -137,8 +139,7 @@ async function startMadridDemo(){
       'Ruta calculada sobre calles reales entre dos puntos turísticos de prueba. El movimiento del Ratón es una animación ficticia, no un GPS.';
     showScreen('route');
     await ensureMap();
-    // The demo begins moving immediately when its map is ready.
-    if(!state.playing)playPause();
+    showIntro();
   }catch(e){
     showScreen('welcome');
     $('demo-error').textContent='No se ha podido cargar el mapa. Comprueba tu conexión y vuelve a probar: '+(e?.message||'error');
@@ -147,6 +148,63 @@ async function startMadridDemo(){
     button.disabled=false;button.textContent='▶ Probar recorrido de Madrid';
   }
 }
+/** Named places are only used after verifying the computed walking route passes nearby. */
+const PUBLIC_LANDMARKS=[
+  {name:'Fuente de Cibeles',coordinate:[-3.6933,40.4194],message:'¡He pasado cerca de la famosa fuente de Cibeles!'},
+  {name:'Puerta del Sol',coordinate:[-3.70376,40.41696],message:'¡Ya estoy cerca de la Puerta del Sol!'},
+  {name:'Parque del Retiro',coordinate:[-3.6849,40.4151],message:'¡Qué bonito es el parque del Retiro de noche!'},
+  {name:'Templo de Debod',coordinate:[-3.7177,40.4241],message:'¡He visto el Templo de Debod desde el camino!'},
+  {name:'Plaza de España',coordinate:[-3.7128,40.4230],message:'¡Qué grande es esta plaza!'}
+];
+function prepareJourney(demo=false){
+  state.isDemo=demo;
+  state.mapPath=publicFacingRoute(state.path,{demo});
+  state.landmark=nearestPublicLandmark(state.mapPath,PUBLIC_LANDMARKS,120)||
+    {name:'Un alto en el camino',message:'¡Qué aventura! Las calles brillan como si guardaran estrellas.',progress:.52};
+  state.landmarkShown=false;state.arrivalShown=false;
+  clearTimeout(state.landmarkTimer);clearTimeout(state.introTimer);
+  $('landmark-panel').classList.add('hidden');
+  $('final-curtain').classList.add('hidden');
+  $('cinematic-intro').classList.add('hidden');
+}
+function playChime(kind='sparkle'){
+  if(!state.soundOn||!state.audioCtx)return;
+  const ctx=state.audioCtx;
+  try{
+    const base=kind==='arrival'?523:kind==='landmark'?659:880;
+    const now=ctx.currentTime;
+    [0,.12].forEach((delay,i)=>{
+      const oscillator=ctx.createOscillator(),gain=ctx.createGain();
+      oscillator.type='sine';oscillator.frequency.setValueAtTime(base*(i?1.25:1),now+delay);
+      gain.gain.setValueAtTime(.0001,now+delay);
+      gain.gain.exponentialRampToValueAtTime(.035,now+delay+.025);
+      gain.gain.exponentialRampToValueAtTime(.0001,now+delay+.29);
+      oscillator.connect(gain);gain.connect(ctx.destination);
+      oscillator.start(now+delay);oscillator.stop(now+delay+.32);
+    });
+  }catch(e){console.warn('Audio no disponible',e)}
+}
+function showLandmark(){
+  if(state.landmarkShown||!state.landmark)return;
+  state.landmarkShown=true;
+  $('landmark-title').textContent=state.landmark.name;
+  $('landmark-copy').textContent=state.landmark.message;
+  $('landmark-panel').classList.remove('hidden');
+  playChime('landmark');
+  clearTimeout(state.landmarkTimer);
+  state.landmarkTimer=setTimeout(()=>$('landmark-panel').classList.add('hidden'),4900);
+}
+function finishIntro(){
+  clearTimeout(state.introTimer);
+  if($('cinematic-intro').classList.contains('hidden'))return;
+  $('cinematic-intro').classList.add('hidden');
+  if(state.path && state.map && !state.playing)playPause();
+}
+function showIntro(){
+  $('cinematic-intro').classList.remove('hidden');
+  state.introTimer=setTimeout(finishIntro,state.reducedMotion?1000:3900);
+}
+
 function line(coords){return {type:'Feature',properties:{},geometry:{type:'LineString',coordinates:coords}};}
 function pin(text,home=false){const e=document.createElement('div');e.className='place-pin'+(home?' place-pin--home':'');e.textContent=text;return e;}
 function mouseNode(){
@@ -291,12 +349,13 @@ function setup(){
   $('address-form').addEventListener('submit',async e=>{
     e.preventDefault();clearError();setBusy(true);
     try {
-      state.route=await calculateRoute();state.path=state.route.path;state.progress=0;state.lastStage=-1;
+      state.route=await calculateRoute();state.path=state.route.path;prepareJourney(false);state.progress=0;state.lastStage=-1;
       $('distance').textContent=formatDistance(state.route.serviceMeters);
       $('route-mode-label').textContent='Ruta a pie real · simulación mágica';
       $('route-legal-note').textContent='El recorrido sigue calles reales; el movimiento del Ratón es ficticio, no GPS. Solo un adulto confirma la llegada.';
       showScreen('route');
       await ensureMap();
+      showIntro();
     }catch(err){console.warn(err);showScreen('address');errorMessage(err.message||'No se pudo calcular la ruta.');}
     finally{setBusy(false);}
   });
