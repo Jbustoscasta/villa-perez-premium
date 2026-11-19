@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {validCoordinate, haversineMeters,createPath,pointAt,compactAddress,postcardSvg,escapeXml} from '../route-utils.mjs';
+test('coordinate validation',()=>{ assert.equal(validCoordinate([-3.69,40.42]),true);assert.equal(validCoordinate([200,40]),false);assert.equal(validCoordinate([null,40]),false); });
+test('distance zero and nonzero',()=>{ assert.equal(haversineMeters([-3,40],[-3,40]),0);assert.ok(haversineMeters([-3,40],[-3.01,40])>800); });
+test('route interpolation follows line, not straight endpoints',()=>{let p=createPath([[0,0],[0,1],[1,1]]);let m=pointAt(p,.5);assert.ok(m.coordinate[0]<.1);assert.ok(m.coordinate[1]>.9);assert.deepEqual(pointAt(p,1).coordinate,[1,1]);});
+test('invalid paths fail and zero-length fail',()=>{ assert.throws(()=>createPath([[0,0]]));assert.throws(()=>createPath([[0,0],[0,0]])); });
+test('postcard does not reveal private destination address',()=>{const s=postcardSvg({clinicName:'Dentista <b>',distanceMeters:3000,points:[[-3.6,40.4],[-3.7,40.5]]});assert.ok(s.includes('Dentista &lt;b&gt;'));assert.ok(!s.includes('Calle'));assert.ok(!s.includes('40.5'));assert.ok(!s.includes('<b>'));});
+test('compact Photon address',()=>{assert.match(compactAddress({properties:{street:'Gran Vía',housenumber:'4',city:'Madrid'}}),/Madrid/);});
+test('xml escape',()=>{assert.equal(escapeXml('a&<b>'),'a&amp;&lt;b&gt;');});
