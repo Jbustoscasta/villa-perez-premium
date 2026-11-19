@@ -115,7 +115,7 @@ async function connectGoogle(){
    const map=new Map3DElement({
      center:{lat:START.lat,lng:START.lng,altitude:685},
      heading:244,tilt:66,range:1650,mode:'SATELLITE',
-     qualityMode:'PERFORMANCE',defaultUIHidden:true
+     qualityMode:'FIDELITY',defaultUIHidden:true
    });
    state.map=map;
    map.style.cssText='width:100%;height:100%;display:block;';
