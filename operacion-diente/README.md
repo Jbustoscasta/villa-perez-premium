@@ -116,4 +116,21 @@ Las pruebas automáticas validan geometría, rumbo, partículas en ruta y no div
 
 ## Licencias y atribución
 
-Mapa: © colaboradores de OpenStreetMap. Cliente: MapLibre GL JS. Datos de prueba: OpenFreeMap, Photon, OSRM-FOSSGIS (respetar políticas y atribuciones de cada proveedor).
+Mapa: © colaboradores de OpenStreetMap. Cliente: MapLibre GL JS. Datos de prueba: OpenFreeMap, Photon, OSRM-FOSSGIS (respetar políticas y atribuciones de cada proveedor).## Versión v0.7 — película sobre calles reales, SIN MINIJUEGOS
+
+**Decisión del producto:** por indicación expresa se RETIRAN los tres minijuegos de estrellas, búsqueda y llave. Se eliminan sus HTML, CSS, lógica y tests. El viaje es una película interactiva ligera, con el único control infantil opcional de alternar la cámara mediante la brújula.
+
+1. **La salida de Villa Pérez:** escena de ~5,7 segundos con la fachada original intacta, ventanas con halos superpuestos, chispita recorriendo el tejado/puerta, resplandor, Ratón oficial intacto por encima, campanilla opcional y texto/locución «¡Atención! ¡Ha caído un diente! ¡Preparad la mochila!». Transición con zoom, desenfoque y cambio a la cartografía real.
+2. **Ciudad reactiva:** destellos proyectados sobre la geometría verdadera de la ruta, huellas de luz, pulsos circulares y halos alrededor del trayecto. Las luces son **efectos decorativos** calculados sobre la ruta; no se atribuyen ubicaciones reales de farolas.
+3. **Lugares reales:** parada panorámica con zoom breve solamente si la ruta pasa cerca de un punto público verificado; en otro caso mensaje genérico, sin inventar monumentos. Street View aún no integrado.
+4. **Brújula de dos vistas:** un solo control CIUDAD / RATÓN que cambia perspectiva cartográfica 3D, pitch, bearing y seguimiento. El ratón sigue siendo la imagen oficial inalterada, no un modelo 3D recreado.
+5. **Llegada secreta:** el mapa infantil solo muestra ruta hasta antes del domicilio particular, y al 92 % pasa a una puerta ilustrada con niebla y luz. Un adulto confirma la llegada.
+6. **Recuerdo para la mañana:** pantalla de buenas noches con botón voluntario de guardar y un enlace que se muestra al volver después de las **06:00 del día siguiente** en el mismo navegador, o acceso inmediato «modo demo». Postal PNG vertical exportable y compartible. 3 estrellas se reciben automáticamente durante la ruta, no hay juegos.
+7. **Privacidad:** el único dato persistente de la sorpresa es un pequeño objeto en localStorage (clínica textual, distancia redondeada a 500 m, cantidad de estrellas, fecha). **No** se guarda dirección, coordenadas ni trazado. Caduca tras 15 días. Los servicios de rutas/geocodificación externos sí procesan las direcciones temporalmente durante la aventura.
+
+**Audio:** el botón activa sonidos y voz española del navegador como DEMOSTRACIÓN (su timbre NO es la voz oficial del Ratón); cuando se aporten clips aprobados, se configuran en `config.js` para utilizar exclusivamente la locución oficial. En Safari el audio requiere activación mediante gesto y puede diferir entre dispositivos.
+
+**Pruebas:** 22 tests unitarios de mapa, trayecto, privacidad, control de estrellas y recuerdo diferido. La verificación en un iPhone físico y la disponibilidad del servidor público de rutas siguen pendientes.
+
+**Demo:** https://jbustoscasta.github.io/villa-perez-premium/operacion-diente/?demo=1&v=0.7.0
+
