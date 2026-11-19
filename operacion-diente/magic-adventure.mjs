@@ -45,7 +45,7 @@ export class MagicAdventure {
     this.onSound=onSound;this.getAudioUrls=getAudioUrls;
     this.done=new Set();this.earned=new Set();this.active=null;this.sound=false;
     this.voiceIds=new Set();this.spoken=new Set();this.timeouts=[];this.markers=[];
-    this.hops=0;this.gathered=new Set();this.voiceAudio=null;this.lastUpdate=0;
+    this.hops=0;this.gathered=new Set();this.voiceAudio=null;this.lastUpdate=0;this.completing=false;
     this.onMove=()=>this.positionMarkers();
     $('quest-close').addEventListener('click',()=>this.finish(false));
     $('quest-skip').addEventListener('click',()=>this.finish(false));
@@ -68,12 +68,14 @@ export class MagicAdventure {
     map?.on('move',this.onMove);map?.on('resize',this.onMove);
   }
   reset(){
-    this.active=null;this.done.clear();this.earned.clear();this.spoken.clear();this.gathered.clear();
+    for(const id of this.timeouts)clearTimeout(id);this.timeouts=[];
+    this.active=null;this.completing=false;this.done.clear();this.earned.clear();this.spoken.clear();this.gathered.clear();
     this.hops=0;this.lastUpdate=0;this.cancelSpeech();
     this.removeMarkers();this.hideChallenge();this.updateHud();
     this.attachMap(null);
   }
-  setAudio(enabled){
+  setAudio(enabled,context){
+    if(context)this.audioContext=context;
     this.sound=Boolean(enabled);this.onSound?.(this.sound);
     if(!this.sound)this.cancelSpeech();
     $('voice-status').textContent=this.sound?'Narración de demostración activa':'Activa la voz de demostración ♪';
@@ -116,7 +118,7 @@ export class MagicAdventure {
   playSound(type='star'){
     try{
       if(!this.sound)return;
-      const context=window.__vpAudioContext;
+      const context=this.audioContext;
       if(!context)return;
       const now=context.currentTime;
       const keys=type==='success'?[523,659,784,1046]:type==='portal'?[392,523,784]:[880,1108];
@@ -141,7 +143,7 @@ export class MagicAdventure {
   }
   start(mission){
     this.onPause?.();
-    this.active=mission;this.gathered.clear();this.hops=0;
+    this.active=mission;this.completing=false;this.gathered.clear();this.hops=0;
     const map=this.getMap(),path=this.getPath();
     $('quest-brow').textContent='DESAFÍO MÁGICO · '+(this.done.size+1)+' DE 3';
     $('quest-title').textContent=mission.name;
@@ -178,10 +180,14 @@ export class MagicAdventure {
   positionMarkers(){
     if(!this.active||!this.getMap()||!this.getPath())return;
     const stage=$('map'),w=stage.clientWidth||360,h=stage.clientHeight||500;
-    for(const marker of this.markers){
+    const cardH=document.querySelector('.quest-card')?.offsetHeight||150;
+    const minY=Math.min(127,Math.max(80,h*.32));
+    const maxY=Math.max(minY,h-cardH-38);
+    for(const [index,marker] of this.markers.entries()){
       const position=this.getMap().project(pointAt(this.getPath(),marker.frac).coordinate);
       // Keep touch targets reachable when the route goes behind header controls.
-      const x=clamp(position.x,42,w-42),y=clamp(position.y,144,h-95);
+      const shiftedX=position.x+(this.active.key==='lights'?(index-1)*38:0);
+      const x=clamp(shiftedX,38,w-38),y=clamp(position.y,minY,maxY);
       marker.button.style.left=x+'px';marker.button.style.top=y+'px';
     }
   }
@@ -219,6 +225,7 @@ export class MagicAdventure {
     const el=$('quest-swipe-track');
     const rect=el.getBoundingClientRect(),p=clamp((e.clientX-rect.left)/rect.width,0,1);
     this.slideFraction=p;
+    $('quest-swipe-track').setAttribute('aria-valuenow',String(Math.round(p*100)));
     $('quest-swipe-knob').style.left=(p*83)+'%';
     $('quest-swipe-fill').style.width=(p*100)+'%';
   }
@@ -229,11 +236,13 @@ export class MagicAdventure {
   }
   resetSwipe(){
     this.swiping=false;this.slideFraction=0;
+    $('quest-swipe-track').setAttribute('aria-valuenow','0');
     $('quest-swipe-knob').style.left='0%';$('quest-swipe-fill').style.width='0%';
   }
   portalDone(){if(this.active?.key==='portal'){this.playSound('portal');this.complete();}}
   complete(){
-    if(!this.active)return;
+    if(!this.active||this.completing)return;
+    this.completing=true;
     this.earned.add(this.active.key);
     $('quest-result').textContent='¡Lo has conseguido! ✦';
     this.playSound('success');
@@ -244,6 +253,7 @@ export class MagicAdventure {
   }
   finish(success=false){
     if(!this.active)return;
+    this.completing=false;
     const key=this.active.key;
     this.done.add(key);
     if(!success)this.say('skip');
