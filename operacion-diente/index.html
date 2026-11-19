@@ -7,8 +7,8 @@
   <meta name="description" content="Operación Diente Perdido: acompaña el viaje mágico del Ratón Pérez desde tu clínica dental hasta casa, sobre un mapa real."/>
   <title>Operación Diente Perdido · Villa Pérez</title>
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css"/>
-  <link rel="stylesheet" href="./styles.css?v=0.6.0"/>
-  <link rel="stylesheet" href="./adventure.css?v=0.6.0"/>
+  <link rel="stylesheet" href="./styles.css?v=0.7.0"/>
+  <link rel="stylesheet" href="./cinematic-story.css?v=0.7.0"/>
 </head>
 <body>
   <div class="app-shell" id="app">
@@ -32,7 +32,8 @@
           <div class="clinic-chip"><span class="chip-icon">⌂</span><div><small>La casa del Ratón Pérez está en</small><strong id="welcome-clinic">Clínica del Doctor Abreu</strong></div></div>
           <button type="button" id="start" class="button button-gold button-large">¡Se me ha caído un diente! <span aria-hidden="true">→</span></button>
           <button type="button" id="try-demo" class="button button-demo button-large">▶ Probar recorrido de Madrid</button>
-          <button type="button" id="welcome-sound" class="welcome-sound" aria-pressed="false">♫ Activar voz y sonidos mágicos</button>
+          <button type="button" id="open-morning-gift" class="button button-gold button-large hidden">✦ Abrir mi sorpresa de ayer</button>
+          <button type="button" id="welcome-sound" class="welcome-sound" aria-pressed="false">♫ Activar narración de prueba y sonidos</button>
           <div id="demo-error" class="error hidden" role="alert"></div>
           <p class="demo-places">Ruta pública de prueba: Puerta de Alcalá → Plaza Mayor · sin introducir datos personales.</p>
           <p class="soft-note">Una aventura de fantasía con recorrido geográfico real.</p>
@@ -82,37 +83,25 @@
         <div class="map-stage">
           <div id="map" role="application" aria-label="Mapa vectorial de alta definición con calles reales y viaje mágico, hasta un área cercana al domicilio"></div>
           <canvas id="route-fx" class="route-fx" aria-hidden="true"></canvas>
-          <div id="quest-targets" class="quest-targets" aria-hidden="false"></div>
-          <div id="map-signature" class="map-signature" aria-hidden="true"><span class="premium-dot"></span> VILLA PÉREZ <small>· AVENTURA MÁGICA v0.6</small></div>
+          <div id="street-magic" class="street-magic" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+          <div id="map-signature" class="map-signature" aria-hidden="true"><span class="premium-dot"></span> VILLA PÉREZ <small>· CINE MÁGICO v0.7</small></div>
           <div id="cinematic-intro" class="cinematic-intro hidden" aria-live="polite" role="status">
             <div class="intro-light"></div>
-            <div class="cinematic-illustration">
-              <img src="../villa-hero.webp" alt="Villa Pérez: fachada original" class="cinematic-facade"/>
+            <div class="cinematic-illustration" aria-hidden="true">
+              <img src="../villa-hero.webp" alt="" class="cinematic-facade"/>
+              <div class="cinematic-windows"><b></b><b></b><b></b><b></b><b></b></div>
+              <svg class="cinematic-trace" viewBox="0 0 400 310" preserveAspectRatio="xMidYMid meet">
+                <path d="M110 85 C148 83 144 128 175 136 S235 173 212 222 Q222 255 265 269" fill="none" stroke="#ffdf96" strokeWidth="3" strokeDasharray="3 10" opacity=".72"/>
+                <circle class="trace-light" cx="110" cy="85" r="8" fill="#fff5cd">
+                  <animateMotion dur="3.2s" begin=".5s" fill="freeze" path="M0 0 C38 -2 34 43 65 51 S125 88 102 137 Q112 170 155 184"/>
+                </circle>
+              </svg>
+              <div class="cinematic-door-glow"></div>
               <img src="../perez.png" alt="" class="cinematic-mouse"/>
+              <div class="cinematic-moonbeam"></div>
             </div>
-            <div class="cinematic-intro-copy"><span class="eyebrow">VILLA PÉREZ · MISIÓN EN MARCHA</span><h2>La puerta se ha abierto…</h2><p>El Ratón Pérez sale de la clínica para emprender su aventura.</p></div>
+            <div class="cinematic-intro-copy"><span class="eyebrow">VILLA PÉREZ · HA LLEGADO UN AVISO</span><h2>¡Ha caído un diente!</h2><p>¡Preparad la mochila! Una luz atraviesa Villa Pérez… y la puerta comienza a abrirse.</p></div>
             <button type="button" id="skip-intro" class="cinematic-skip">Saltar introducción →</button>
-          </div>
-          <div id="magic-game" class="magic-game hidden" role="dialog" aria-modal="false" aria-labelledby="quest-title" aria-describedby="quest-copy">
-            <div class="quest-card">
-              <div class="quest-heading-row">
-                <span id="quest-brow" class="eyebrow">DESAFÍO MÁGICO · 1 DE 3</span>
-                <button type="button" id="quest-close" class="quest-close" aria-label="Continuar sin jugar">✕</button>
-              </div>
-              <h2 id="quest-title">Enciende el camino</h2>
-              <p id="quest-copy">Toca tres estrellas sobre el camino.</p>
-              <span id="quest-progress" class="quest-progress">0 / 3 estrellas</span>
-              <p id="quest-result" class="quest-result" aria-live="polite"></p>
-              <div id="quest-swipe" class="quest-swipe hidden">
-                <div id="quest-swipe-track" class="quest-swipe-track" tabindex="0" role="slider" aria-label="Deslizar la llave para abrir el portal mágico" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                  <div id="quest-swipe-fill" class="quest-swipe-fill"></div>
-                  <div id="quest-swipe-knob" class="quest-swipe-knob" aria-hidden="true">⚷</div>
-                  <span class="quest-swipe-hint" aria-hidden="true">Desliza →</span>
-                </div>
-                <button type="button" id="quest-collect" class="quest-accessible">Abrir con un toque</button>
-              </div>
-              <button type="button" id="quest-skip" class="quest-skip">Continuar sin jugar →</button>
-            </div>
           </div>
           <div id="landmark-panel" class="landmark-panel hidden" aria-live="polite" role="status">
             <span class="landmark-eyebrow">✦ POSTAL DEL CAMINO</span>
@@ -122,9 +111,9 @@
           </div>
           <div id="final-curtain" class="final-curtain hidden" aria-live="polite">
             <div class="curtain-stars" aria-hidden="true">✧ ✦ ✧</div>
-            <div class="curtain-door" aria-hidden="true">⌂</div>
+            <div class="enchanted-door" aria-hidden="true"><i class="enchanted-door-panel"></i><i class="enchanted-door-knob"></i><i class="enchanted-door-steps"></i></div>
             <strong>Shhh… ¡ya casi estoy!</strong>
-            <p>Los últimos pasos son secretos. Será mejor no mirar…</p>
+            <p>Hay una regla importante: nadie puede verme entrar. El último tramo quedará entre nosotros.</p>
           </div>
           <div class="map-vignette" aria-hidden="true"></div>
           <div class="map-magic-dust" aria-hidden="true"><i>✦</i><i>✧</i><i>✦</i><i>✧</i><i>✦</i></div>
@@ -139,17 +128,16 @@
           <div class="map-buttons">
             <button type="button" id="fit-map" class="map-btn" title="Ver toda la ruta" aria-label="Ver toda la ruta">⤢</button>
             <button type="button" id="follow-map" class="map-btn is-selected" title="Seguir al Ratón" aria-label="Seguir al Ratón" aria-pressed="true">◎</button>
-            <button type="button" id="cinematic-map" class="map-btn is-selected" title="Cambiar vista cinematográfica" aria-label="Cambiar vista cinematográfica" aria-pressed="true">◈</button>
-            <button type="button" id="raton-view" class="map-btn" title="Alternar vista cercana del Ratón" aria-label="Activar vista Ratón" aria-pressed="false">◉</button>
+            <button type="button" id="magic-compass" class="map-btn compass-btn" aria-label="Vista ciudad. Activar vista Ratón" aria-pressed="false" title="Alternar vista ciudad y vista Ratón"><span class="compass-needle">◈</span><small id="compass-label">CIUDAD</small></button>
             <button type="button" id="sound-toggle" class="map-btn" title="Activar narración y sonidos de demostración" aria-label="Activar narración y sonidos de demostración" aria-pressed="false">♪</button>
             <button type="button" id="narrate-again" class="map-btn" title="Repetir último mensaje" aria-label="Repetir último mensaje de la aventura">↻</button>
           </div>
         </div>
         <div class="route-sheet">
           <div class="sheet-handle" aria-hidden="true"></div>
-          <div class="journey-head"><div><span class="eyebrow">MISIÓN ACTIVA · AVENTURA INTERACTIVA</span><h2>De Villa Pérez hasta tu casa</h2></div><span class="progress-number" id="percent">0%</span></div>
-          <div class="missions-hud" aria-label="Estrellas conseguidas">
-            <span><strong id="mission-hud-count">0 / 3</strong> desafíos superados</span>
+          <div class="journey-head"><div><span class="eyebrow">UN CUENTO QUE RECORRE CALLES REALES</span><h2>De Villa Pérez hasta tu casa</h2></div><span class="progress-number" id="percent">0%</span></div>
+          <div class="missions-hud" aria-label="Estrellas del viaje iluminadas automáticamente">
+            <span><strong id="mission-hud-count">0 / 3</strong> estrellas del camino</span>
             <span id="mission-hud-stars" class="missions-hud-stars">✧ ✧ ✧</span>
           </div>
           <div class="route-track" id="route-track" role="progressbar" aria-label="Progreso de la misión" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="route-track-fill" id="track-fill"></div></div>
@@ -165,24 +153,43 @@
       <section id="screen-arrival" class="screen screen--arrival" aria-labelledby="arrival-title">
         <div class="arrival-glow"></div><div class="arrival-confetti" aria-hidden="true">✦ ✧ ✦ ✧ ✦</div><div class="arrival-icon" aria-hidden="true">⌂</div>
         <span class="eyebrow">PASO 3 · MISIÓN CUMPLIDA</span>
-        <h1 id="arrival-title">¡He llegado a tu casa!</h1>
-        <p>He seguido cada calle desde Villa Pérez. Ahora toca descansar… ¡mañana te espera una sorpresa!</p>
+        <h1 id="arrival-title">¡La magia ha llegado!</h1>
+        <p>Los últimos pasos son secretos. Ahora toca descansar… porque mañana tendrás un recuerdo de nuestro viaje.</p>
         <div class="letter"><span>✦</span><strong>MENSAJE DE VILLA PÉREZ</strong><p>«Gracias por avisarme. Ha sido un viaje inolvidable. Cuida mucho de tu sonrisa y sigue soñando».</p></div>
         <div class="recap"><div><span>Origen</span><strong id="recap-clinic">Clínica del Doctor Abreu</strong></div><div><span>Camino recorrido</span><strong id="recap-distance">— km</strong></div></div>
         <div class="achievement-summary">
           <strong>✦ Las estrellas de tu aventura</strong>
-          <p id="arrival-missions">0 de 3 desafíos mágicos conseguidos</p>
+          <p id="arrival-missions">0 de 3 estrellas del viaje iluminadas</p>
           <div id="arrival-badges" class="arrival-badges"></div>
         </div>
-        <button type="button" id="download-postcard" class="button button-gold button-large">Guardar mi postal mágica ↓</button>
-        <button type="button" id="share-postcard" class="button button-demo button-large">Compartir mi postal mágica ↗</button>
-        <p id="postcard-error" class="small hidden" role="alert"></p>
+        <button type="button" id="save-morning" class="button button-gold button-large">Guardar la sorpresa para mañana ✦</button>
+        <button type="button" id="preview-morning" class="button button-demo button-large">Ver el recuerdo ahora · modo demo</button>
+        <p id="save-morning-status" class="small" role="status"></p>
         <button type="button" id="new-trip" class="button button-text">Preparar otra misión</button>
-        <small class="soft-note">La postal usa un recorrido decorativo: nunca se copia el trazado real de tu casa.</small>
+        <small class="soft-note">Solo se guarda en este navegador una ficha de recuerdo sin dirección ni coordenadas. Los padres controlan cuándo mostrarlo.</small>
+      </section>
+      <section id="screen-morning" class="screen screen--morning" aria-labelledby="morning-title">
+        <div class="morning-sky" aria-hidden="true"><span class="morning-sun"></span><span class="morning-stars">✧ ✦ ✧</span></div>
+        <span class="eyebrow">UN REGALO PARA LA MAÑANA SIGUIENTE</span>
+        <h1 id="morning-title">¡Misión completada!</h1>
+        <p>¡Gracias por acompañarme! He guardado un recuerdo de nuestro viaje desde Villa Pérez.</p>
+        <div class="morning-scroll">
+          <span class="morning-seal" aria-hidden="true">✦</span>
+          <span class="eyebrow">CERTIFICADO DE VIAJE MÁGICO</span>
+          <strong id="morning-clinic">Tu clínica dental</strong>
+          <div class="morning-distance"><span>Camino recorrido</span><b id="morning-distance">— km</b></div>
+          <div class="morning-awards"><span>Estrellas del camino</span><b id="morning-stars">✦ ✦ ✦</b></div>
+          <p>Una aventura de verdad… con un poquito de magia.</p>
+        </div>
+        <button type="button" id="download-postcard" class="button button-gold button-large">Guardar postal para WhatsApp ↓</button>
+        <button type="button" id="share-postcard" class="button button-demo button-large">Compartir recuerdo ↗</button>
+        <p id="postcard-error" class="small hidden" role="alert"></p>
+        <button type="button" id="morning-new-trip" class="button button-text">Volver a Villa Pérez</button>
+        <small class="soft-note">Este recuerdo no incluye la dirección, las coordenadas ni el mapa de tu domicilio.</small>
       </section>
     </main>
-    <footer class="site-footer"><span>Una experiencia de <b>Ilusiono</b></span><span id="site-mode">DEMO · AVENTURA INTERACTIVA v0.6 · PRIVACIDAD INFANTIL</span></footer>
+    <footer class="site-footer"><span>Una experiencia de <b>Ilusiono</b></span><span id="site-mode">DEMO · CINE MÁGICO v0.7 · SIN MINIJUEGOS</span></footer>
   </div>
-  <script type="module" src="./app.js?v=0.6.0"></script>
+  <script type="module" src="./app.js?v=0.7.0"></script>
 </body>
 </html>
