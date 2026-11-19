@@ -1,136 +1,48 @@
-# Operación Diente Perdido — módulo Villa Pérez v0.6 · AVENTURA INTERACTIVA (mapa premium + minijuegos + voz)
+# Operación Diente Perdido — Villa Pérez v0.7
 
-## Demo pública para iPhone — 19 noviembre 2026
+**Módulo autónomo** de `villa-perez-premium/operacion-diente/` que no modifica el módulo Foto con Pérez. Se puede probar en iPhone por HTTPS:
 
-**URL:** https://jbustoscasta.github.io/villa-perez-premium/operacion-diente/
+- Inicio: https://jbustoscasta.github.io/villa-perez-premium/operacion-diente/?v=0.7.0
+- Prueba sin datos privados: https://jbustoscasta.github.io/villa-perez-premium/operacion-diente/?demo=1&v=0.7.0
 
-**Enlace de acceso directo:** https://jbustoscasta.github.io/villa-perez-premium/operacion-diente/?demo=1
+## La película del Ratón (sin minijuegos)
 
-El botón «Probar recorrido de Madrid» selecciona dos lugares públicos (Puerta de Alcalá → Plaza Mayor) sin pedir dirección familiar. Intenta obtener una ruta peatonal calculada por el servicio OSM. Si este servidor público falla, muestra una **ruta ilustrativa explícitamente marcada como no verificada** para que se pueda evaluar la interfaz. La animación empieza al terminar de cargar el mapa. La opción «¡Se me ha caído un diente!» permite probar otras direcciones reales mediante el formulario para adultos.
+Por decisión expresa de producto, **NO hay retos de tocar estrellas, perseguir objetos ni arrastrar llaves**. Los archivos `magic-adventure.mjs`, `adventure.css` y sus pruebas ya no forman parte del módulo.
 
-**Límites de la demo:** la dirección real de Clínica del Doctor Abreu NO está configurada; los servicios comunitarios pueden limitar peticiones. La prueba en Safari físico y la accesibilidad de GitHub Pages deben comprobarse externamente. No es un servicio de producción.
+1. **Salida de película** (~5,7 s): fachada `../villa-hero.webp` intacta. Luces de ventanas, halo en la puerta y luz que recorre la fachada con SVG/CSS, campanilla opcional y locución: «¡Atención! ¡Ha caído un diente! ¡Preparad la mochila!». Ratón oficial `../perez.png` superpuesto como capa intacta. Transición zoom/blur al mapa real y acceso «Saltar introducción».
+2. **Mapa reactivo:** cartografía vectorial real con MapLibre/OpenFreeMap, callejero de contraste alto, edificios 3D donde hay datos, ruta dorada multicapa, partículas sincronizadas con la polilínea, mini huellas, ondas de luz y cinco brillos que siguen posiciones calculadas de la ruta. **Los brillos simulan farolas, no representan inventario real de farolas.**
+3. **Sorpresas geográficas:** un lugar público solo se nombra cuando está suficientemente próximo a la ruta, con enfoque de cámara y un mensaje. En otros trayectos, el hito es genérico; no se inventan edificios, puentes o parques.
+4. **Brújula mágica:** un único control CIUDAD / RATÓN alterna cámara urbana 3D y cámara baja que sigue la ruta desde atrás. La imagen del personaje no se redibuja ni se convierte en un modelo 3D aproximado.
+5. **Llegada secreta:** la ruta infantil se interrumpe antes de los últimos metros de la casa. Desde el 92 % aparece una puerta fantástica, niebla luminosa y una narración; únicamente el adulto confirma finalizar la misión.
+6. **Mañana siguiente:** pantalla nocturna con botón voluntario «Guardar la sorpresa para mañana» y previsualización inmediata. Si se guarda, al abrir la misma web en el mismo navegador después de las **06:00 del día siguiente**, aparece «Abrir mi sorpresa de ayer». Se obtiene una postal 1080 × 1350 en PNG, compartible por WhatsApp; las tres estrellas se encienden automáticamente durante el trayecto, sin intervención del niño.
 
-Módulo web independiente, **sin tocar el flujo de Foto con Pérez**. Diseñado para alojarse en `villa-perez-premium/operacion-diente/` y reutilizar `../perez.png` (máster oficial intacto) y `../villa-hero.webp` (fachada oficial existente). No se dibuja ni se sustituye el personaje.
+## Sonido
 
-## NOVEDAD v0.6 — Experiencia infantil interactiva
+La narración se habilita con un botón de usuario (requisito de Safari), está desactivada inicialmente y utiliza una voz española del sistema **solo para la demo**, no la voz oficial del Ratón Pérez. `config.js` permite configurar clips MP3 oficiales aprobados para intro, depart, halfway, scenic, near y morning. Los efectos de campanilla y el ambiente se sintetizan localmente en WebAudio; existe botón de silencio y se respetan preferencias de movimiento reducido. El audio puede quedar bloqueado si Safari no recibe un gesto explícito.
 
-- **Juego 1, «Enciende el camino» (~17 %):** tres estrellas pulsables situadas como capa interactiva sobre puntos de la **ruta cartográfica real y privada recortada**. Se ilumina cada una al tocarla.
-- **Juego 2, «¡Una estrella traviesa!» (~43 %):** una estrella cambia entre tres posiciones del trazado real; tres pulsaciones permiten capturarla.
-- **Juego 3, «La llave de la noche» (~71 %):** barra de arrastre táctil para abrir el portal; alternativa accesible «Abrir con un toque» y soporte de teclado.
-- Los juegos **pausan la reproducción** de forma exacta, y reanudan la misma ruta y velocidad al completarse. Todos son optativos y se pueden saltar sin castigo.
-- **Voz guiada (demostración):** activa manualmente desde bienvenida o botón de sonido en el mapa. Narración web local en español usando `SpeechSynthesis` y pequeños sonidos `WebAudio` sintetizados; voz del sistema, **no la voz oficial del Ratón Pérez**. El objeto `APP_CONFIG.narrationAudio` permite incorporar archivos aprobados del personaje para las diferentes frases y sustituir la narración de demostración.
-- **Ambiente nocturno opcional** a volumen muy bajo, con limpieza y silencio cuando se pausa o la pestaña pasa a segundo plano.
-- **Vista Ratón:** botón ◉ con zoom y perspectiva de cámara a nivel de calles; sigue la ruta de MapLibre. No cambia la ilustración maestra `perez.png`.
-- **Punto de interés real:** si se detecta un monumento público conocido cercano al camino, la cámara se acerca a sus coordenadas durante un breve intervalo, con comentario narrativo. Si no hay monumento verificable, se muestra una sorpresa genérica, sin inventar lugares.
-- **Colección de estrellas:** 0–3 insignias mostradas durante la ruta, al terminar y en la postal. Se mantienen únicamente en memoria de esa pestaña; no hay perfil infantil.
-- **Postal PNG vertical 1080×1350:** guardar o compartir mediante `navigator.share` cuando el sistema lo permita, y descarga de respaldo. Emplea trazado genérico y distancia redondeada al km, sin calles, coordenadas, domicilio ni dirección de llegada.
-- **Privacidad:** el mapa infantil continúa ocultando unos 160 m antes del domicilio. El niño nunca necesita introducir datos personales. Los proveedores de mapas de demostración son externos: no introducir direcciones de menores en producción antes de completar la evaluación de protección de datos.
-- **Street View:** no integrado por ahora. Añadir panorámicas de terceros exige comprobar licencia, cobertura, atribución y compatibilidad legal de una web infantil; esta versión ofrece acercamientos 3D a lugares públicos reales sobre el mapa.
-- **Pruebas:** 22 pruebas automáticas de lógica, incluidas pausa/reanudación de los 3 juegos, posición real de estrellas, privacidad, mapa y efectos. Safari físico e integración con servicios cartográficos siguen pendientes de verificación visual.
+## Privacidad infantil
 
-**Demo directa para iPhone:** https://jbustoscasta.github.io/villa-perez-premium/operacion-diente/?demo=1&v=0.6.0
+- Origen de demostración: Puerta de Alcalá (NO es la dirección real de Clínica del Doctor Abreu). Destino de demostración: Plaza Mayor. Si el servidor de rutas está saturado, se muestra un **trazado ilustrativo declarado como tal**, nunca presentado como ruta peatonal confirmada.
+- Para misiones personalizadas, un adulto debe introducir origen y destino. La búsqueda se envía a Photon y las coordenadas a OSRM para obtener una ruta real; estos proveedores externos procesan los datos durante la consulta. No usar servicios públicos comunitarios para producción sin contrato/control de capacidad.
+- Las coordenadas, domicilio y polilínea permanecen en la memoria temporal de la página. No se envían a la clínica ni se incluyen en la postal o URL. Para el mapa infantil, se recorta el último tramo de la ruta.
+- **Solo cuando se pulsa «Guardar la sorpresa para mañana»** se escribe una ficha mínima en `localStorage`: nombre de clínica, **distancia redondeada a 500 m**, cantidad de estrellas y fechas. No incluye domicilio, coordenadas ni ruta. Se considera caducada después de 15 días. Para una solución real revisar consentimiento, responsabilidad y política de datos.
+- La postal exportada usa una ruta decorativa independiente de la geografía privada. No hay notificaciones push ni procesos en segundo plano.
 
-## Mejoras visibles de cartografía y efectos — v0.5
+## Tecnología e integración
 
-- **BASE VECTORIAL CAMBIADA:** OpenFreeMap Liberty en vez de Dark Matter; se aplica después del evento de carga una paleta nocturna propia sobre los elementos geográficos REALES.
-- **CALLES Y NOMBRES:** vías principales en crema luminosa, secundarias en azul perla, caminos en verde azulado, calles y lugares con textos claros y halo oscuro para leerlos en el iPhone. Agua azul vivo y parques verde petróleo. Menor oscurecimiento por el degradado UI que tapaba calles.
-- **EDIFICIOS 3D REALES:** capas vectoriales `building` de OpenFreeMap con `render_height`, extrusión progresiva de z14.3 a z15.4, colores de edificio dependientes de altura y etiquetas dibujadas encima. La disponibilidad depende de la zona y la cartografía.
-- **RUTA LUMINOSA:** camino con línea central blanca crema de 6.2 px, segundo halo ámbar 17 px, resplandor difuminado de 34 px y sombra de alto contraste 24 px; diferencia claramente tramo pendiente y tramo recorrido.
-- **PARTÍCULAS EN PANTALLA:** capa Canvas independiente sobre el mapa con 24 destellos proyectados con MapLibre sobre la geometría REAL, estrellas y una pequeña onda viajera. Canvas a DPR máximo 1.7 con actualizaciones a ~22 FPS; desactivado si se solicita reducir movimiento.
-- **CÁMARA:** zoom dinámico próximo a 16.15 (antes 15.15) para ver mejor cada calle. La interfaz permite volver a ver la ruta completa.
-- **SIN INTERFERIR EN FOTO CON PÉREZ:** esta carpeta tiene `premium-map.mjs` como único motor nuevo, integrado en `app.js`, sin tocar `../index.html` ni assets oficiales.
-- **COMPROBACIÓN:** 17 pruebas de geometría, privacidad y estilo/effects, sintaxis JS y concordancia de controles. Sin afirmaciones de validación visual de iPhone/Safari, falta QA en dispositivo.
+- `index.html`, `styles.css`, `cinematic-story.css`: interfaz móvil responsive. Los controles están dentro del documento; sin imágenes de pantallas pegadas como fondo.
+- `app.js`: orquestación de rutas, cámara, reproducción y ciclo de vida.
+- `journey-director.mjs`: audio opcional, tres estrellas pasivas, validación y preparación del recuerdo para la mañana siguiente.
+- `premium-map.mjs`: cartografía real coloreada, 3D, trazos luminosos y reacciones ligadas a la ruta.
+- `route-utils.mjs`: interpolación de distancia, curva cinematográfica, corte de privacidad y SVG de postal.
+- `config.js`: datos de clínica, proveedores de mapa y rutas, referencias a imágenes oficiales.
 
-**Acceso demo:** https://jbustoscasta.github.io/villa-perez-premium/operacion-diente/?demo=1&v=0.5.0
+Para unirlo después con Foto con Pérez: asociar la clínica desde backend verificado, aplicar reglas de suscripción, reutilizar másteres oficiales y enlazar este módulo desde la app existente. No fiarse de datos de clínica pasados en el navegador sin validación.
 
-## Novedades v0.4 — experiencia premium
+## Verificaciones y limitaciones
 
-- **Acto de salida:** superposición animada de la fachada **oficial** `../villa-hero.webp` y el personaje **original intacto** `../perez.png`. Opción «Saltar introducción».
-- **Ritmo cinematográfico:** interpolación de avance con ocho hitos de ritmo suave, frenadas y aceleraciones. Inversa de la curva para pausa, reanudación y cambios de duración sin saltos.
-- **Mapa nocturno premium:** tres capas de ruta dorada con halo, 18 partículas sincronizadas con la geometría real, edificios extruidos opcionales (si el proveedor aporta vector buildings), perspectiva dinámica y giros por rumbo verdadero. Botones de visión general y vista cinematográfica.
-- **Postal del camino:** parada visual que menciona **solamente** un punto público si la ruta pasa a menos de 120 m según coordenadas. En otros recorridos se muestra una sorpresa genérica, sin inventar monumentos. Las imágenes de Street View **no** forman parte de esta versión.
-- **Llegada:** escena nocturna de cierre que se activa a partir del 92 % del viaje.
-- **Privacidad reforzada:** en la misión personalizada, el mapa del niño reproduce solo las calles calculadas hasta unos 160 m antes del domicilio. La distancia total real se mantiene para la información de padres, y la postal usa únicamente un camino decorativo.
-- **Sonido:** dos tonos cortos originales y opcionales, desactivados por defecto; compatibles con silencio y preferencias de movimiento reducido.
-- **Pruebas:** 13 pruebas lógicas aprobadas en comprobación de código; sintaxis JS y correspondencia de IDs de controles verificadas. **No sustituye una QA física de Safari ni validación del servicio cartográfico.**
+Pruebas puras: `node --test operacion-diente/tests/*.test.mjs`. Cubren privacidad, interpolación, mapas, recuerdos y automatización de estrellas. La sintaxis y correspondencia de IDs se revisan antes de publicar. **Las pruebas de lógica no garantizan la reproducción visual en un Safari físico**; pendiente QA real de iPhone, señal móvil, rotación, rendimiento WebGL y proveedores externos.
 
-### Street View
+Street View **no está integrado**: requiere comprobar permisos, condiciones comerciales y privacidad, especialmente al tratarse de un público infantil. Se recomienda en todo caso solo para lugares públicos y nunca cerca de viviendas.
 
-**No integrado todavía.** Google Street View tiene condiciones específicas de visualización y combinación con mapas en el Espacio Económico Europeo; la aplicación está dirigida a niños. Antes de añadir panorámicas, evaluar un proveedor y contrato adecuado (con atribución, privacidad, derechos de uso y cobertura), y limitarlo a lugares públicos lejos de domicilios.
-
-## Qué hace ya
-
-- Pantalla de bienvenida personalizada con nombre de clínica.
-- Zona para padres: origen de clínica editable y domicilio mediante selección de sugerencia de dirección.
-- Geocodificación Photon (OSM) y **ruta real a pie** a través del servidor de pruebas FOSSGIS OSRM.
-- Mapa real interactivo con MapLibre + OpenFreeMap (tema oscuro); línea dorada de progreso a lo largo de geometría real.
-- Posición interpolada sobre la ruta por distancia, controles iniciar/pausar/continuar/ver todo/seguir, dos ritmos.
-- **NUEVO v0.2:** estela de 13 partículas geolocalizadas sobre la ruta de verdad, vista cinematográfica con orientación según el tramo, seguimiento suave (sin saltos de cámara cada 90 ms), hitos visuales de salida/en camino/cerca/llegada y accesibilidad mejorada.
-- **Corrección de privacidad v0.2:** la postal es puramente decorativa y NUNCA reproduce la forma geográfica de la ruta, que podría dar pistas sobre la vivienda. Test explícito contra filtraciones.
-- **Robustez:** las búsquedas de direcciones invalidan peticiones obsoletas incluso al borrar el texto; los fallos al cargar el mapa dejan reintentar.
-- Mensajes de misión, final controlado por adulto y postal descargable como SVG sin datos del domicilio.
-- No usa cookies, analítica ni almacenamiento local. El domicilio se mantiene solo en memoria de la pestaña mientras dura el viaje.
-- Responsive móvil (iPhone Safari por comprobar in situ).
-
-## Arranque
-
-Si se añade al repo existente (recomendado para respetar recursos compartidos):
-
-`https://jbustoscasta.github.io/villa-perez-premium/operacion-diente/`
-
-O para desarrollo local, desde la **raíz del repo que contiene `perez.png` y `villa-hero.webp`**:
-
-```bash
-python3 -m http.server 8080
-# abrir http://localhost:8080/operacion-diente/
-```
-
-Para usar el ZIP aislado crea una carpeta superior con `perez.png` y `villa-hero.webp` originales sin modificarlos, o ajusta en `config.js` las rutas `assets` a las copias aprobadas. Sin estos recursos se muestra el mapa y un indicador genérico, no un Ratón Pérez reimaginado.
-
-## Demo de clínica — ¡importante!
-
-«Clínica del Doctor Abreu» aparece **solo como nombre demostrativo**. Su ubicación real **NO se conoce**: la demo inicia en **Puerta de Alcalá, Madrid**, claramente indicada como «origen de prueba». Selecciona una dirección real de clínica en el formulario antes de calcular el recorrido definitivo. **No atribuir la localización de la demo a la clínica.**
-
-## Servicios externos / requisitos antes de lanzar a clientes
-
-`config.js` apunta a **servidores públicos de demostración**: `photon.komoot.io`, `routing.openstreetmap.de` y `tiles.openfreemap.org`. En esta fase hay límites de capacidad, políticas de uso, errores posibles de CORS y sin SLA. **No usarlos para atender familias de producción ni para uso comercial sostenido sin contratación / autorización / infraestructura.** Reemplazar por servicios propios o comerciales con geocodificador y enrutador peatonal, proxy servidor, cuotas y auditoría de condiciones. El mapa exige conexión a Internet.
-
-**Privacidad:** el domicilio que escribe el adulto se envía al geocodificador, y las coordenadas a enrutamiento y mapas. No se almacena en servidores de Ilusiono desde este frontend, pero sí se procesa por servicios externos: requiere evaluación legal, acuerdos y medidas adecuadas antes del lanzamiento. No mostrar dirección al niño, a la clínica, en postal ni en analítica. Evitar parámetros de URL con direcciones o coordenadas.
-
-**Seguridad / control comercial:** la clínica y su estado de suscripción deben proceder de backend verificado (no confiar en `config.js` editable o query strings); definir cancelación y fallback a Ilusiono antes de unirlo al QR comercial.
-
-## Integración prevista
-
-- Carpeta `operacion-diente/` con HTML/CSS/JS independiente, enlazada desde portada Foto con Pérez con botón «¡Se me ha caído un diente!».
-- Reusar nombre/origen desde `clinic` verificado por backend (p.ej. `clinic_id` asociado a tarjeta/QR), nunca tomar dirección de origen de un texto no validado.
-- Reusar archivos `../perez.png` y `../villa-hero.webp` sin procesarlos.
-- Mostrar la experiencia solo con suscripción activa o modo gratuito Ilusiono según reglas de negocio.
-- Capa opcional de mensajes de voz con asset ElevenLabs ya aprobado; no integrado aquí.
-- Próxima fase: versión PNG de postal, voces narrativas, geocoding/routing de producción, QA Safari y posible vista panorámica licenciada.
-
-## Verificación
-
-`node --test ./tests/*.test.mjs`
-
-Las pruebas automáticas validan geometría, rumbo, partículas en ruta y no divulgación de geometría privada. No verifican que proveedores externos respondan ni Safari real. La conexión externa debe probarse en una web HTTPS desplegada. Los servicios de demo comunitarios pueden limitar las solicitudes.
-
-## Licencias y atribución
-
-Mapa: © colaboradores de OpenStreetMap. Cliente: MapLibre GL JS. Datos de prueba: OpenFreeMap, Photon, OSRM-FOSSGIS (respetar políticas y atribuciones de cada proveedor).## Versión v0.7 — película sobre calles reales, SIN MINIJUEGOS
-
-**Decisión del producto:** por indicación expresa se RETIRAN los tres minijuegos de estrellas, búsqueda y llave. Se eliminan sus HTML, CSS, lógica y tests. El viaje es una película interactiva ligera, con el único control infantil opcional de alternar la cámara mediante la brújula.
-
-1. **La salida de Villa Pérez:** escena de ~5,7 segundos con la fachada original intacta, ventanas con halos superpuestos, chispita recorriendo el tejado/puerta, resplandor, Ratón oficial intacto por encima, campanilla opcional y texto/locución «¡Atención! ¡Ha caído un diente! ¡Preparad la mochila!». Transición con zoom, desenfoque y cambio a la cartografía real.
-2. **Ciudad reactiva:** destellos proyectados sobre la geometría verdadera de la ruta, huellas de luz, pulsos circulares y halos alrededor del trayecto. Las luces son **efectos decorativos** calculados sobre la ruta; no se atribuyen ubicaciones reales de farolas.
-3. **Lugares reales:** parada panorámica con zoom breve solamente si la ruta pasa cerca de un punto público verificado; en otro caso mensaje genérico, sin inventar monumentos. Street View aún no integrado.
-4. **Brújula de dos vistas:** un solo control CIUDAD / RATÓN que cambia perspectiva cartográfica 3D, pitch, bearing y seguimiento. El ratón sigue siendo la imagen oficial inalterada, no un modelo 3D recreado.
-5. **Llegada secreta:** el mapa infantil solo muestra ruta hasta antes del domicilio particular, y al 92 % pasa a una puerta ilustrada con niebla y luz. Un adulto confirma la llegada.
-6. **Recuerdo para la mañana:** pantalla de buenas noches con botón voluntario de guardar y un enlace que se muestra al volver después de las **06:00 del día siguiente** en el mismo navegador, o acceso inmediato «modo demo». Postal PNG vertical exportable y compartible. 3 estrellas se reciben automáticamente durante la ruta, no hay juegos.
-7. **Privacidad:** el único dato persistente de la sorpresa es un pequeño objeto en localStorage (clínica textual, distancia redondeada a 500 m, cantidad de estrellas, fecha). **No** se guarda dirección, coordenadas ni trazado. Caduca tras 15 días. Los servicios de rutas/geocodificación externos sí procesan las direcciones temporalmente durante la aventura.
-
-**Audio:** el botón activa sonidos y voz española del navegador como DEMOSTRACIÓN (su timbre NO es la voz oficial del Ratón); cuando se aporten clips aprobados, se configuran en `config.js` para utilizar exclusivamente la locución oficial. En Safari el audio requiere activación mediante gesto y puede diferir entre dispositivos.
-
-**Pruebas:** 22 tests unitarios de mapa, trayecto, privacidad, control de estrellas y recuerdo diferido. La verificación en un iPhone físico y la disponibilidad del servidor público de rutas siguen pendientes.
-
-**Demo:** https://jbustoscasta.github.io/villa-perez-premium/operacion-diente/?demo=1&v=0.7.0
-
+Atribuciones obligatorias de cartografía: OpenFreeMap / colaboradores OpenStreetMap; MapLibre para renderizado; geocodificación Photon y enrutamiento OSRM en modo de demostración.
