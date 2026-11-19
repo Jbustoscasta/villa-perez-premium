@@ -118,7 +118,9 @@ export function postcardSvg({clinicName='Tu clínica dental',distanceMeters=0, d
   const shortClinic=escapeXml(String(clinicName).slice(0,60));
   const d= date instanceof Date && Number.isFinite(date.getTime()) ? date : new Date();
   const dateStr=escapeXml(new Intl.DateTimeFormat('es-ES',{dateStyle:'long'}).format(d));
-  const dist = escapeXml(formatDistance(distanceMeters));
+  // Shareable postcards deliberately show only a COARSE distance to avoid narrowing down a family home.
+  const safeMeters = Number.isFinite(distanceMeters) ? Math.max(0,distanceMeters) : 0;
+  const dist = safeMeters < 1000 ? 'menos de 1 km' : escapeXml(formatDistance(Math.round(safeMeters/1000)*1000));
   const starsCount = Number.isFinite(stars) ? Math.max(0,Math.min(3,Math.floor(stars))) : 0;
   const reward = '✦'.repeat(starsCount) + '✧'.repeat(3-starsCount);
   // Never project actual route geometry into a shareable souvenir. Reveals home area even without labels.
