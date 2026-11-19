@@ -46,3 +46,14 @@ Pruebas puras: `node --test operacion-diente/tests/*.test.mjs`. Cubren privacida
 Street View **no está integrado**: requiere comprobar permisos, condiciones comerciales y privacidad, especialmente al tratarse de un público infantil. Se recomienda en todo caso solo para lugares públicos y nunca cerca de viviendas.
 
 Atribuciones obligatorias de cartografía: OpenFreeMap / colaboradores OpenStreetMap; MapLibre para renderizado; geocodificación Photon y enrutamiento OSRM en modo de demostración.
+
+
+## Versión 1.0.2 — expedición automática y cinematográfica (19/11/2026)
+
+- El progenitor solo necesita indicar su dirección; el origen se toma de la configuración fija de la clínica. El formulario no solicita origen, nombre del menor, edad, imagen o cuenta de usuario.
+- Las sugerencias Photon son opcionales. Si el usuario no selecciona una, el autogeocodificador únicamente elige una coincidencia inequívoca de calle, portal y municipio; en caso de ambigüedad pide seleccionar una sugerencia, para evitar enviar al personaje a otra calle. Se ha quitado el parámetro lang=es no admitido por Photon.
+- OSRM devuelve la geometría de calles y los nombres de vías en los pasos. El mapa muestra el nombre de la vía cuando está disponible y oculta las pistas próximas al domicilio. Los datos nunca se incluyen en la postal.
+- Apertura a pantalla completa sin controles tapando la fachada; cuatro sorpresas audiovisuales, ruta de polvo de oro, plano 3D y cámara cinematográfica. La duración se fija en unos 190 segundos sin pedir opciones al progenitor.
+- La misión avanza sola, muestra la llegada, y abre el recuerdo sin pasos obligatorios. Los padres pueden pausar/saltar y después guardar o compartir la postal.
+- El modo DEMO sigue partiendo de Puerta de Alcalá, por lo que NO debe presentarse como dirección real de Clínica del Doctor Abreu. Para lanzar comercialmente hay que proporcionar y verificar sus coordenadas reales en config.js y sustituir geocoder/router comunitarios por un proveedor con cobertura y capacidad garantizadas.
+- No se ha incorporado la voz oficial de Ratón Pérez por falta de archivos MP3 aprobados en este módulo. La narración del sistema se presenta como voz de prueba. La prueba en Chromium móvil no sustituye la verificación manual en Safari iPhone.
