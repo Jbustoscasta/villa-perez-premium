@@ -1,4 +1,5 @@
 import {enableRescue} from './rescue.mjs?v=1.0.0';
+import {createCinemaCity} from './cinema-city.mjs?v=2.0.0';
 /**
  * Villa Pérez · Vuelo de cine — prototype v1.
  * Real street geometry: © OpenStreetMap contributors, through OpenFreeMap.
@@ -45,7 +46,8 @@ const ctx={
  routeMs:0,orbitMs:0,durationMs:68000,orbitDuration:16000,
  token:0,frame:0,prevTime:0,prevPaint:0,heading:0,
  overviewTimeout:null,toasts:null,magic:true,day:false,viewIndex:-1,
- effectsReady:false,mouseAssetError:false,nightWindowTimer:null
+ effectsReady:false,mouseAssetError:false,nightWindowTimer:null,
+ city3d:null,cityStats:null
 };
 const safeText=s=>String(s||'').slice(0,120);
 function toast(message,ms=3900){
@@ -121,22 +123,64 @@ function addLayerSafe(layer,before){
  if(ctx.map.getLayer(layer.id))return;
  try{ctx.map.addLayer(layer,before)}catch(e){console.warn('Layer unavailable',layer.id,e)}
 }
+function makeFacadePattern(map,day){
+ if(!map.addImage)return false;
+ try{
+  if(map.hasImage?.('vp-facade'))return true;
+  const canvas=document.createElement('canvas');
+  canvas.width=128;canvas.height=128;
+  const c=canvas.getContext('2d',{willReadFrequently:true});
+  if(!c)return false;
+  c.fillStyle=day?'#b3aaa1':'#29384e';c.fillRect(0,0,128,128);
+  for(let y=0;y<128;y+=16){
+   c.strokeStyle=day?'rgba(58,47,37,.23)':'rgba(127,152,182,.20)';
+   c.beginPath();c.moveTo(0,y+.5);c.lineTo(128,y+.5);c.stroke();
+  }
+  for(let row=0;row<4;row++)for(let col=0;col<5;col++){
+   const x=7+col*25,y=5+row*30;
+   const seed=Math.sin((row+3)*13.7+(col+7)*25.5)*137.8;
+   const lit=seed-Math.floor(seed)>.48;
+   c.fillStyle=day?'#645a50':'#142033';c.fillRect(x-2,y-1,15,21);
+   c.fillStyle=day?'#7997a0':lit?'#f4c67b':'#28415a';c.fillRect(x,y+1,11,17);
+   c.fillStyle=lit&&!day?'rgba(255,246,200,.75)':'rgba(163,187,212,.4)';
+   c.fillRect(x+5,y+1,1,17);c.fillRect(x,y+9,11,1);
+  }
+  map.addImage('vp-facade',c.getImageData(0,0,128,128));
+  return true;
+ }catch(e){console.warn('Facade texture not available',e);return false}
+}
+function enableCinemaBuildings(map,source,before){
+ if(ctx.rescue||typeof map?.getCanvas!=='function'||map.getLayer('vp-cinema-city'))return;
+ try{
+  const city=createCinemaCity(map,{
+   getRoute:()=>ctx.route,
+   getSource:()=>getSourceId(ctx.map),
+   onStats:stats=>{
+    ctx.cityStats=stats;
+    if($('cityStatus'))$('cityStatus').textContent=
+      stats.real+' edificios reales + '+stats.fantasy+' de cuento';
+   }
+  });
+  city.day=ctx.day;
+  map.addLayer(city,before);
+  ctx.city3d=city;
+ }catch(e){console.warn('3D architectural effects unavailable',e)}
+}
 function mapLayerSetup(){
  const map=ctx.map;if(!map||!map.getStyle()?.sources)return;
  const source=getSourceId(map);
  const firstLabel=map.getStyle().layers?.find(l=>l.type==='symbol')?.id;
  const dark=!ctx.day;
  if(source){
+  const textured=makeFacadePattern(map,!dark);
   const buildings={
-   id:'vp-buildings',type:'fill-extrusion',source,'source-layer':'building',minzoom:13,
+   id:'vp-buildings',type:'fill-extrusion',source,'source-layer':'building',minzoom:12,
    paint:{
-    'fill-extrusion-color':dark?
-      ['interpolate',['linear'],['to-number',['get','render_height'],16],
-       0,'#203551',20,'#334967',60,'#445c7a',120,'#5b688a']:
-      '#b7ad9e',
-    'fill-extrusion-height':['max',5,['to-number',['get','render_height'],12]],
+    ...(textured?{'fill-extrusion-pattern':'vp-facade'}:
+      {'fill-extrusion-color':dark?'#344864':'#b0a698'}),
+    'fill-extrusion-height':['max',12,['to-number',['get','render_height'],18]],
     'fill-extrusion-base':['max',0,['to-number',['get','render_min_height'],0]],
-    'fill-extrusion-opacity':dark?.96:.77,
+    'fill-extrusion-opacity':dark?.97:.93,
     'fill-extrusion-vertical-gradient':true
    }
   };
@@ -186,6 +230,9 @@ function mapLayerSetup(){
   addLayerSafe({id:'vp-window-point',type:'circle',source:'vp-windows',
    paint:{'circle-color':'#ffe1a2','circle-radius':1.1,'circle-opacity':.72}});
  }
+ enableCinemaBuildings(map,source,firstLabel);
+ try{map.setLight?.({anchor:'viewport',color:dark?'#b1c5ef':'#fff0dd',intensity:dark?.68:.8,position:[1.5,205,40]})}catch(e){}
+ try{map.setSky?.(dark?{'sky-color':'#08172c','horizon-color':'#344665','fog-color':'#26334d','sky-horizon-blend':.5,'horizon-fog-blend':.3,'fog-ground-blend':.1}:undefined)}catch(e){}
  ctx.effectsReady=true;
  refreshRouteLayers();scheduleWindows();
 }
@@ -286,7 +333,7 @@ function loadMap(){
  try{
   map=new window.maplibregl.Map({
    container:'map',style:STYLE.dark,center:[START.lng,START.lat],
-   zoom:14.5,pitch:61,bearing:-28,antialias:true,
+   zoom:16.35,pitch:70,bearing:-28,antialias:true,
    attributionControl:true,cooperativeGestures:false,
    preserveDrawingBuffer:false,maxPitch:73
   });
@@ -484,7 +531,8 @@ function render(t){
   // Keep the globo on screen near the center, never magnified or occluded.
   const ahead=coordAt(Math.min(1,p+.006));
   const focus=interpolate(here,ahead,.13);
-  ctx.map.jumpTo({center:focus,zoom:16.65,pitch:65,bearing:ctx.heading-16});
+  ctx.map.jumpTo({center:focus,zoom:17.0,pitch:71,bearing:ctx.heading-16});
+  ctx.city3d?.setFocus?.(focus);
   $('phaseLabel').textContent='Vuelo bajo · ciudad real';
   progress(.82*p);
   setHUDTitle(Math.min(4,Math.floor(p*5)));
@@ -496,7 +544,8 @@ function render(t){
   const c=[dest[0]+Math.sin(angle)*radM/(111320*Math.max(.15,Math.cos(rad(lat)))),
            dest[1]+Math.cos(angle)*radM/111320];
   ctx.balloon?.setLngLat(c);
-  ctx.map.jumpTo({center:dest,pitch:65,bearing:ctx.heading+p*360,zoom:16.55});
+  ctx.map.jumpTo({center:dest,pitch:71,bearing:ctx.heading+p*360,zoom:16.8});
+  ctx.city3d?.setFocus?.(dest);
   const q=Math.min(3,Math.floor(p*4));
   if(q!==ctx.viewIndex){ctx.viewIndex=q;$('chapterTitle').textContent=['Sobre el destino','La ciudad desde otro ángulo','Los tejados de cerca','Última panorámica'][q]}
   $('phaseLabel').textContent='Panorámica '+(q+1)+' de 4';
@@ -578,6 +627,7 @@ function restart(){
  ctx.phase='idle';ctx.playing=false;ctx.paused=false;ctx.overview=false;
  ctx.routeMs=0;ctx.orbitMs=0;ctx.viewIndex=-1;ctx.destination=null;
  ctx.route=[];ctx.prefix=[];ctx.cumulative=[];ctx.total=0;
+ ctx.city3d?.setFocus?.([START.lng,START.lat]);
  showBalloon(false);ctx.homePin?.remove();ctx.homePin=null;
  ctx.origin=[START.lng,START.lat];
  if(ctx.map){ctx.map.easeTo({center:ctx.origin,zoom:14.5,pitch:58,bearing:-27,duration:650})}
@@ -592,6 +642,7 @@ function setStyle(day){
  ctx.day=day;document.body.classList.toggle('day',day);
  $('night').textContent=day?'☾ Noche cine':'☀ Ver día';
  status(day?'CALLES REALES · DÍA':'NOCHE DE CINE · CALLES REALES');
+ ctx.city3d?.setDay?.(day);
  const map=ctx.map;if(!map)return;
  map.setStyle(day?STYLE.day:STYLE.dark);
  if(ctx.rescue)mapLayerSetup();
