@@ -40,7 +40,11 @@ const state={
  orbitElapsedMs:0,frameId:0,lastFrame:0,lastPaint:0,filteredHeading:null,
  native:null,Model3DElement:null,Marker3DElement:null,routeSource:'panoramica',effectsOn:true,
  nightFx:null,
- routeDistances:[],routeLength:0,orbitStartHeading:0,orbitView:-1,busy:false
+ routeDistances:[],routeLength:0,orbitStartHeading:0,orbitView:-1,busy:false,
+ origin:{lat:START.lat,lng:START.lng},clinicName:'Clínica del Doctor Abreu',
+ originLabel:'Origen de prueba · Puerta de Alcalá',clinicVerified:false,originMarker:null,
+ destinationMarker:null,routeGlow:null,routeLine:null,overview:false,overviewTimer:0,
+ overviewWasPlaying:false,originStored:false
 };
 const R=Earth=>Earth*Math.PI/180;
 function distance(a,b){
@@ -49,15 +53,14 @@ function distance(a,b){
 }
 function lerp(a,b,t){return {lat:a.lat+(b.lat-a.lat)*t,lng:a.lng+(b.lng-a.lng)*t}}
 function heading(a,b){const y=Math.sin(R(b.lng-a.lng))*Math.cos(R(b.lat)),x=Math.cos(R(a.lat))*Math.sin(R(b.lat))-Math.sin(R(a.lat))*Math.cos(R(b.lat))*Math.cos(R(b.lng-a.lng));return (Math.atan2(y,x)*180/Math.PI+360)%360}
-function smoothCustom(end){
- const dist=distance(START,end),cut=Math.min(.85,Math.max(0,1-180/Math.max(dist,181)));
- const stop=lerp(START,end,cut);
- const points=[START],n=Math.min(10,Math.max(5,Math.ceil(dist/500)));
+function smoothCustom(end,origin=START){
+ const dist=distance(origin,end),cut=Math.min(.85,Math.max(0,1-180/Math.max(dist,181)));
+ const stop=lerp(origin,end,cut);
+ const points=[origin],n=Math.min(10,Math.max(5,Math.ceil(dist/500)));
  for(let i=1;i<n;i++){
-  const t=i/n,a=lerp(START,stop,t);
-  // Gentle cinematic detour; not a road-navigation geometry.
+  const t=i/n,a=lerp(origin,stop,t);
   const curvature=Math.min(.00065,dist/10000000)*Math.sin(Math.PI*t);
-  const ang=Math.atan2(stop.lng-START.lng,stop.lat-START.lat)+Math.PI/2;
+  const ang=Math.atan2(stop.lng-origin.lng,stop.lat-origin.lat)+Math.PI/2;
   points.push({lat:a.lat+Math.cos(ang)*curvature,lng:a.lng+Math.sin(ang)*curvature});
  }
  points.push(stop);
@@ -78,7 +81,7 @@ function setActiveChoice(choice){
  state.route=choice;state.custom=false;state.points=routes[choice].points;
  $('address').value='';
  document.querySelectorAll('.chip').forEach(b=>b.classList.toggle('active',b.dataset.route===choice));
- $('travelLabel').textContent='PUERTA DE ALCALÁ → '+routes[choice].label.toUpperCase();
+ $('travelLabel').textContent=state.originLabel.toUpperCase()+' → '+routes[choice].label.toUpperCase();
 }
 document.querySelectorAll('[data-route]').forEach(b=>b.addEventListener('click',()=>setActiveChoice(b.dataset.route)));
 $('address').addEventListener('input',()=>{
@@ -145,6 +148,7 @@ async function connectGoogle(){
        info('La cartografía 3D sigue cargando. Si la pantalla permanece vacía, revisa la cobertura y permisos de Google Cloud.');
    },25000);
    state.loaded=true;
+   createOriginMarker();
    try{sessionStorage.setItem('vp_google3d_trial_key',key)}catch(e){}
    $('keyGroup').classList.add('connected');
    $('setup').classList.add('ready');
@@ -161,10 +165,43 @@ async function connectGoogle(){
  }
 }
 $('connect').addEventListener('click',connectGoogle);
+async function locateClinicOrigin(){
+ const name=$('clinicName').value.trim()||'Clínica del Doctor Abreu';
+ const address=$('clinicAddress').value.trim();
+ state.clinicName=name;
+ if(!address){
+  state.origin={...START};
+  state.clinicVerified=false;
+  state.originLabel='Origen de prueba · Puerta de Alcalá';
+  $('originBadge').textContent=state.originLabel;
+  createOriginMarker();
+  return;
+ }
+ let Geocoder;
+ try{({Geocoder}=await google.maps.importLibrary('geocoding'))}
+ catch(e){throw new Error('Para situar la clínica necesitas habilitar Geocoding API.')}
+ const result=await new Geocoder().geocode({
+  address,region:'ES',componentRestrictions:{country:'ES'}
+ });
+ const first=result.results?.find(x=>x.geometry?.location);
+ if(!first)throw new Error('No encuentro la dirección de la clínica. Añade calle, número y ciudad.');
+ const loc=first.geometry.location;
+ state.origin={lat:loc.lat(),lng:loc.lng()};
+ if(!Number.isFinite(state.origin.lat)||!Number.isFinite(state.origin.lng))
+  throw new Error('La dirección de la clínica no tiene coordenadas válidas.');
+ state.clinicVerified=true;
+ state.originLabel=name;
+ $('originBadge').textContent='SALIDA · '+name;
+ try{localStorage.setItem('vp_clinic_origin',JSON.stringify({name,address}))}catch(e){}
+ createOriginMarker();
+}
 async function getDestination(){
  const text=$('address').value.trim();
  if(!text){state.custom=false;return {
- points:routes[state.route].points,label:routes[state.route].label,
+ points:state.clinicVerified
+   ?smoothCustom(routes[state.route].points.at(-1),state.origin)
+   :routes[state.route].points,
+ label:routes[state.route].label,
  trueEnd:routes[state.route].points.at(-1),custom:false
 };}
  if(text.length>220)throw new Error('La dirección es demasiado larga.');
@@ -176,13 +213,13 @@ async function getDestination(){
  if(!first)throw new Error('No encuentro una dirección inequívoca. Escribe calle, número y municipio.');
  const loc=first.geometry.location;const end={lat:loc.lat(),lng:loc.lng()};
  if(!Number.isFinite(end.lat)||!Number.isFinite(end.lng))throw new Error('No se han recibido coordenadas válidas.');
- if(distance(START,end)>80000)throw new Error('Para esta prueba el destino debe estar a menos de 80 km de Madrid.');
- return {points:smoothCustom(end),trueEnd:end,label:'destino elegido',custom:true};
+ if(distance(state.origin,end)>80000)throw new Error('Para esta prueba el destino debe estar a menos de 80 km de Madrid.');
+ return {points:smoothCustom(end,state.origin),trueEnd:end,label:'destino elegido',custom:true};
 }
 async function improveRoute(destination){
  // Route.computeRoutes is the current Google route API, and may require a
  // separately enabled Google Routes API. Do not block the parent when unavailable.
- const attempt=calculateStreetRoute(START,destination.trueEnd,!!destination.custom);
+ const attempt=calculateStreetRoute(state.origin,destination.trueEnd,!!destination.custom);
  try{
   const result=await Promise.race([
    attempt,
@@ -197,18 +234,115 @@ async function improveRoute(destination){
  state.routeSource='panoramica';
  return false;
 }
-function makePolyline(points){
- if(!state.Polyline3DElement||!state.map)return;
+function removeElement(el){try{el?.remove()}catch(e){}}
+function createOriginMarker(){
+ if(!state.map||!state.Marker3DElement)return;
+ removeElement(state.originMarker);
  try{
-  const existing=state.map.querySelector('#vpRoute3d');if(existing)existing.remove();
-  const line=new state.Polyline3DElement({
-   path:points.map(p=>({...p,altitude:4})),
-   strokeColor:'#97b5b3',outerColor:'#244854',
-   strokeWidth:3,outerWidth:.3,altitudeMode:'RELATIVE_TO_GROUND',
-   drawsOccludedSegments:false
+  // Built-in pin and native Google text label, not a raster photo marker.
+  state.originMarker=new state.Marker3DElement({
+   position:{...state.origin,altitude:8},altitudeMode:'RELATIVE_TO_GROUND',
+   label:state.originLabel,sizePreserved:true,drawsWhenOccluded:true,
+   zIndex:19
   });
-  line.id='vpRoute3d';state.map.append(line);
- }catch(e){console.warn('Ruta dibujada no disponible en esta versión de Maps 3D',e)}
+  state.originMarker.id='vpOriginPin';
+  state.map.append(state.originMarker);
+ }catch(e){console.warn('Origin pin unavailable:',e)}
+}
+function clearRouteMap(){
+ removeElement(state.routeGlow);removeElement(state.routeLine);
+ removeElement(state.destinationMarker);state.routeGlow=null;
+ state.routeLine=null;state.destinationMarker=null;
+}
+function makePolyline(points,destination){
+ if(!state.Polyline3DElement||!state.map)return;
+ clearRouteMap();
+ // Raise the entire path above many roofs; render occluded segments in overview
+ // so a parent can recognize all waypoints. A gold line remains in the map.
+ const path=points.map(p=>({...p,altitude:33}));
+ try{
+  state.routeGlow=new state.Polyline3DElement({
+   path,strokeColor:'#d6a054',strokeWidth:15,
+   outerColor:'#ffe0a3',outerWidth:.8,
+   altitudeMode:'RELATIVE_TO_GROUND',drawsOccludedSegments:true
+  });
+  state.routeGlow.id='vpRouteGlow';
+  state.map.append(state.routeGlow);
+ }catch(e){console.warn('Route glow disabled',e)}
+ try{
+  state.routeLine=new state.Polyline3DElement({
+   path,strokeColor:'#fff1c1',strokeWidth:6,
+   outerColor:'#bb742e',outerWidth:.5,
+   altitudeMode:'RELATIVE_TO_GROUND',drawsOccludedSegments:true
+  });
+  state.routeLine.id='vpRouteLine';
+  state.map.append(state.routeLine);
+ }catch(e){console.warn('Route line unavailable',e)}
+ createOriginMarker();
+ if(state.Marker3DElement){
+  try{
+   state.destinationMarker=new state.Marker3DElement({
+    position:{...points.at(-1),altitude:8},altitudeMode:'RELATIVE_TO_GROUND',
+    label:'Destino · '+destination.label,sizePreserved:true,
+    drawsWhenOccluded:true,zIndex:18
+   });
+   state.map.append(state.destinationMarker);
+  }catch(e){console.warn('Destination pin unavailable',e)}
+ }
+}
+function overviewCamera(){
+ const points=state.points;
+ if(!points?.length||!state.map)return;
+ const first=points[0],last=points[points.length-1];
+ const middle={lat:(first.lat+last.lat)/2,lng:(first.lng+last.lng)/2};
+ const length=Math.max(state.routeLength,distance(first,last));
+ // Allow enough horizontal margin to show the entire geography; Safari is tall.
+ const range=Math.min(28000,Math.max(1550,length*(innerWidth<680?3.3:2.1)+700));
+ try{
+  state.map.stopCameraAnimation?.();
+  state.map.center={...middle,altitude:850};
+  state.map.heading=0;state.map.tilt=28;state.map.range=range;
+ }catch(e){console.warn('Could not show full route:',e)}
+}
+function closeOverview(){
+ if(!state.overview)return;
+ state.overview=false;
+ clearTimeout(state.overviewTimer);state.overviewTimer=0;
+ $('overviewToggle').textContent='🗺 Ver recorrido completo';
+ $('overviewToggle').setAttribute('aria-pressed','false');
+ $('balloon').hidden=!(!state.native&&state.phase!=='done');
+ state.lastFrame=getNow();state.lastPaint=0;
+ if(state.phase==='preview'){
+  flightStart();
+  return;
+ }
+ if(state.phase==='route')renderRoute(state.progressMs/state.routeDurationMs);
+ else if(state.phase==='orbit')renderOrbit(state.orbitElapsedMs/state.orbitDurationMs);
+ if(state.playing&&!state.paused)state.frameId=requestAnimationFrame(renderTick);
+}
+function enterOverview({intro=false}={}){
+ if(!state.points?.length)return;
+ stopFrame();
+ state.overview=true;
+ $('overviewToggle').textContent=intro?'▶ Empezar vuelo':'▶ Volver al vuelo';
+ $('overviewToggle').setAttribute('aria-pressed','true');
+ $('balloon').hidden=true;
+ $('chapterTitle').textContent='Así será el recorrido';
+ $('chapterEyebrow').textContent='VISTA GENERAL · RUTA COMPLETA';
+ $('travelLabel').textContent=state.originLabel.toUpperCase()+' → '+(state.activeDestination?.label||'DESTINO').toUpperCase();
+ status('MAPA COMPLETO · ORIGEN Y DESTINO');
+ overviewCamera();
+ if(intro){
+  state.phase='preview';
+  state.overviewTimer=setTimeout(()=>{
+    if(state.overview&&state.phase==='preview')closeOverview()
+  },5200);
+ }
+}
+function toggleOverview(){
+ if(state.overview){closeOverview();return}
+ if(!state.playing||state.phase==='done')return;
+ enterOverview();
 }
 /*
  * Google flyCameraTo uses an arcing, parabolic trajectory. On every waypoint
