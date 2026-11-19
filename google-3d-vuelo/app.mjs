@@ -607,6 +607,7 @@ function renderTick(now){
   state.takeoffMs=Math.min(state.takeoffDurationMs,state.takeoffMs+delta);
   if(state.takeoffMs>=state.takeoffDurationMs){
    state.phase='route';state.lastPaint=0;state.turnLastTs=0;
+   state.filteredHeading=state.takeoffBearing;
    renderRoute(0);
   }else if(now-state.lastPaint>=40){
    state.lastPaint=now;renderTakeoff(state.takeoffMs/state.takeoffDurationMs);
