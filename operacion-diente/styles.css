@@ -151,3 +151,7 @@
 .screen--route .route-sheet{transition:transform .8s cubic-bezier(.24,.81,.2,1),opacity .65s ease}
 .screen--route.intro-active .route-sheet{opacity:0;transform:translateY(110%);pointer-events:none}
 .screen--route.intro-active .map-buttons,.screen--route.intro-active .map-heading,.screen--route.intro-active .floating-message,.screen--route.intro-active .street-locator,.screen--route.intro-active .map-signature{opacity:0;pointer-events:none}
+
+/* Important: the fullscreen route stage must not appear behind other screens. */
+.screen--route:not(.active){display:none!important}
+.screen--route.active{display:block}
