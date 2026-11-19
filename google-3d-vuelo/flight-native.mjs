@@ -6,7 +6,7 @@
  */
 const METERS=111320;
 export const BALLOON_ALTITUDE=58; // above natural ground, not sea level
-const MODEL_SRC=new URL('./assets/globo-villa-perez-3d.glb?v=2',import.meta.url).href;
+const MODEL_SRC=new URL('./assets/globo-villa-perez-v3.glb',import.meta.url).href;
 // The official mouse is intentionally NOT rendered as a map marker: Safari
 // could magnify it to building size. Its untouched PNG appears in the HUD.
 export const geoDistance=(a,b)=>{
