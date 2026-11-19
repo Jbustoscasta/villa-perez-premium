@@ -4,7 +4,7 @@ La prueba está en: https://jbustoscasta.github.io/villa-perez-premium/google-3d
 
 ### Qué cambia
 
-- `assets/globo-villa-perez-3d.glb`: **modelo GLB real**, de 682.592 bytes, con tela 3D, secciones, costuras, latón, cuerdas, quemador y cesta. El modelo está integrado mediante `Model3DElement` en Google Maps JavaScript 3D y recibe posición geográfica por fotograma. Se utiliza la profundidad nativa del mapa; su oclusión concreta debe comprobarse en Safari.
+- `assets/globo-villa-perez-3d.glb`: **modelo GLB real**, de 1.115.872 bytes, con tela 3D, secciones, costuras, latón, cuerdas, quemador y cesta. El modelo está integrado mediante `Model3DElement` en Google Maps JavaScript 3D y recibe posición geográfica por fotograma. Se utiliza la profundidad nativa del mapa; su oclusión concreta debe comprobarse en Safari.
 - `../perez.png`: imagen **oficial intacta**. Está georreferenciada como `Marker3DElement`, con `drawsWhenOccluded:false`, por lo que puede ocultarse detrás de edificios. El personaje sigue siendo 2D: no se ha inventado una nueva pose ni se ha generado un rig 3D.
 - `flight-native.mjs`: línea de luz situada a unos 72 m sobre el terreno, rastro de 75 posiciones como máximo, siete partículas 3D que avanzan por la ruta y estrellas orbitando al llegar. La opción ✨ Magia ON/OFF desactiva efectos complementarios pero mantiene globo y personaje.
 - `app.mjs`: cámara a distancia constante (550 m), recorrido suave y órbita final de 360° con cuatro perspectivas. **Sin arco de vuelo que suba y baje continuamente.** Pausa/reanudación y reinicio.
@@ -20,7 +20,7 @@ La prueba está en: https://jbustoscasta.github.io/villa-perez-premium/google-3d
 
 ### Límites de lo implementado
 
-- El GLB es **un modelo procedimental propio**, no un asset cinematográfico profesional texturizado en Blender. Es tridimensional real con materiales PBR y elementos volumétricos. Refinar materiales y UVs podría aumentar el realismo.
+- El GLB es **un modelo procedimental propio**, no un asset cinematográfico profesional texturizado en Blender. Es tridimensional real con materiales PBR ajustados a la especificación glTF 2.0 y elementos volumétricos. Refinar materiales y UVs podría aumentar el realismo.
 - La ruta real proviene de calles transitables; el globo la **sobrevuela como narración ficticia**, no se simulan meteorología, vientos, obstáculos aéreos ni GPS.
 - La posición del modelo se calcula respecto al terreno (`RELATIVE_TO_GROUND` a ~72 m) sin garantía de separación de todas las cubiertas de edificios altos. Revisar visualmente en cada zona.
 - El Ratón oficial es marcador 3D con el PNG maestro, no rig 3D. Puede ocultarse detrás de edificios; no hay garantía de que la cesta oculte todas las partes de su imagen desde todos los ángulos.
