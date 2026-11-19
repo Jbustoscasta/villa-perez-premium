@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#091927">
 <meta name="description" content="Prueba de vuelo cinematográfico sobre Google Maps 3D fotorrealista para Villa Pérez.">
 <title>Google 3D · Vuelo del Ratón Pérez · Villa Pérez</title>
-<link rel="stylesheet" href="./styles.css?v=1.2.0">
-<script type="module" src="./app.mjs?v=1.2.0"></script>
+<link rel="stylesheet" href="./styles.css?v=2.0.0">
+<script type="module" src="./app.mjs?v=2.0.0"></script>
 </head>
 <body>
 <div class="app">
@@ -37,7 +37,7 @@
    <div class="destination-chips"><button class="chip active" data-route="plaza" type="button">Plaza Mayor</button><button class="chip" data-route="bernabeu" type="button">Bernabéu</button><button class="chip" data-route="arroyofresno" type="button">Arroyo Fresno</button></div>
    <label for="address">O indica una dirección (opcional)</label>
    <input id="address" autocomplete="street-address" placeholder="Calle, número, municipio" maxlength="220">
-   <p class="micro">Para direcciones propias también hay que activar Geocoding API. La demo usa lugares públicos sin consultar domicilios.</p>
+   <p class="micro">El origen es de prueba. Para introducir un domicilio hay que habilitar Geocoding; para seguir calles reales, Google Routes. El destino se procesa en Google y el vuelo termina antes de los últimos 180 m.</p>
    <p class="form-error" id="error" role="alert" hidden></p>
    <button class="cta gold" id="launch" type="button" disabled>✦ Despegar sobre Madrid</button>
   </div>
@@ -53,14 +53,16 @@
   <div class="chapter"><span class="eyebrow" id="chapterEyebrow">TRANSMISIÓN MÁGICA · CAPÍTULO 1</span><h2 id="chapterTitle">Sobre los tejados</h2><p id="chapterDescription">Madrid comienza a aparecer bajo el globo…</p></div>
   <div class="flight-bar">
    <div class="bar-top"><span id="travelLabel">PUERTA DE ALCALÁ → PLAZA MAYOR</span><span id="progressLabel">0%</span></div>
+   <div class="flight-labels"><span id="routeMode">RUTA PANORÁMICA</span><span id="modelMode">PREPARANDO MODELO 3D</span></div>
    <div class="bar-track"><div id="progressFill"></div></div>
    <div class="flight-buttons">
     <button id="pause" type="button">⏸ Pausar</button>
     <button id="twilight" type="button">☾ Oscurecer</button>
+    <button id="fxToggle" type="button" aria-label="Activar o desactivar efectos especiales">✨ Magia ON</button>
     <button id="restart" type="button">↺ Reiniciar</button>
    </div>
   </div>
-  <p class="flight-warning">Vuelo de fantasía por puntos geográficos reales. No es navegación ni seguimiento GPS.</p>
+  <p class="flight-warning">Vuelo de fantasía sobre cartografía real · efectos 3D y recorrido aproximado cuando Google Routes no está habilitado · no es seguimiento GPS.</p>
  </div>
  <div id="arrival" class="arrival" hidden><div class="arrival-card"><span>✦ LA MAGIA HA LLEGADO ✦</span><h2>¡El Ratón Pérez está muy cerca!</h2><p>La cámara ha sobrevolado la ciudad a altura estable y ha rodeado el destino para enseñarte sus calles y edificios. Los últimos metros hasta casa serán un secreto.</p><button class="cta gold" id="again">Repetir el vuelo</button></div></div>
  <div id="systemMessage" class="system-message" role="status" aria-live="polite" hidden></div>
