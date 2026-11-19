@@ -84,17 +84,18 @@ async function createMap(){
  else{
    try{map.setConfigProperty('basemap','lightPreset',state.nightPreset)}catch(e){console.warn('Iluminación nocturna no disponible',e)}
    try{map.setFog({color:'#244354','high-color':'#102a45','space-color':'#06172c','horizon-blend':.17,'star-intensity':.22})}catch(e){console.warn('Bruma no disponible',e)}
-   try{
-     state.balloon3D=await installBalloon3D(map,lib,{imageUrl:'../perez.png'});
-     state.balloonStatus='3d';
-     state.balloon3D.setActive(state.playing);
-     if(state.childPath)state.balloon3D.setPose({coordinates:along(state.childPath,state.progress),bearing:heading(state.childPath,state.progress),altitude:95,progress:state.progress});
-   }catch(e){state.balloon3D=null;state.balloonStatus='2d';console.warn('Globo 3D no disponible. Se mantiene globo SVG:',e)}
  }
+ // The same georeferenced 3D balloon works in MapLibre and Mapbox; no token needed for the 3D model.
+ try{
+   state.balloon3D=await installBalloon3D(map,lib,{imageUrl:'../perez.png'});
+   state.balloonStatus='3d';
+   state.balloon3D.setActive(state.playing);
+   if(state.childPath)state.balloon3D.setPose({coordinates:along(state.childPath,state.progress),bearing:heading(state.childPath,state.progress),altitude:95,progress:state.progress});
+ }catch(e){state.balloon3D=null;state.balloonStatus='2d';console.warn('Globo 3D no disponible. Se mantiene globo SVG:',e)}
  map.on('move',()=>{renderBalloon();if(!state.playing)drawTrail(performance.now())});
  map.on('resize',()=>{renderBalloon();drawTrail(performance.now())});
  setProviderText();
- $('mode-pill').textContent=isMb?(state.balloon3D?'SATÉLITE · GLOBO 3D':'SATÉLITE · GLOBO 2D'):'3D · MAPA REAL';
+ $('mode-pill').textContent=isMb?(state.balloon3D?'SATÉLITE · GLOBO 3D':'SATÉLITE · GLOBO 2D'):(state.balloon3D?'GLOBO 3D · MAPA LIBRE':'GLOBO 2D · MAPA LIBRE');
  if(state.childPath)installRoute();
  return map;
 }
