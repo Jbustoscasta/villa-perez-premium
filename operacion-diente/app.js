@@ -1,8 +1,8 @@
-import {APP_CONFIG as CFG} from './config.js?v=0.7.0';
-import {createPath,pointAt,validCoordinate,compactAddress,formatDistance,postcardSvg,trailParticles,routeBearing,cinematicProgress,cinematicPhase,publicFacingRoute,nearestPublicLandmark} from './route-utils.mjs?v=0.7.0';
+import {APP_CONFIG as CFG} from './config.js?v=1.0.0';
+import {createPath,pointAt,validCoordinate,compactAddress,formatDistance,postcardSvg,trailParticles,routeBearing,cinematicProgress,cinematicPhase,publicFacingRoute,nearestPublicLandmark} from './route-utils.mjs?v=1.0.0';
 
-import {applyPremiumStreetStyle,installPremiumCityLayers,premiumRoutePaint,drawGoldenRouteFx} from './premium-map.mjs?v=0.7.0';
-import {JourneyDirector,makeMemento,safeMemento,MEMENTO_KEY} from './journey-director.mjs?v=0.7.0';
+import {applyPremiumStreetStyle,installPremiumCityLayers,premiumRoutePaint,drawGoldenRouteFx} from './premium-map.mjs?v=1.0.0';
+import {JourneyDirector,makeMemento,safeMemento,MEMENTO_KEY} from './journey-director.mjs?v=1.0.0';
 const $ = id => document.getElementById(id);
 const screens = ['welcome','address','route','arrival','morning'];
 const state = {
@@ -10,7 +10,7 @@ const state = {
   origin:{label:CFG.clinic.originLabel,coordinate:CFG.clinic.origin?.slice()||null},
   destination:{label:'',coordinate:null},
   map:null,ml:null,mouseMarker:null,originMarker:null,homeMarker:null,director:null,ratView:false,
-  morningData:null,route:null,path:null,mapPath:null,isDemo:false,landmark:null,landmarkShown:false,landmarkTimer:0,introTimer:0,arrivalShown:false,scenicUntil:0,
+  morningData:null,route:null,path:null,mapPath:null,isDemo:false,landmark:null,landmarkShown:false,landmarkTimer:0,introTimer:0,arrivalTimer:0,magicEventTimer:0,magicEventIndex:-1,streetName:"",streetSegments:[],arrivalShown:false,scenicUntil:0,
   soundOn:false,audioCtx:null,durationMs:CFG.stageDurationSeconds*1000,progress:0,
   playing:false,startTime:0,frame:0,follow:true,cinematic:true,lastPaint:0,lastFx:0,lastStage:-1,lastCamera:0,
   reducedMotion:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches??false
@@ -24,7 +24,7 @@ function showScreen(name) {
 }
 function errorMessage(msg) { const node=$('form-error');node.textContent=msg;node.classList.remove('hidden');node.scrollIntoView({block:'nearest'}); }
 function clearError() { $('form-error').textContent='';$('form-error').classList.add('hidden'); }
-function setBusy(on){const b=$('calculate');b.disabled=on;b.textContent=on?'Calculando recorrido real…':'Calcular mi viaje mágico →';}
+function setBusy(on){const b=$('calculate');b.disabled=on;b.textContent=on?'Buscando las calles mágicas…':'✦ ¡Que comience la magia! →';}
 function sanitizePhoton(feature){
   if(!feature?.geometry || feature.geometry.type!=='Point' || !validCoordinate(feature.geometry.coordinates)) return null;
   return {coordinate:feature.geometry.coordinates.slice(0,2),label:compactAddress(feature)||'Dirección encontrada'};
@@ -35,7 +35,8 @@ function updateConfig(){
   $('origin-clinic').textContent=CFG.clinic.name;
   $('recap-clinic').textContent=CFG.clinic.name;
   $('origin-address').value=CFG.clinic.originLabel.replace(' · ORIGEN DE PRUEBA','');
-  $('origin-demo-hint').textContent=CFG.clinic.demo?'Punto de salida provisional, NO dirección real de la clínica. Cámbialo para probarla.':'Dirección registrada por la clínica. Puedes corregirla para esta prueba.';
+  $('origin-demo-hint').textContent=CFG.clinic.demo?'Punto provisional de prueba.':'Dirección de clínica configurada.';
+  $('clinic-origin-status').textContent=CFG.clinic.demo?'⚠ DEMOSTRACIÓN: salida provisional desde Puerta de Alcalá, no desde la clínica.':'Salida fija configurada · '+CFG.clinic.originLabel;
   const facade=$('facade');facade.src=CFG.assets.facade;facade.onerror=()=>{facade.style.display='none';};
 }
 
@@ -94,17 +95,32 @@ function setupAutocomplete(field,box,key) {
 async function routeBetween(start,end){
   if(Math.abs(start[0]-end[0])<.00001 && Math.abs(start[1]-end[1])<.00001) throw new Error('Elige una dirección distinta de la clínica.');
   const coords=`${start[0].toFixed(6)},${start[1].toFixed(6)};${end[0].toFixed(6)},${end[1].toFixed(6)}`;
-  const url=CFG.services.router+coords+'?overview=full&geometries=geojson&steps=false&alternatives=false';
+  const url=CFG.services.router+coords+'?overview=full&geometries=geojson&steps=true&alternatives=false';
   const json=await fetchJson(url,13000);
   const first=json?.routes?.[0];
   if(json.code!=='Ok'||!first?.geometry?.coordinates?.length) throw new Error('No se ha encontrado una ruta real a pie entre ambos lugares.');
   const path=createPath(first.geometry.coordinates);
-  return {path,serviceMeters:first.distance,serviceSeconds:first.duration,demoFallback:false};
+  const streets=(first.legs||[]).flatMap(leg=>leg.steps||[]).filter(step=>Number.isFinite(step.distance)&&step.distance>=0).map(step=>({name:String(step.name||'').trim().slice(0,90),meters:step.distance}));
+  return {path,serviceMeters:first.distance,serviceSeconds:first.duration,streets,demoFallback:false};
 }
 async function calculateRoute(){
-  if(!$('adult-confirm').checked) throw new Error('Esta función requiere que un adulto marque la confirmación.');
-  if(!validCoordinate(state.origin.coordinate)) throw new Error('Elige la dirección de la clínica en las sugerencias.');
-  if(!validCoordinate(state.destination.coordinate)) throw new Error('Elige la dirección de casa en las sugerencias.');
+  if(!validCoordinate(state.origin.coordinate)) throw new Error('La clínica no tiene un punto de partida válido. La administración debe configurarlo.');
+  if(!validCoordinate(state.destination.coordinate)){
+    const typed=$('destination-address').value.trim();
+    if(typed.length<8) throw new Error('Escribe tu calle, número y localidad.');
+    const url=new URL(CFG.services.geocoder);
+    url.searchParams.set('q',typed);url.searchParams.set('limit','5');url.searchParams.set('lang','es');
+    url.searchParams.set('lat',String(state.origin.coordinate[1]));
+    url.searchParams.set('lon',String(state.origin.coordinate[0]));
+    const found=(await fetchJson(url.toString(),10500)).features||[];
+    const places=found.map(sanitizePhoton).filter(Boolean);
+    if(!places.length)throw new Error('No encontramos esa calle. Añade el municipio y prueba de nuevo.');
+    const requestedNumber=(typed.match(/(?:^|[ ,])([0-9]{1,4})(?:[ ,]|$)/)||[])[1];
+    const strong=found.find(feature=>String(feature?.properties?.housenumber||'')===requestedNumber);
+    const top=strong?sanitizePhoton(strong):(places.length===1?places[0]:null);
+    if(!top)throw new Error('Para evitar una dirección equivocada, elige tu domicilio en las sugerencias.');
+    state.destination=top;
+  }
   return routeBetween(state.origin.coordinate,state.destination.coordinate);
 }
 /** Public demonstration between two known Madrid landmarks; no user's address is needed. */
@@ -132,6 +148,7 @@ async function startMadridDemo(){
       state.route={path,serviceMeters:path.total,serviceSeconds:null,demoFallback:true};
     }
     state.path=state.route.path;
+    state.streetSegments=state.route.streets||[];
     prepareJourney(true);
     state.progress=0;state.lastStage=-1;
     $('distance').textContent=formatDistance(state.route.serviceMeters);
@@ -167,7 +184,8 @@ function prepareJourney(demo=false){
   state.mapPath=publicFacingRoute(state.path,{demo});
   state.landmark=nearestPublicLandmark(state.mapPath,PUBLIC_LANDMARKS,120)||
     {name:'Un alto en el camino',message:'¡Qué aventura! Las calles brillan como si guardaran estrellas.',progress:.52};
-  state.landmarkShown=false;state.arrivalShown=false;
+  state.landmarkShown=false;state.arrivalShown=false;state.magicEventIndex=-1;state.streetName='';$('street-locator').classList.add('hidden');$('magic-event').classList.remove('visible');
+  clearTimeout(state.magicEventTimer);clearTimeout(state.arrivalTimer);
   clearTimeout(state.landmarkTimer);clearTimeout(state.introTimer);
   $('landmark-panel').classList.add('hidden');
   $('final-curtain').classList.add('hidden');
@@ -268,7 +286,7 @@ async function ensureMap(){
     map.addLayer({id:'route-sparkle-aura',type:'circle',source:'journey-sparks',paint:{'circle-radius':['get','size'],'circle-color':'#ffdf91','circle-opacity':['get','alpha'],'circle-blur':.68}});
     map.addLayer({id:'route-sparkle-core',type:'circle',source:'journey-sparks',paint:{'circle-radius':2,'circle-color':'#fff9d2','circle-opacity':['get','alpha']}});
     premiumRoutePaint(map);
-    state.originMarker=new ml.Marker({element:pin('✦ Villa Pérez')}).setLngLat(state.mapPath.points[0]).addTo(map);
+    state.originMarker=new ml.Marker({element:pin(CFG.clinic.demo?'✦ Salida de prueba':'✦ '+CFG.clinic.name)}).setLngLat(state.mapPath.points[0]).addTo(map);
     state.homeMarker=new ml.Marker({element:pin(state.isDemo?'⌂ Fin de prueba':'✧ Cerca de casa',true)}).setLngLat(state.mapPath.points.at(-1)).addTo(map);
     state.mouseMarker=new ml.Marker({element:mouseNode(),anchor:'bottom'}).setLngLat(state.mapPath.points[0]).addTo(map);
     state.director?.attachMap(map);
@@ -316,12 +334,49 @@ function updateMilestones(progress){
     node.classList.toggle('completed',progress>=stops[i] && i<index);
   });
 }
+function currentStreet(progress){
+  if(progress>.90||!state.streetSegments?.length)return '';
+  const meters=progress*state.mapPath.total;
+  let done=0,previous='';
+  for(const step of state.streetSegments){
+    done+=step.meters;
+    if(step.name&&step.name!==previous)previous=step.name;
+    if(done>=meters)return previous;
+  }
+  return previous;
+}
+const MAGIC_EVENTS=[
+  {at:.13,kicker:'PRIMER AVISTAMIENTO',title:'¡Una pista brillante!',message:'Una pequeña luz ha cruzado la primera calle.'},
+  {at:.34,kicker:'MENSAJE DE VILLA PÉREZ',title:'¡La ciudad está despertando!',message:'Las luces del camino nos muestran por dónde seguir.'},
+  {at:.59,kicker:'EL RASTRO CONTINÚA',title:'¡Cada vez más cerca!',message:'Pérez ha encontrado otra señal entre las calles.'},
+  {at:.78,kicker:'ÚLTIMO AVISO',title:'¡Estamos llegando!',message:'Mira bien las calles: seguro que conoces esta zona.'}
+];
+function revealMagicEvent(progress){
+  if(state.magicEventIndex>=MAGIC_EVENTS.length-1)return;
+  const next=MAGIC_EVENTS[state.magicEventIndex+1];
+  if(progress<next.at)return;
+  state.magicEventIndex++;
+  $('event-kicker').textContent=next.kicker;
+  $('event-title').textContent=next.title;
+  $('event-message').textContent=next.message;
+  const event=$('magic-event');event.classList.remove('visible');void event.offsetWidth;event.classList.add('visible');
+  clearTimeout(state.magicEventTimer);
+  state.magicEventTimer=setTimeout(()=>event.classList.remove('visible'),3900);
+  playChime('sparkle');
+}
 function paintProgress(progress,force=false){
   state.progress=Math.max(0,Math.min(1,progress));
   $('percent').textContent=`${Math.round(state.progress*100)}%`;
   $('track-fill').style.width=`${state.progress*100}%`;
   $('route-track').setAttribute('aria-valuenow',String(Math.round(state.progress*100)));
   updateMilestones(state.progress);
+  if(!force)revealMagicEvent(state.progress);
+  const road=currentStreet(state.progress);
+  if(road!==state.streetName){
+    state.streetName=road;
+    $('street-locator').classList.toggle('hidden',!road);
+    $('street-name').textContent=road||'Una calle de tu ciudad';
+  }
   if(!state.mapPath || !state.map || !state.mouseMarker)return;
   const now=performance.now();
   if(!force&&now-state.lastPaint<95)return;
@@ -377,6 +432,8 @@ function finishAnimation(){
   state.progress=1;paintProgress(1,true);
   stopAnimation();
   $('skip').textContent='Ver sorpresa final →';
+  clearTimeout(state.arrivalTimer);
+  state.arrivalTimer=setTimeout(()=>{if(state.screen==='route'&&state.progress>=1)finishMission();},2700);
 }
 function animate(t){
   if(!state.playing)return;
@@ -411,15 +468,17 @@ function finishMission(){
   $('recap-distance').textContent=formatDistance(state.route.serviceMeters);
   state.director?.tick(1);state.director?.updateHud();
   showScreen('arrival');
+  clearTimeout(state.arrivalTimer);
+  state.arrivalTimer=setTimeout(()=>{if(state.screen==='arrival')openMorning(currentMorningData());},6900);
 }
 function reset(){
-  clearTimeout(state.introTimer);clearTimeout(state.landmarkTimer);
+  clearTimeout(state.introTimer);clearTimeout(state.landmarkTimer);clearTimeout(state.arrivalTimer);clearTimeout(state.magicEventTimer);
   state.director?.reset();
   state.morningData=null;
   stopAnimation();state.map?.remove();state.map=null;state.mouseMarker=null;state.originMarker=null;state.homeMarker=null;state.path=null;state.mapPath=null;state.route=null;state.landmark=null;state.landmarkShown=false;state.arrivalShown=false;state.isDemo=false;
   $('cinematic-intro').classList.add('hidden');$('landmark-panel').classList.add('hidden');$('final-curtain').classList.add('hidden');
   state.progress=0;state.scenicUntil=0;state.lastStage=-1;state.lastPaint=0;state.lastFx=0;state.lastCamera=0;const fx=$('route-fx');fx?.getContext('2d')?.clearRect(0,0,fx.width,fx.height);state.destination={label:'',coordinate:null};
-  $('destination-address').value='';$('adult-confirm').checked=false;
+  $('destination-address').value='';state.streetSegments=[];state.streetName='';state.magicEventIndex=-1;$('street-locator').classList.add('hidden');$('magic-event').classList.remove('visible');
   $('route-message').textContent='¡Mi mochila está lista! Voy a salir de la clínica.';$('play-pause').textContent='Comenzar el viaje ▶';$('skip').textContent='Terminar misión';
   $('map-fallback').classList.add('hidden');$('follow-map').classList.add('is-selected');$('follow-map').setAttribute('aria-pressed','true');state.follow=true;
   state.ratView=false;$('magic-compass').classList.remove('is-selected');$('magic-compass').setAttribute('aria-pressed','false');
@@ -575,7 +634,7 @@ function setup(){
   });
   $('sound-toggle').addEventListener('click',toggleSound);
   $('welcome-sound').addEventListener('click',toggleSound);
-  $('try-demo').addEventListener('click',startMadridDemo);
+  $('try-demo').addEventListener('click',()=>{if(!state.soundOn)void toggleSound();startMadridDemo();});
   // Deep link for testing directly on a phone without storing a home address.
   if(new URLSearchParams(location.search).get('demo')==='1')setTimeout(startMadridDemo,450);
   $('back-welcome').addEventListener('click',()=>showScreen('welcome'));
@@ -590,14 +649,14 @@ function setup(){
   refreshMorningGift();
   $('download-postcard').addEventListener('click',downloadPostcard);
   $('share-postcard').addEventListener('click',sharePostcard);
-  setupAutocomplete('origin-address','origin-suggestions','origin');
   setupAutocomplete('destination-address','destination-suggestions','destination');
   $('address-form').addEventListener('submit',async e=>{
     e.preventDefault();clearError();setBusy(true);
+    if(!state.soundOn)void toggleSound();
     try {
-      state.route=await calculateRoute();state.path=state.route.path;prepareJourney(false);state.progress=0;state.lastStage=-1;
+      state.route=await calculateRoute();state.path=state.route.path;state.streetSegments=state.route.streets||[];prepareJourney(false);state.progress=0;state.lastStage=-1;
       $('distance').textContent=formatDistance(state.route.serviceMeters);
-      $('route-mode-label').textContent='Ruta a pie real · simulación mágica';
+      $('route-mode-label').textContent=CFG.clinic.demo?'Ruta real · origen de prueba':'Ruta a pie real · ficción mágica';
       $('route-legal-note').textContent='El recorrido se calcula por calles reales. Para cuidar la privacidad, el mapa infantil termina antes del domicilio. El Ratón es una animación, no un GPS.';
       showScreen('route');
       await ensureMap();
