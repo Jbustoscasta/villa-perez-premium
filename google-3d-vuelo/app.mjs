@@ -53,8 +53,11 @@ function distance(a,b){
 }
 function lerp(a,b,t){return {lat:a.lat+(b.lat-a.lat)*t,lng:a.lng+(b.lng-a.lng)*t}}
 function heading(a,b){const y=Math.sin(R(b.lng-a.lng))*Math.cos(R(b.lat)),x=Math.cos(R(a.lat))*Math.sin(R(b.lat))-Math.sin(R(a.lat))*Math.cos(R(b.lat))*Math.cos(R(b.lng-a.lng));return (Math.atan2(y,x)*180/Math.PI+360)%360}
-function smoothCustom(end,origin=START){
- const dist=distance(origin,end),cut=Math.min(.85,Math.max(0,1-180/Math.max(dist,181)));
+function smoothCustom(end,origin=START,privateHome=true){
+ const dist=distance(origin,end);
+ // Trim only residential destinations, by approximately 180m.
+ // Public landmarks must stay exactly at their displayed marker.
+ const cut=privateHome?Math.max(0,1-180/Math.max(dist,180)):1;
  const stop=lerp(origin,end,cut);
  const points=[origin],n=Math.min(10,Math.max(5,Math.ceil(dist/500)));
  for(let i=1;i<n;i++){
@@ -199,7 +202,7 @@ async function getDestination(){
  const text=$('address').value.trim();
  if(!text){state.custom=false;return {
  points:state.clinicVerified
-   ?smoothCustom(routes[state.route].points.at(-1),state.origin)
+   ?smoothCustom(routes[state.route].points.at(-1),state.origin,false)
    :routes[state.route].points,
  label:routes[state.route].label,
  trueEnd:routes[state.route].points.at(-1),custom:false
