@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta name="theme-color" content="#0c2832"/>
+  <meta name="description" content="Operación Diente Perdido: acompaña el viaje mágico del Ratón Pérez desde tu clínica dental hasta casa, sobre un mapa real."/>
+  <title>Operación Diente Perdido · Villa Pérez</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css"/>
+  <link rel="stylesheet" href="./styles.css"/>
+</head>
+<body>
+  <div class="app-shell" id="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-tooth" aria-hidden="true">✦</span><span>VILLA <b>PÉREZ</b></span></div>
+      <span class="top-label">OPERACIÓN DIENTE PERDIDO</span>
+      <button type="button" class="icon-button" id="restart" aria-label="Empezar de nuevo" title="Empezar de nuevo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2-5.3M4 4v5h5"/></svg></button>
+    </header>
+
+    <main>
+      <section id="screen-welcome" class="screen screen--welcome active" aria-labelledby="welcome-title">
+        <div class="welcome-art" id="welcome-art">
+          <div class="halo"></div>
+          <img class="official-facade" id="facade" src="../villa-hero.webp" alt="Fachada original de Villa Pérez"/>
+          <div class="stars" aria-hidden="true">✦ &nbsp; · &nbsp; ✧ &nbsp; · &nbsp; ✦</div>
+        </div>
+        <div class="intro-copy">
+          <span class="eyebrow">UNA AVENTURA QUE EMPIEZA EN TU CLÍNICA</span>
+          <h1 id="welcome-title">¡El Ratón Pérez va a tu casa!</h1>
+          <p>Ha llegado el momento de recoger tu diente. Descubre el recorrido <strong>por calles de verdad</strong> desde Villa Pérez hasta casa.</p>
+          <div class="clinic-chip"><span class="chip-icon">⌂</span><div><small>La casa del Ratón Pérez está en</small><strong id="welcome-clinic">Clínica del Doctor Abreu</strong></div></div>
+          <button type="button" id="start" class="button button-gold button-large">¡Se me ha caído un diente! <span aria-hidden="true">→</span></button>
+          <button type="button" id="try-demo" class="button button-demo button-large">▶ Probar recorrido de Madrid</button>
+          <div id="demo-error" class="error hidden" role="alert"></div>
+          <p class="demo-places">Ruta pública de prueba: Puerta de Alcalá → Plaza Mayor · sin introducir datos personales.</p>
+          <p class="soft-note">Una aventura de fantasía con recorrido geográfico real.</p>
+        </div>
+      </section>
+
+      <section id="screen-address" class="screen" aria-labelledby="form-title">
+        <div class="screen-heading">
+          <span class="eyebrow">PASO 1 · ZONA DE MADRES Y PADRES</span>
+          <h1 id="form-title">¿Dónde llevo la magia?</h1>
+          <p>Un adulto nos indica la dirección de casa. La usaremos para trazar la ruta real desde la clínica.</p>
+        </div>
+        <form id="address-form" novalidate>
+          <div class="form-card">
+            <div class="address-pair">
+              <span class="route-dot route-dot--start" aria-hidden="true"></span>
+              <div class="field-stack">
+                <label for="origin-address">Salida · <span id="origin-clinic">Clínica del Doctor Abreu</span></label>
+                <p class="field-hint" id="origin-demo-hint">La clínica usa temporalmente un origen de demostración. Puedes cambiarlo.</p>
+                <input id="origin-address" type="text" value="Puerta de Alcalá, Madrid" autocomplete="off" spellcheck="false" aria-autocomplete="list" aria-controls="origin-suggestions" placeholder="Dirección de la clínica" required/>
+                <div id="origin-suggestions" class="suggestions hidden" role="listbox" aria-label="Direcciones de clínica sugeridas"></div>
+              </div>
+            </div>
+            <div class="connector" aria-hidden="true"></div>
+            <div class="address-pair">
+              <span class="route-dot route-dot--home" aria-hidden="true"></span>
+              <div class="field-stack">
+                <label for="destination-address">Llegada · Dirección de casa</label>
+                <input id="destination-address" type="text" autocomplete="street-address" spellcheck="false" aria-autocomplete="list" aria-controls="destination-suggestions" placeholder="Calle, número, localidad…" required/>
+                <div id="destination-suggestions" class="suggestions hidden" role="listbox" aria-label="Direcciones de casa sugeridas"></div>
+                <small class="field-hint">Elige una de las direcciones sugeridas para ubicar el destino.</small>
+              </div>
+            </div>
+          </div>
+          <div class="privacy-box">
+            <div class="privacy-icon" aria-hidden="true">♧</div>
+            <div><strong>La dirección es privada</strong><p>Se envía a proveedores externos de mapas y rutas para calcular el trayecto. Este prototipo no guarda tu domicilio ni lo transmite a la clínica. No compartas capturas del mapa con tu dirección.</p></div>
+          </div>
+          <label class="check-row"><input id="adult-confirm" type="checkbox" required/><span>Soy madre, padre o tutor y quiero calcular el recorrido.</span></label>
+          <div class="error hidden" id="form-error" role="alert"></div>
+          <button type="submit" id="calculate" class="button button-gold button-large">Calcular mi viaje mágico <span aria-hidden="true">→</span></button>
+          <button type="button" class="button button-text" id="back-welcome">Volver</button>
+        </form>
+      </section>
+
+      <section id="screen-route" class="screen screen--route" aria-labelledby="route-title">
+        <div class="map-stage">
+          <div id="map" role="application" aria-label="Mapa interactivo con ruta real desde la clínica hasta casa"></div>
+          <div class="map-magic-dust" aria-hidden="true"><i>✦</i><i>✧</i><i>✦</i><i>✧</i><i>✦</i></div>
+          <div id="map-fallback" class="map-fallback hidden" role="alert">No se ha podido cargar el mapa. Comprueba tu conexión a Internet o prueba otro navegador.</div>
+          <div class="map-shade" aria-hidden="true"></div>
+          <div class="map-heading">
+            <span class="eyebrow">PASO 2 · EL VIAJE MÁGICO</span>
+            <h1 id="route-title">¡Ya estoy en camino!</h1>
+            <p id="route-subtitle">El Ratón Pérez sale de Villa Pérez…</p>
+          </div>
+          <div id="route-message" class="floating-message" aria-live="polite">¡Mi mochila está lista! Voy a salir de la clínica.</div>
+          <div class="map-buttons">
+            <button type="button" id="fit-map" class="map-btn" title="Ver toda la ruta" aria-label="Ver toda la ruta">⤢</button>
+            <button type="button" id="follow-map" class="map-btn is-selected" title="Seguir al Ratón" aria-label="Seguir al Ratón" aria-pressed="true">◎</button>
+            <button type="button" id="cinematic-map" class="map-btn" title="Activar vista cinematográfica" aria-label="Activar vista cinematográfica" aria-pressed="false">◈</button>
+          </div>
+        </div>
+        <div class="route-sheet">
+          <div class="sheet-handle" aria-hidden="true"></div>
+          <div class="journey-head"><div><span class="eyebrow">MISIÓN ACTIVA</span><h2>De la clínica a tu casa</h2></div><span class="progress-number" id="percent">0%</span></div>
+          <div class="route-track" id="route-track" role="progressbar" aria-label="Progreso de la misión" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="route-track-fill" id="track-fill"></div></div>
+          <div class="journey-milestones" id="journey-milestones" aria-label="Etapas del viaje"><span class="active">✦ <small>Salida</small></span><span>✦ <small>En camino</small></span><span>✦ <small>Muy cerca</small></span><span>⌂ <small>Llegada</small></span></div>
+          <div class="trip-facts"><span id="distance">— km</span><span id="route-mode-label">Ruta a pie · simulación mágica</span></div>
+          <div class="travel-choices" id="travel-choices"><span class="choice-label">Duración del cuento</span><button type="button" data-duration="105" class="time-choice selected">Rápida · 1:45</button><button type="button" data-duration="240" class="time-choice">Con calma · 4:00</button></div>
+          <div class="action-row"><button type="button" id="play-pause" class="button button-gold">Comenzar el viaje ▶</button><button type="button" id="skip" class="button button-quiet">Terminar misión</button></div>
+          <small class="sheet-note" id="route-legal-note">El trayecto sigue calles reales cuando se calcula con el servicio de rutas; el movimiento es una animación ficticia. La llegada la confirma un adulto.</small>
+        </div>
+      </section>
+
+      <section id="screen-arrival" class="screen screen--arrival" aria-labelledby="arrival-title">
+        <div class="arrival-glow"></div><div class="arrival-icon" aria-hidden="true">⌂</div>
+        <span class="eyebrow">PASO 3 · MISIÓN CUMPLIDA</span>
+        <h1 id="arrival-title">¡He llegado a tu casa!</h1>
+        <p>He seguido cada calle desde Villa Pérez. Ahora toca descansar… ¡mañana te espera una sorpresa!</p>
+        <div class="letter"><span>✦</span><strong>MENSAJE DE VILLA PÉREZ</strong><p>«Gracias por avisarme. Ha sido un viaje inolvidable. Cuida mucho de tu sonrisa y sigue soñando».</p></div>
+        <div class="recap"><div><span>Origen</span><strong id="recap-clinic">Clínica del Doctor Abreu</strong></div><div><span>Camino recorrido</span><strong id="recap-distance">— km</strong></div></div>
+        <button type="button" id="download-postcard" class="button button-gold button-large">Guardar mi postal mágica ↓</button>
+        <button type="button" id="new-trip" class="button button-text">Preparar otra misión</button>
+        <small class="soft-note">La postal usa un recorrido decorativo: nunca se copia el trazado real de tu casa.</small>
+      </section>
+    </main>
+    <footer class="site-footer"><span>Una experiencia de <b>Ilusiono</b></span><span id="site-mode">DEMO HTTPS · NO PUBLICAR DATOS DE MENORES</span></footer>
+  </div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
