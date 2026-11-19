@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#102d38"/>
+<title>Villa Pérez · El encuentro mágico · Foto premium</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg1:#0f2e38; --bg2:#173b45; --gold:#f1d490; --gold2:#e8c06c; --panel:#153740; --line:#4f6f73; --muted:#c8dcda; --text:#fff; --teal:#99d8d6;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:16px 12px 50px;background:radial-gradient(ellipse at top,#335f66 0,#173b45 44%,#0f2e38 100%);min-height:100dvh;color:var(--text)}
+.wrap{max-width:520px;margin:0 auto}
+.hero{margin-bottom:10px}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);padding:6px 10px;font-size:11px;color:#d8ece8;backdrop-filter:blur(10px)}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(180deg,var(--gold),#fff0b5);box-shadow:0 0 14px rgba(241,212,144,.7)}
+h1{font-size:28px;letter-spacing:-.6px;margin:10px 0 4px;line-height:1.05}
+.sub{font-size:13px;color:#bdd2cf;margin:0 0 12px;line-height:1.4}
+.frame{position:relative;border:3px solid rgba(241,212,144,.92);border-radius:28px;overflow:hidden;background:#1f3740;box-shadow:0 18px 42px rgba(0,0,0,.33)}
+.frame canvas{display:block;width:100%;height:auto;touch-action:none;background:#25444d}
+.frame .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:28px;pointer-events:none;text-align:center;color:#d3e4e3;font-size:17px;line-height:1.35}
+.cameraChrome{position:absolute;inset:0;pointer-events:none}
+.corner{position:absolute;width:28px;height:28px;border-color:rgba(255,255,255,.75);border-style:solid}
+.corner.tl{top:14px;left:14px;border-width:3px 0 0 3px;border-top-left-radius:10px}
+.corner.tr{top:14px;right:14px;border-width:3px 3px 0 0;border-top-right-radius:10px}
+.corner.bl{bottom:14px;left:14px;border-width:0 0 3px 3px;border-bottom-left-radius:10px}
+.corner.br{bottom:14px;right:14px;border-width:0 3px 3px 0;border-bottom-right-radius:10px}
+.scanHint{position:absolute;left:50%;top:18px;transform:translateX(-50%);background:rgba(7,26,31,.42);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px);padding:7px 12px;border-radius:999px;font-size:12px;color:#fef7d7;max-width:86%;text-align:center}
+.badge{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:rgba(7,26,31,.44);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);padding:9px 12px;border-radius:14px;font-size:12px;color:#d9ece8;max-width:88%;text-align:center;line-height:1.35}
+.badge.hidden,.scanHint.hidden{display:none}
+.countdown{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:96px;font-weight:800;color:#fff;text-shadow:0 10px 35px rgba(0,0,0,.45);background:linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.3));pointer-events:none;opacity:0;transition:opacity .15s}
+.countdown.show{opacity:1}
+.toast{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(18,36,40,.78);border:1px solid rgba(241,212,144,.35);backdrop-filter:blur(10px);padding:12px 16px;border-radius:18px;text-align:center;color:#fff;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;min-width:220px;max-width:80%}
+.toast.show{opacity:1;transform:translate(-50%,-52%)}
+.toast strong{display:block;color:#ffefbc;font-size:16px;margin-bottom:3px}
+.panel{background:linear-gradient(180deg,rgba(21,55,64,.98),rgba(18,48,56,.96));border:1px solid #49696d;border-radius:18px;padding:14px;margin-top:12px;box-shadow:0 8px 20px rgba(0,0,0,.15)}
+.status{font-size:13px;color:#d8e7e3;line-height:1.45}
+.status strong{color:#fff5c9}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.btn{appearance:none;border:0;border-radius:14px;padding:12px 15px;min-height:48px;color:#10313b;background:linear-gradient(180deg,var(--gold),#efc66d);font-weight:800;font-size:14px;cursor:pointer;flex:1;box-shadow:0 8px 18px rgba(0,0,0,.14)}
+.btn.secondary{background:linear-gradient(180deg,#e2eeea,#c9ddd7);color:#153740}
+.btn.tertiary{background:#274d56;color:white;border:1px solid #7b969a;box-shadow:none}
+.btn.ghost{background:transparent;color:#ebf6f3;border:1px dashed rgba(255,255,255,.25);box-shadow:none}
+.btn:disabled{opacity:.5;cursor:default}
+.btnlabel{display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+.small{font-size:12px;color:#adc9c9;line-height:1.5}
+.hint{font-size:12px;color:#cbd4d1;line-height:1.5;margin:8px 0}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+.placement-picker{padding:13px 13px 14px;margin:5px 0 13px;border:1px solid #60878a88;border-radius:18px;background:linear-gradient(135deg,#244e55,#153d45)}
+.placement-picker h2{font:700 14px system-ui;margin:0 0 10px;color:#e9ddbb}
+.placement-choices{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.placement-choice{min-height:68px;display:flex;align-items:center;gap:8px;padding:10px 10px;border:1px solid #7ca3a37c;border-radius:13px;background:#173943;color:#e1eeea;text-align:left;cursor:pointer}
+.placement-choice.active{background:#f3dfb2;color:#173b43;border:2px solid #fff0bd}
+.placement-choice strong{display:block;font-size:13px;line-height:1.2}
+.placement-choice small{display:block;font-size:10px;opacity:.8;margin-top:4px;line-height:1.2}
+.place-emoji{font-size:23px;line-height:1}
+.side-row{padding:10px 0 0;color:#cfdfdb;font-size:12px}
+.side-choices{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}
+.side-choice{min-height:40px;border-radius:10px;border:1px solid #719294;background:#234953;color:#e1efea;font-size:12px;cursor:pointer;font-weight:600}
+.side-choice.active{background:#f1d490;color:#183941;border-color:#f1d490}
+.placement-choice:focus-visible,.side-choice:focus-visible{outline:3px solid #fff2c5;outline-offset:2px}
+label{font-size:13px;color:#d7e7e4;display:block}
+input[type=range]{width:100%;accent-color:var(--gold);margin:12px 0 2px}
+a{color:#fee4a0}#file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.hidden{display:none!important}
+.privacy{font-size:11px;color:#b4caca;line-height:1.45} .credit{color:#9fbdc0;font-size:11px;margin-top:13px;line-height:1.45} .sep{height:1px;background:#3e6267;margin:12px 0}
+.exportModes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.modeBtn{appearance:none;border:1px solid rgba(255,255,255,.16);background:#203f48;color:#dceceb;border-radius:12px;padding:10px 8px;font-size:12px;font-weight:700;cursor:pointer}
+.modeBtn.active{background:linear-gradient(180deg,#f7e4b8,#f1d490);color:#183740;border-color:#f3dc9c}
+.mini{font-size:11px;color:#adc5c3}
+.footerTips{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.tipCard{border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03);border-radius:14px;padding:10px 12px}
+.tipCard strong{display:block;font-size:12px;color:#fff2c1;margin-bottom:4px}
+.toggleline{display:flex;align-items:center;gap:10px;font-size:12px;color:#dceae6;margin:9px 0 2px;min-height:30px}
+input[type=checkbox]{accent-color:var(--gold);height:18px;width:18px;flex:0 0 auto}
+@media(prefers-reduced-motion:reduce){.toast,.countdown{transition:none!important}}
+
+/* Premium photography direction — only CSS and UI chrome, original PNG unchanged */
+:root{--cream:#fff1d4;--gold:#eecb82;--ocean:#102c35;--foam:#d4f0e9}
+body{background:radial-gradient(ellipse 120% 88% at 50% -10%,#375967 0%,#142e3c 49%,#091d26 100%);font-family:-apple-system,BlinkMacSystemFont,'Avenir Next',system-ui,sans-serif;min-height:100dvh}
+.wrap{max-width:460px}
+.hero{text-align:center;margin-top:7px;margin-bottom:21px}
+.hero .pill{font-size:10px;letter-spacing:1.8px;padding:8px 14px;color:#ffe5a9;background:#e8d6a512}
+.hero .pill .dot{width:5px;height:5px}
+h1{font-family:Georgia,'Times New Roman',serif;font-size:38px;font-weight:400;line-height:1.08;letter-spacing:-1.2px;margin:18px 0 10px}
+.sub{color:#c2d9d5;font-size:13px}
+.clinicLocation:empty{display:none}.clinicLocation:not(:empty)::before{content:' · '}
+.placement-picker{padding:16px;background:linear-gradient(145deg,#1b3e47,#0d2732);border-radius:24px;border:1px solid #a6b3a631;box-shadow:0 16px 42px #0413184a}
+.placement-picker h2{font-size:12px;letter-spacing:1.1px;text-transform:uppercase;color:#c9e4dc;margin:2px 0 15px;text-align:center}
+.placement-choices{gap:10px}
+.placement-choice{min-height:116px;border-radius:18px;border:1px solid #8caaab36;background:#19404a;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:9px;padding:13px}
+.placement-choice.active{border:1px solid #ffe9b7;background:linear-gradient(170deg,#fff0cf,#ecd6ab);box-shadow:inset 0 0 0 1px #ffffff88,0 4px 25px #dfc58522}
+.placement-choice strong{font-size:15px}.placement-choice small{font-size:11px}
+.place-emoji{font-size:30px}
+.frame{margin-top:14px;border-radius:28px;border:1px solid #d9be866e;background:#0a2731;box-shadow:0 19px 56px #0009;isolation:isolate}
+.frame canvas{width:100%;height:auto;max-height:63dvh;object-fit:contain}
+body:not(.has-camera) .frame{height:min(31dvh,252px);overflow:hidden}
+body:not(.has-camera) .frame canvas{height:100%;max-height:none;object-fit:cover}
+body:not(.has-camera) .frame .empty{background:linear-gradient(135deg,#041c2aa8,#173d42a3);font-size:14px}
+.corner{width:22px;height:22px;border-color:#f9e6c5b8}
+.panel{padding:15px;border-radius:22px;border-color:#ffffff15;background:linear-gradient(180deg,#153741,#102d39);box-shadow:0 16px 36px #04131836}
+.panel>.status{font-size:12px;text-align:center;color:#e1e8e2b8}
+.btn{min-height:52px;border-radius:14px;font-weight:700;letter-spacing:.1px}
+.btn.tertiary{background:#183b46;border:1px solid #ffffff30}
+.btnrow{margin:10px 0}
+.privacy,.credit{text-align:center;margin-top:17px}
+.scanHint{top:20px;white-space:nowrap;background:#071a23a8;border-radius:20px;font-size:12px}
+.badge{bottom:22px;background:#071a23c1;border-radius:18px}
+.side-row{margin:13px 0 0}.side-choice{border-radius:14px}
+.exportModes{gap:8px}
+.modeBtn{min-height:45px;background:#21434a;border-radius:13px}
+.modeBtn.active{background:#fff0cc}
+.finishRow{display:flex;gap:8px;margin-top:12px}.finishRow>.btn{flex:1}
+.shutter{min-height:70px;width:70px;height:70px;flex:none;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;border:3px solid #ffeed2;background:transparent;padding:0;box-shadow:0 5px 22px #0007;cursor:pointer}
+.shutter-ring{width:56px;height:56px;border-radius:50%;background:#fff8ec;box-shadow:inset 0 0 0 2px #d7c8a3}
+.switch-camera{flex:none;width:54px;height:54px;border-radius:50%;font-size:29px}
+#liveRow{align-items:center;justify-content:center;position:relative;gap:23px}
+#editRow>.btn{font-size:12px;padding:13px 8px;min-height:48px}
+.finalPreview{position:absolute;inset:0;z-index:3;background:#0c2731;display:flex;align-items:center;justify-content:center;padding:12px}
+.finalPreview>img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 18px #0008)}
+.finalLabel{position:absolute;top:15px;left:50%;transform:translateX(-50%);background:#0f343dc9;color:#f2dfb8;padding:8px 12px;border-radius:20px;font-size:12px;white-space:nowrap;backdrop-filter:blur(8px)}
+.shareExtras{margin-top:12px;border:1px solid #f6dfa436;background:linear-gradient(155deg,#254750,#102f39);border-radius:18px;padding:18px;text-align:center}
+.shareTitle{font-family:Georgia,serif;font-size:18px;line-height:1.35;margin:0 0 12px}.shareTitle strong{color:#ffe2a6;font-weight:400}
+.mapsButton{border:1px solid #d5bb88;border-radius:12px;background:#f2e6c9;color:#16404a;min-height:44px;padding:10px 16px;font-weight:700;width:100%;cursor:pointer}
+.shareNote{color:#afc8c7;font-size:11px;margin:10px 0 0}
+.localMetrics{margin:22px 0;padding:16px;border-radius:17px;background:#183943;border:1px solid #d9bb814b;font-size:12px}
+.localMetrics h3{margin:0 0 8px}.localMetrics p{color:#c1d4d2}
+.localMetrics #metricsContent{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px 0 14px}
+.stat{background:#102c34;border-radius:9px;padding:10px}.stat b{display:block;color:#f3d79b;font-size:21px;font-variant-numeric:tabular-nums}
+body.has-camera{overflow:hidden;padding:0;background:#091c25}
+body.has-camera .wrap{max-width:none}
+body.has-camera .hero{position:fixed;z-index:7;top:0;left:0;width:100%;padding:calc(env(safe-area-inset-top) + 12px) 18px 22px;margin:0;background:linear-gradient(#061d27da,#061d2700);pointer-events:none}
+body.has-camera .hero .pill{display:none}
+body.has-camera .hero h1{font-size:23px;margin:4px 0 5px;font-family:Georgia,serif;text-shadow:0 1px 14px #000b}
+body.has-camera .hero .sub{font-size:11px;color:#e9f4f0;text-shadow:0 2px 10px #000a}
+body.has-camera .placement-picker,body.has-camera .privacy,body.has-camera .credit,body.has-camera .localMetrics{display:none!important}
+body.has-camera .frame{position:fixed;inset:0;height:100dvh;width:100%;margin:0;border:0;border-radius:0;box-shadow:none;background:#061e27}
+body.has-camera .frame canvas{width:100%;height:100%;max-height:none;object-fit:cover}
+body.editing .frame canvas{object-fit:contain}
+body.editing #viewfinder,body.stage-result #viewfinder{
+  bottom:var(--vp-dock-height,230px);
+  height:auto;
+  border-bottom:1px solid #d7c28b38;
+}
+body.stage-result .frame canvas{object-fit:contain}
+body.stage-result .frame .finalPreview{
+  padding:calc(env(safe-area-inset-top) + 65px) 18px 12px;
+}
+
+body.has-camera .panel{position:fixed;z-index:8;left:0;right:0;bottom:0;max-height:52dvh;overflow:auto;margin:0;padding:24px 14px calc(env(safe-area-inset-bottom) + 14px);border:0;border-radius:0;background:linear-gradient(to bottom,#061a23d0 0%,#071e28f5 22%,#071e28 100%);box-shadow:none}
+body.has-camera #liveRow{margin:0 0 5px}
+body.has-camera #startRow{display:none!important}
+body.has-camera .panel>.status{text-shadow:0 1px 4px #000;margin:0 0 7px}
+body.has-camera .scanHint{top:calc(env(safe-area-inset-top) + 100px)}
+body.has-camera .badge{bottom:33dvh}
+body.has-camera #editRow{margin:7px 0}
+body.has-camera #adjust{margin-top:0}
+body.has-camera #adjust>.sep{display:none}
+body.has-camera #adjust>.footerTips{display:none}
+body.has-camera #adjust>.hint{display:none}
+body.has-camera #adjust .btnrow{margin:7px 0}body.has-camera #adjust .btnrow .btn{font-size:11px;padding:7px 9px;min-height:43px}
+body.has-camera #exportPanel .mini{display:none}
+body.has-camera .frame .finalPreview{padding:calc(env(safe-area-inset-top) + 70px) 20px 21dvh}
+body.stage-result #adjust,body.stage-result #finishPhoto{display:none!important}
+body.stage-result #editPhoto{display:block!important}
+body.stage-result #finalPreview{display:flex!important}
+body.stage-result #shareExtras{display:block!important;margin:0;border:0;padding:5px 4px 0;background:transparent}
+body.stage-result .finalLabel{top:calc(env(safe-area-inset-top) + 62px)}
+@media(min-width:700px){body.has-camera .frame{width:min(100%,520px);left:50%;transform:translateX(-50%);box-shadow:0 12px 60px #000b}
+body.has-camera .panel,body.has-camera .hero{left:50%;right:auto;transform:translateX(-50%);width:min(100%,520px)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+.introArt{position:absolute;z-index:2;inset:0;display:flex;align-items:center;justify-content:flex-start;padding:20px;overflow:hidden;pointer-events:none;
+ background:radial-gradient(ellipse at 87% 47%,#6b807278,transparent 52%),linear-gradient(110deg,#0b2838a8,#345c5a44)}
+.introOrb{position:absolute;width:210px;height:210px;right:-24px;top:18px;border-radius:50%;border:1px solid #cbb88c4c;background:radial-gradient(circle,#e9dbb435,#d6b06d04 66%,transparent);box-shadow:0 0 50px #edda9640}
+.introArt img{position:absolute;right:10px;bottom:-11px;width:44%;height:106%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 13px 16px #051e2c8c)}
+.introCopy{position:relative;width:58%;text-align:left;z-index:1;display:flex;flex-direction:column;gap:11px;text-shadow:0 2px 12px #051b279a}
+.introCopy span{letter-spacing:2px;font-size:9px;font-weight:800;color:#edcf91}
+.introCopy strong{font-family:Georgia,serif;font-size:26px;line-height:1.05;font-weight:400;color:#fff5dc}
+.introCopy small{font-size:11px;line-height:1.3;color:#e0eae3}
+body:not(.has-camera) .frame .empty{display:none}
+body.has-camera .introArt{display:none}
+.touchTip{font-size:11px;color:#f0e5cc;margin:7px 0 10px;text-align:center}
+.advanceSettings{font-size:11px;color:#d3e3dd;border-top:1px solid #ffffff18;padding-top:9px}
+.advanceSettings summary{cursor:pointer;list-style:none;color:#afc9c7;text-align:center;padding:4px}
+.advanceSettings summary::after{content:'  ⌄';color:#e6d4a0}
+.advanceSettings[open] summary::after{content:'  ⌃'}
+.advanceSettings .hint{color:#b0c5c4}
+.advanceSettings .btnrow{margin:7px 0}
+.advanceSettings summary::-webkit-details-marker{display:none}
+body.editing #download,body.editing #share{display:none!important}
+body.stage-result #retry{display:none!important}
+body.stage-result #exportPanel{margin-top:6px}
+body.stage-result #shareExtras{margin-top:7px}
+body.has-camera #editRow{justify-content:center}
+body.editing #editRow>.btn{max-width:150px}
+body.has-camera #adjust .advanceSettings>.hint,body.has-camera #adjust .advanceSettings .btnrow{display:block}
+body.has-camera .panel{max-height:52dvh}
+@media(max-width:345px){.introCopy strong{font-size:22px}.introArt img{right:-1px}}
+
+.back-choice{position:absolute;z-index:6;top:calc(env(safe-area-inset-top) + 12px);left:13px;background:#07232ccc;color:#fff0d0;border:1px solid #ffffff36;border-radius:999px;font-size:11px;font-weight:700;min-height:40px;padding:9px 13px;pointer-events:auto;backdrop-filter:blur(10px);cursor:pointer}
+body.has-camera .hero{padding-top:calc(env(safe-area-inset-top) + 12px)}
+body.has-camera .hero h1{font-size:21px}
+.cameraFlash{position:absolute;inset:0;background:#ffffff;opacity:0;pointer-events:none;z-index:10;transition:opacity 155ms ease-out}
+.cameraFlash.flashOn{opacity:.24}
+@media(max-height:700px){
+ body.stage-result .frame .finalPreview{padding:18px 10px 8px}
+ body.stage-result .finalLabel{top:14px}
+ body.has-camera .hero h1{font-size:18px}
+ body.has-camera .panel{padding-top:12px}
+ body.has-camera .shareTitle{font-size:15px}
+ body.has-camera .shareNote{font-size:10px}
+ body.stage-result #exportPanel{margin-top:0}
+}
+@media(prefers-reduced-motion:reduce){.cameraFlash{transition:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="hero">
+    <div class="pill"><span class="dot"></span> EXPERIENCIA FOTOGRÁFICA · V5 PREMIUM</div>
+    <h1>Tu encuentro con Pérez</h1>
+    <p class="sub"><span id="clinicName">Clínica del Doctor Abreu</span><span id="clinicLocation" class="clinicLocation"></span></p>
+  </div>
+
+  <section class="placement-picker" id="placementPicker" aria-label="Elegir dónde aparece Pérez">
+    <h2>Primero, elige dónde quieres que aparezca</h2>
+    <div class="placement-choices" role="group" aria-label="Posición del personaje">
+      <button class="placement-choice active" type="button" id="placePalm" aria-pressed="true"><span class="place-emoji">✋</span><span><strong>En la palma</strong><small>Extiende una mano</small></span></button>
+      <button class="placement-choice" type="button" id="placeShoulder" aria-pressed="false"><span class="place-emoji">🧍</span><span><strong>En el hombro</strong><small>Sonríe a la cámara</small></span></button>
+    </div>
+  </section>
+  <div class="frame" id="viewfinder">
+    <canvas id="canvas" width="720" height="960" aria-label="Visor de cámara con el Ratón Pérez oficial"></canvas>
+    <div id="finalPreview" class="finalPreview hidden" aria-label="Tu fotografía terminada">
+      <img id="finalImage" alt="Fotografía mágica con Pérez y el nombre de la clínica"/>
+      <span class="finalLabel">Tu recuerdo está listo ✨</span>
+    </div>
+    <div id="empty" class="empty">Elige palma u hombro y abre la cámara o sube una fotografía.</div>
+    <div class="introArt" aria-hidden="true">
+      <div class="introOrb"></div>
+      <div class="introCopy"><span>UN ENCUENTRO EXTRAORDINARIO</span><strong>La magia está muy cerca</strong><small>Elige, sonríe y guarda tu recuerdo</small></div>
+      <img src="./perez.png" alt="" decoding="async" loading="eager"/>
+    </div>
+    <div class="cameraChrome">
+      <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+      <div id="scanHint" class="scanHint hidden">Abre tu mano y coloca la palma bien visible</div>
+      <div id="badge" class="badge hidden">Puedes hacer la foto</div>
+      <button type="button" id="backToChoice" class="back-choice hidden" aria-label="Volver y cambiar Palma u Hombro">← Cambiar</button>
+      <div id="cameraFlash" class="cameraFlash" aria-hidden="true"></div>
+      
+      
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="status" id="status" role="status"><strong>Elige una posición.</strong> Después abre la cámara o selecciona una foto.</div>
+    <div id="shoulderSideRow" class="side-row hidden"><span>¿En qué hombro?</span><div class="side-choices" role="group" aria-label="Elegir el hombro en la fotografía">
+      <button type="button" class="side-choice active" data-side="auto" aria-pressed="true">Automático</button>
+      <button type="button" class="side-choice" data-side="left" aria-pressed="false">Izq. foto</button>
+      <button type="button" class="side-choice" data-side="right" aria-pressed="false">Dcha. foto</button>
+    </div></div>
+
+    <div class="btnrow" id="startRow">
+      <button class="btn" id="startCamera">Abrir cámara <span aria-hidden="true">◉</span></button>
+      <label class="btn secondary btnlabel" for="file">🖼️ Elegir foto</label>
+      <input id="file" type="file" accept="image/*"/>
+    </div>
+
+    <div class="btnrow hidden" id="liveRow">
+      <button class="shutter" id="takePhoto" aria-label="Hacer foto"><span class="shutter-ring"></span></button>
+      <button class="btn tertiary switch-camera" id="switchCamera" aria-label="Cambiar cámara">↻</button>
+    </div>
+    
+
+    <div class="btnrow hidden" id="editRow">
+      <button class="btn" id="download">↓ Guardar foto</button>
+      <button class="btn secondary" id="share">↗ Compartir</button>
+      <button class="btn tertiary" id="retry">Otra foto</button>
+    </div>
+
+    <div id="exportPanel" class="hidden">
+      <div class="exportModes">
+        <button class="modeBtn active" data-export="photo" aria-pressed="true">Foto original</button>
+        <button class="modeBtn" data-export="polaroid" aria-pressed="false">Polaroid</button>
+        <button class="modeBtn" data-export="stories" aria-pressed="false">Stories</button>
+      </div>
+      <p class="mini">Una foto real, con un toque de magia.</p>
+      <div class="finishRow">
+        <button id="finishPhoto" class="btn" type="button">✨ Ver mi recuerdo</button>
+        <button id="editPhoto" class="btn tertiary hidden" type="button">↶ Ajustar a Pérez</button>
+      </div>
+    </div>
+
+    <div id="adjust" class="hidden">
+      <p class="touchTip">Arrastra a Pérez · ⤢ Tamaño · ↻ Giro</p>
+      <details class="advanceSettings">
+        <summary>Opciones avanzadas</summary>
+        <div class="toggleline"><input id="realismToggle" type="checkbox" checked/> <span>Integración fotográfica realista</span></div>
+      <div class="toggleline"><input id="occlusionToggle" type="checkbox" checked/> <span>Integrar Pérez con la palma o la ropa (experimental)</span></div>
+      <div class="toggleline"><input id="magicToggle" type="checkbox"/> <span>Conservar destellos en la foto</span></div>
+      <p class="hint">Tu foto no se modifica. Los ajustes de realismo solo afectan a Pérez y su punto de apoyo.</p>
+      <div class="btnrow">
+        <button class="btn tertiary" id="reset">⌖ Ajuste automático</button>
+        <button class="btn tertiary" id="switchPlacementPhoto">⇆ Cambiar a hombro</button>
+      </div>
+
+      </details>
+    </div>
+  <section class="shareExtras hidden" id="shareExtras">
+    <p class="shareTitle">La magia continúa en <strong id="clinicNameResult">Clínica del Doctor Abreu</strong></p>
+    <button id="googleMapsButton" class="mapsButton hidden" type="button">✦ Ver la clínica en Google Maps</button>
+    <p class="shareNote">En iPhone, puedes usar «Compartir» → «Guardar imagen» para añadirla a Fotos. Dejar una reseña es opcional.</p>
+  </section>
+  </div>
+
+  <section id="localMetrics" class="localMetrics hidden">
+    <h3>Panel de demostración · Esta pantalla únicamente</h3>
+    <p>Contadores guardados en este dispositivo. No son estadísticas globales de la clínica.</p>
+    <div id="metricsContent"></div>
+    <button class="btn tertiary" id="metricsDownload">Exportar contadores CSV</button>
+  </section>
+  <p class="privacy">La foto se procesa en tu móvil; no se sube a la web. El reconocimiento necesita descargar sus modelos la primera vez.</p>
+  <p class="credit">Experiencia Villa Pérez para <span id="clinicFooter">Clínica del Doctor Abreu</span>. Personaje oficial intacto. Si el reconocimiento falla, puedes ajustar a Pérez manualmente.</p>
+  <video id="video" playsinline muted autoplay class="hidden"></video>
+  <img id="perez" alt="Personaje oficial de Ratón Pérez" src="./perez.png" class="hidden"/>
+</main>
+
+<script type="module">
+const $=x=>document.getElementById(x);
+const cv=$('canvas'),ctx=cv.getContext('2d',{alpha:false}),v=$('video'),character=$('perez');
+const status=$('status'), empty=$('empty'), badge=$('badge'), scanHint=$('scanHint');
+let model=null, stream=null, mode='idle', face='environment', frame=null, fileImg=null, autoPose=null, pose=null, lastInference=0, rafId=0;
+let exportMode='photo', photoJustTakenAt=0, palmVisible=false, landingStart=0, stableDetections=0, particles=[], countdownRunning=false, captureEpoch=0, trackingReady=false;
+const active=new Map(); let gesture=null;
+let latestHand=null, capturedHand=null, processedSprite=null, photoProfile=null;
+let lastContact=null, lastProfileKey='', profilePrepared=false;
+const REDUCED_MOTION=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||false;
+let placement='palm',shoulderSide='auto',handModel=null,shoulderModel=null,visionPromise=null,latestBody=null,capturedBody=null;
+let resultScreen=false,finalUrl=null,lightCheckAt=0,brightnessHint='',photoSeen=false;
+let shoulderOcclusionLayer=null,qualityChecked=false;
+let recognitionEpoch=0,manualTouched=false,previewRequestId=0,lastPoseSeenAt=0,finalizing=false;
+const fallbackPose=where=>where==='shoulder'
+ ?{x:cv.width*.66,y:cv.height*.46,h:Math.min(cv.width,cv.height)*.24,scale:1,rot:0}
+ :{x:cv.width*.50,y:cv.height*.60,h:Math.min(cv.width,cv.height)*.27,scale:1,rot:0};
+
+const search=new URLSearchParams(window.location.search||'');
+function syncDockHeight(){
+ if(mode!=='frozen'){document.documentElement?.style?.removeProperty('--vp-dock-height');return;}
+ const dock=document.querySelector('.panel');
+ if(!dock)return;
+ const height=Math.ceil(dock.getBoundingClientRect().height);
+ document.documentElement?.style?.setProperty('--vp-dock-height',Math.min(height,window.innerHeight*.62)+'px');
+}
+if(typeof ResizeObserver!=='undefined'){
+  const ro=new ResizeObserver(()=>syncDockHeight());
+  const dock=document.querySelector('.panel');if(dock)ro.observe(dock);
+}
+window.addEventListener?.('resize',syncDockHeight);
+window.visualViewport?.addEventListener?.('resize',syncDockHeight);
+
+const safeName=(s,defaultName)=>{s=(s||'').trim().replace(/[<>\x00-\x1F]/g,'').slice(0,75);return s||defaultName};
+const clinicName=safeName(search.get('clinica')||search.get('clinic'),'Clínica del Doctor Abreu');
+const clinicCity=safeName(search.get('ciudad')||search.get('city'),'').slice(0,55);
+function trustedMapsUrl(text){
+  try{
+    const url=new URL(text);
+    if(url.protocol!=='https:')return null;
+    const host=url.hostname.toLowerCase();
+    return host==='maps.app.goo.gl'||host==='g.page'||host==='maps.google.com'||host==='www.google.com'&&url.pathname.startsWith('/maps/');
+  }catch(e){return null}
+}
+const clinicMaps=trustedMapsUrl(search.get('maps'));
+const clinicKey='vp5-metrics:'+clinicName.toLowerCase();
+function eventCount(name){
+  const allowed=['mode_palm','mode_shoulder','camera','photo_upload','capture','finish','save','share','maps'];
+  if(!allowed.includes(name))return;
+  try{
+    const obj=JSON.parse(localStorage.getItem(clinicKey)||'{}');obj[name]=(obj[name]||0)+1;
+    localStorage.setItem(clinicKey,JSON.stringify(obj));
+  }catch(e){}
+  if(typeof window.dispatchEvent==='function'&&typeof CustomEvent==='function'){
+    window.dispatchEvent(new CustomEvent('villa-perez:event',{detail:{event:name,placement,clinic:clinicName}}));
+  }
+  renderMetrics();
+}
+function renderMetrics(){
+  if(!$('localMetrics')||$('localMetrics').classList.contains('hidden'))return;
+  let obj={};try{obj=JSON.parse(localStorage.getItem(clinicKey)||'{}')}catch(e){}
+  const names={mode_palm:'Palma',mode_shoulder:'Hombro',camera:'Cámaras',photo_upload:'Fotos importadas',capture:'Capturas',finish:'Finalizadas',save:'Guardadas',share:'Compartidas',maps:'Google Maps'};
+  $('metricsContent').replaceChildren();
+  for(const [name,title] of Object.entries(names)){
+    const item=document.createElement('div');item.className='stat';
+    const v=document.createElement('b');v.textContent=String(obj[name]||0);
+    const lab=document.createElement('span');lab.textContent=title;
+    item.append(v,lab);$('metricsContent').append(item);
+  }
+}
+function initClinic(){
+  for(const id of ['clinicName','clinicNameResult','clinicFooter'])$(id).textContent=clinicName;
+  $('clinicLocation').textContent=clinicCity;
+  if(clinicMaps)$('googleMapsButton').classList.remove('hidden');
+  if(search.get('panel')==='clinica'){$('localMetrics').classList.remove('hidden');renderMetrics()}
+}
+
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const setStatus=(s)=>status.innerHTML=s;
+const show=(id,on=true)=>$(id).classList.toggle('hidden',!on);
+function changeMode(next){
+  mode=next;
+  resultScreen=false;document.body.classList.remove('stage-result');
+  document.body.classList.toggle('has-camera',next==='live'||next==='frozen'||next==='switching');
+  document.body.classList.toggle('editing',next==='frozen');
+  show('placementPicker',next==='idle');
+  show('shoulderSideRow',placement==='shoulder'&&next==='idle');
+  scanHint.classList.toggle('hidden',next!=='live');
+  show('startRow',next==='idle'); show('liveRow',next==='live'); show('editRow',next==='frozen'); show('adjust',next==='frozen'); show('exportPanel',next==='frozen');
+
+  badge.classList.toggle('hidden', next!=='live');
+  show('backToChoice',next==='live');
+  requestAnimationFrame(syncDockHeight);
+  scanHint.textContent=placement==='palm'?'Muestra la palma abierta':'Enfoca el rostro y los hombros';
+}
+function setCanvas(w,h){cv.width=w;cv.height=h;}
+function placeholder(){
+  setCanvas(720,960);
+  let g=ctx.createLinearGradient(0,0,0,cv.height); g.addColorStop(0,'#315962'); g.addColorStop(1,'#1b3942');
+  ctx.fillStyle=g; ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.textAlign='center'; ctx.fillStyle='#f3f0d6'; ctx.font='700 38px system-ui'; ctx.fillText(placement==='palm'?'Abre la palma de tu mano':'Sonríe y muestra los hombros',cv.width/2,cv.height/2-8);
+  ctx.fillStyle='#c8d8d3'; ctx.font='24px system-ui'; ctx.fillText(placement==='palm'?'o posa con Pérez en tu hombro':'Pérez puede sentarse en uno',cv.width/2,cv.height/2+32);
+}
+placeholder();
+function coverRect(sw,sh,dw,dh){const sr=sw/sh, dr=dw/dh; let sx=0, sy=0, cw=sw, ch=sh; if(sr>dr){cw=sh*dr; sx=(sw-cw)/2;} else {ch=sw/dr; sy=(sh-ch)/2;} return {sx,sy,cw,ch};}
+function drawProportional(targetCtx, src, dw, dh, mirror=false){
+  const sw=src.videoWidth||src.naturalWidth||src.width, sh=src.videoHeight||src.naturalHeight||src.height;
+  const r=coverRect(sw,sh,dw,dh);
+  targetCtx.save();
+  if(mirror){ targetCtx.translate(dw,0); targetCtx.scale(-1,1); }
+  targetCtx.drawImage(src,r.sx,r.sy,r.cw,r.ch,0,0,dw,dh);
+  targetCtx.restore();
+}
+function paintParticles(targetCtx, t){
+  particles=particles.filter(p=>t-p.born < p.life);
+  for(const p of particles){
+    const k=(t-p.born)/p.life; const alpha=Math.max(0,1-k); const x=p.x + p.vx*k*34; const y=p.y + p.vy*k*34 - k*12;
+    targetCtx.save(); targetCtx.globalAlpha=alpha; targetCtx.fillStyle=p.fill;
+    targetCtx.beginPath(); targetCtx.arc(x,y,p.r*(1+0.5*k),0,Math.PI*2); targetCtx.fill(); targetCtx.restore();
+  }
+}
+function makeBurst(x,y,h){
+  const now=performance.now(); particles=[];
+  for(let i=0;i<18;i++){ const a=(Math.PI*2*i)/18, sp=0.7+Math.random()*1.2; particles.push({x,y:y-h*0.55+Math.random()*h*0.22,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp*0.9,r:2+Math.random()*2.3,life:560+Math.random()*380,born:now,fill:i%3===0?'#fff9cf':i%2===0?'#f4d27f':'#b5f3ed'}); }
+}
+function maybeShowToast(){}
+
+// Measure lighting only on the photograph, near the detected support point.
+// The child's real photo remains untouched; adjustments are applied to a disposable sprite layer.
+function measureScene(photo){
+  const fallback={exposure:1,saturation:.95,warmth:0,softness:.55,contrast:.98};
+  try{
+    const c=photo.getContext('2d',{willReadFrequently:true});
+    const anchor=pose||autoPose||{x:photo.width*.5,y:photo.height*.60,h:photo.width*.25};
+    const span=clamp(Math.round(anchor.h*.42),24,115);
+    const px=clamp(Math.round(anchor.x-span/2),0,Math.max(0,photo.width-span));
+    const py=clamp(Math.round(anchor.y-span/2),0,Math.max(0,photo.height-span));
+    const w=Math.min(photo.width,span),h=Math.min(photo.height,span);
+    const im=c.getImageData(px,py,w,h),a=im.data;
+    let sr=0,sg=0,sb=0,n=0,chrom=0,edges=0,ne=0;
+    for(let y=3;y<h-3;y+=4){for(let x=3;x<w-3;x+=4){
+      const k=(y*w+x)*4;
+      const r=a[k],g=a[k+1],b=a[k+2];
+      sr+=r;sg+=g;sb+=b;n++;
+      chrom+=Math.max(r,g,b)-Math.min(r,g,b);
+      const k2=(y*w+x+2)*4;edges+=Math.abs(r-a[k2])+Math.abs(g-a[k2+1])+Math.abs(b-a[k2+2]);ne++;
+    }}
+    if(n<1)return fallback;
+    sr/=n;sg/=n;sb/=n;
+    const lum=(.213*sr+.715*sg+.072*sb)/255;
+    const chroma=chrom/n/255;
+    const sharp=edges/Math.max(ne,1)/3;
+    return {exposure:clamp(.86+lum*.26,.83,1.095),saturation:clamp(.9+(chroma-.16)*.32,.86,1.03),warmth:clamp((sr-sb)/255,-.27,.33),softness:clamp(.65-(sharp/120),.2,.68),contrast:clamp(.95+(sharp/450),.95,1)};
+  }catch(e){console.warn('Scene analysis fallback',e);return fallback;}
+}
+function preparePhotoSprite(){
+  if(!character.complete||!character.naturalWidth)return;
+  if(!$('realismToggle').checked){processedSprite=null;return;}
+  const settings=photoProfile||{exposure:.96,saturation:.96,warmth:0,softness:.5,contrast:.98};
+  const key=[settings.exposure,settings.saturation,settings.warmth,settings.softness,settings.contrast].map(x=>Math.round(x*100)).join('-');
+  if(processedSprite&&lastProfileKey===key)return;
+  const h=650,w=Math.round(character.naturalWidth*h/character.naturalHeight);
+  const sprite=document.createElement('canvas');sprite.width=w;sprite.height=h;
+  const c=sprite.getContext('2d',{willReadFrequently:true});
+  c.save();c.filter=`blur(${settings.softness.toFixed(2)}px)`;
+  c.drawImage(character,0,0,w,h);c.restore();
+  try{
+    const data=c.getImageData(0,0,w,h),d=data.data;
+    const exposure=settings.exposure,saturation=settings.saturation,warmth=settings.warmth;
+    // Deterministic fine luminance noise, not a randomly flickering live filter.
+    for(let i=0;i<d.length;i+=4){
+      if(d[i+3]<4)continue;
+      const r=d[i],g=d[i+1],b=d[i+2];
+      const l=.213*r+.715*g+.072*b;
+      const noise=((((i>>>2)*73)%113)/113-.5)*3.2;
+      d[i]=clamp((l+(r-l)*saturation)*exposure+warmth*11+noise,0,255);
+      d[i+1]=clamp((l+(g-l)*saturation)*exposure+noise,0,255);
+      d[i+2]=clamp((l+(b-l)*saturation)*exposure-warmth*8+noise,0,255);
+    }
+    c.putImageData(data,0,0);
+  }catch(e){console.warn('Using unprocessed character',e);processedSprite=null;return;}
+  processedSprite=sprite;lastProfileKey=key;
+}
+function handProjection(result,w,h,mirror){
+  if(!result?.landmarks?.length)return null;
+  const crop=coverRect(w,h,cv.width,cv.height);
+  return result.landmarks[0].map(p=>({x:(mirror?1-(p.x*w-crop.sx)/crop.cw:(p.x*w-crop.sx)/crop.cw)*cv.width,
+    y:(p.y*h-crop.sy)/crop.ch*cv.height}));
+}
+function handFromImage(result){
+  if(!result?.landmarks?.length)return null;
+  return result.landmarks[0].map(p=>({x:p.x*cv.width,y:p.y*cv.height}));
+}
+function capsulePath(target,a,b,r){
+  const dx=b.x-a.x,dy=b.y-a.y,dist=Math.hypot(dx,dy);
+  if(dist<.001)return;
+  const nx=-dy/dist*r,ny=dx/dist*r;
+  const theta=Math.atan2(dy,dx);
+  target.moveTo(a.x+nx,a.y+ny);target.lineTo(b.x+nx,b.y+ny);
+  target.arc(b.x,b.y,r,theta+Math.PI/2,theta-Math.PI/2,true);
+  target.lineTo(a.x-nx,a.y-ny);target.arc(a.x,a.y,r,theta-Math.PI/2,theta+Math.PI/2,true);
+  target.closePath();
+}
+// Conservative 2D thumb overlap: only close to the character's feet, not full hand segmentation.
+// If the thumb is far away, no occlusion is drawn, avoiding unrealistic cut-outs.
+function prepareShoulderMask(result){
+  shoulderOcclusionLayer=null;
+  if(placement!=='shoulder'||!frame)return;
+  const mask=result?.segmentationMasks?.[0];
+  if(!mask)return;
+  try{
+    const mw=mask.width,mh=mask.height;
+    if(!mw||!mh||mw*mh>1024*1024)return;
+    const floats=mask.getAsFloat32Array?mask.getAsFloat32Array():null;
+    const integers=!floats&&mask.getAsUint8Array?mask.getAsUint8Array():null;
+    if(!floats&&!integers)return;
+    const matte=document.createElement('canvas');matte.width=mw;matte.height=mh;
+    const cg=matte.getContext('2d'),pixels=cg.createImageData(mw,mh);
+    for(let k=0;k<mw*mh;k++){
+      const score=floats?floats[k]:integers[k]/255;
+      const alpha=clamp((score-.47)*5,0,1)*255;
+      const off=k*4;pixels.data[off]=255;pixels.data[off+1]=255;pixels.data[off+2]=255;pixels.data[off+3]=alpha;
+    }
+    cg.putImageData(pixels,0,0);
+    const resultCanvas=document.createElement('canvas');
+    resultCanvas.width=frame.width;resultCanvas.height=frame.height;
+    const c=resultCanvas.getContext('2d');
+    c.drawImage(frame,0,0);
+    c.globalCompositeOperation='destination-in';
+    c.drawImage(matte,0,0,frame.width,frame.height);
+    c.globalCompositeOperation='source-over';
+    shoulderOcclusionLayer=resultCanvas;
+  }catch(err){console.warn('Shoulder segmentation fallback',err);}
+}
+function paintShoulderOcclusion(target){
+  if(placement!=='shoulder'||mode!=='frozen'||!shoulderOcclusionLayer||!pose||!$('realismToggle').checked||!$('occlusionToggle').checked)return;
+  // Only restore the foreground fabric in a tiny strip at the feet.
+  // Never cover the head or body of the official character.
+  const hh=pose.h*pose.scale,ww=hh*character.naturalWidth/character.naturalHeight;
+  target.save();target.beginPath();
+  target.ellipse(pose.x,pose.y,ww*.28,Math.max(2,hh*.052),(pose.rot||0)*Math.PI/180,0,2*Math.PI);
+  target.clip();target.drawImage(shoulderOcclusionLayer,0,0,cv.width,cv.height);target.restore();
+}
+async function analyzeCapturedShoulder(captured){
+  if(placement!=='shoulder'||!shoulderModel||!captured||resultScreen)return;
+  const job=recognitionEpoch;
+  try{
+    await shoulderModel.setOptions({runningMode:'IMAGE',outputSegmentationMasks:true});
+    if(frame!==captured||mode!=='frozen'||resultScreen||job!==recognitionEpoch)return;
+    const result=shoulderModel.detect(captured);
+    if(frame!==captured||mode!=='frozen'||resultScreen||job!==recognitionEpoch)return;
+    if(result.landmarks?.length)capturedBody=bodyPointsFromImage(result);
+    prepareShoulderMask(result);redraw();
+  }catch(err){console.warn('Shoulder matte not available; keeping contact shadow',err)}
+}
+function paintThumbOverlap(target){
+  if(placement!=='palm'||mode!=='frozen'||!frame||!capturedHand||!pose||!$('realismToggle').checked||!$('occlusionToggle').checked)return;
+  const h=pose.h*pose.scale;
+  if(h<1)return;
+  const thumb=capturedHand,ends=[[thumb[2],thumb[3]],[thumb[3],thumb[4]]];
+  const near=ends.some(([a,b])=>Math.min(Math.hypot(a.x-pose.x,a.y-pose.y),Math.hypot(b.x-pose.x,b.y-pose.y))<h*.40);
+  if(!near)return;
+  target.save();target.beginPath();target.ellipse(pose.x,pose.y-h*.10,h*.27,h*.17,(pose.rot||0)*Math.PI/180,0,2*Math.PI);target.clip();
+  target.beginPath();for(const [a,b] of ends)capsulePath(target,a,b,clamp(h*.07,5,30));target.clip();
+  target.globalAlpha=.88;target.drawImage(frame,0,0,cv.width,cv.height);
+  target.restore();
+}
+
+// Los controles de edición solo aparecen en la vista, nunca en las fotografías exportadas.
+function characterMetrics(){
+  if(!pose||!character.naturalWidth)return null;
+  const h=pose.h*pose.scale, w=h*character.naturalWidth/character.naturalHeight;
+  return {h,w,x:pose.x,y:pose.y,rot:(pose.rot||0)*Math.PI/180};
+}
+function toWorld(m,x,y){return {x:m.x+x*Math.cos(m.rot)-y*Math.sin(m.rot),y:m.y+x*Math.sin(m.rot)+y*Math.cos(m.rot)};}
+function controlCenters(m){
+  return {rotate:toWorld(m,m.w*.43,-m.h*.84),scale:toWorld(m,m.w*.43,-m.h*.12)};
+}
+function paintControls(target){
+  if(mode!=='frozen')return;
+  const m=characterMetrics();if(!m)return;
+  const centers=controlCenters(m);
+  target.save();
+  target.strokeStyle='rgba(255,255,255,.9)';target.lineWidth=Math.max(2,m.h*.005);
+  for(const [name,point] of Object.entries(centers)){
+    const r=clamp(m.h*.077,22,34);
+    target.fillStyle='rgba(13,49,57,.85)';target.shadowColor='rgba(0,0,0,.4)';target.shadowBlur=8;
+    target.beginPath();target.arc(point.x,point.y,r,0,Math.PI*2);target.fill();target.stroke();
+    target.shadowBlur=0;target.fillStyle='#ffe4a4';target.textAlign='center';target.textBaseline='middle';
+    target.font=`bold ${Math.round(r*.95)}px system-ui`;
+    target.fillText(name==='rotate'?'↻':'⤢',point.x,point.y+1);
+  }
+  target.restore();
+}
+function paintCharacter(targetCtx, t, withControls=false){
+  if(!pose||!character.complete||!character.naturalWidth)return;
+  const baseH=pose.h*pose.scale,width=baseH*character.naturalWidth/character.naturalHeight;
+  let y=pose.y,alpha=1,extraScale=1;
+  if(mode==='live'&&landingStart&&t-landingStart<820&&!REDUCED_MOTION){
+    const progress=clamp((t-landingStart)/620,0,1),ease=1-Math.pow(1-progress,3);
+    extraScale=.28+.72*ease+Math.sin(progress*Math.PI)*.08;
+    y=pose.y-(1-progress)*baseH*.72;alpha=.25+.75*ease;
+  }
+  const photoMode=mode==='frozen';
+  const realistic=photoMode&&$('realismToggle').checked;
+  const glowing=!photoMode||$('magicToggle').checked;
+  targetCtx.save();targetCtx.translate(pose.x,y);targetCtx.rotate((pose.rot||0)*Math.PI/180);
+  // Sombra de apoyo muy pequeña y prácticamente pegada al pie, no un círculo separado.
+  const shadowW=width*.10,shadowH=Math.max(.85,baseH*.006);
+  targetCtx.fillStyle='rgba(14,13,12,.24)';targetCtx.shadowColor='rgba(17,15,12,.28)';
+  targetCtx.shadowBlur=Math.max(1.5,baseH*.012);
+  targetCtx.beginPath();targetCtx.ellipse(0,0,shadowW,shadowH,0,0,Math.PI*2);targetCtx.fill();
+  targetCtx.shadowBlur=0;targetCtx.shadowColor='transparent';
+  targetCtx.globalAlpha=alpha;
+  if(glowing){targetCtx.shadowColor='rgba(241,212,144,.30)';targetCtx.shadowBlur=Math.max(6,baseH*.06);}
+  const sprite=(realistic&&processedSprite)||character;
+  targetCtx.drawImage(sprite,-width*extraScale/2,-baseH*extraScale,width*extraScale,baseH*extraScale);
+  targetCtx.restore();
+  if(realistic){paintThumbOverlap(targetCtx);paintShoulderOcclusion(targetCtx);}
+  if(mode==='live')paintParticles(targetCtx,t);
+  if(withControls)paintControls(targetCtx);
+}
+
+function redraw(){
+  const t=performance.now();
+  if(mode==='live' && v.readyState>=2) drawProportional(ctx,v,cv.width,cv.height,face==='user');
+  else if(mode==='frozen' && frame) ctx.drawImage(frame,0,0,cv.width,cv.height);
+  else return;
+  paintCharacter(ctx,t,true);
+}
+function palmFromLandmarks(landmarks,w,h,mirror=false){
+  const p=n=>({x:(mirror?1-landmarks[n].x:landmarks[n].x)*w,y:landmarks[n].y*h});
+  const a=p(0),b=p(5),c=p(9),d=p(13),e=p(17); const dist=(x,y)=>Math.hypot(x.x-y.x,x.y-y.y); const span=Math.max(18,dist(b,e));
+  const knuckles={x:(b.x+c.x+d.x+e.x)/4,y:(b.y+c.y+d.y+e.y)/4};
+  const palmAngle=Math.atan2(e.y-b.y,e.x-b.x)*180/Math.PI;
+  const tilt=clamp((palmAngle>90?palmAngle-180:palmAngle< -90?palmAngle+180:palmAngle)*.36,-13,13);
+  return {x:.47*a.x+.53*knuckles.x,y:.48*a.y+.52*knuckles.y,h:clamp(span*2.05,64,Math.min(w,h)*.58),scale:1,rot:tilt};
+}
+function detected(result,w,h,mirror){ if(!result?.landmarks?.length) return null; return palmFromLandmarks(result.landmarks[0],w,h,mirror); }
+// PoseLandmarker: 11/12 hombros, 13/14 codos y 7/8 orejas.
+// Coordenadas normalizadas en la misma ventana recortada de la cámara.
+function bodyPoints(result,sw,sh,mirror=false){
+ if(!result?.landmarks?.length)return null;
+ const crop=coverRect(sw,sh,cv.width,cv.height);
+ return result.landmarks[0].map(pt=>({
+   x:(mirror?1-(pt.x*sw-crop.sx)/crop.cw:(pt.x*sw-crop.sx)/crop.cw)*cv.width,
+   y:(pt.y*sh-crop.sy)/crop.ch*cv.height,
+   visibility:pt.visibility??pt.presence??1
+ }));
+}
+function bodyPointsFromImage(result){
+ if(!result?.landmarks?.length)return null;
+ return result.landmarks[0].map(pt=>({x:pt.x*cv.width,y:pt.y*cv.height,visibility:pt.visibility??pt.presence??1}));
+}
+function shoulderPlacement(pts,side='auto'){
+ if(!pts?.[12])return null;
+ const l=pts[11],r=pts[12],w=cv.width,h=cv.height;
+ const visible=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&(p.visibility??1)>=.35&&p.x> w*.02&&p.x<w*.98&&p.y>h*.08&&p.y<h*.87;
+ const vl=visible(l),vr=visible(r);if(!vl&&!vr)return null;
+ const separation=vl&&vr?Math.hypot(l.x-r.x,l.y-r.y):Math.min(w*.31,h*.23);
+ if(separation<20)return null;
+ const charHeight=clamp(separation*.60,Math.min(w,h)*.075,Math.min(w,h)*.43);
+ const charWidth=charHeight*character.naturalWidth/Math.max(1,character.naturalHeight);
+ const centerX=vl&&vr?(l.x+r.x)/2:w*.5;
+ const shoulders=[{p:l,valid:vl},{p:r,valid:vr}].filter(x=>x.valid).map(({p})=>{
+   const outward=p.x<centerX?-1:1;
+   const x=p.x+outward*separation*.045;
+   const y=p.y-separation*.022;
+   const available=outward<0?x:w-x;
+   const clearance=clamp(available/(charWidth*.66+18),0,1);
+   const within=x>charWidth*.2&&x<w-charWidth*.2&&y>charHeight*.70;
+   const score=(p.visibility??1)*.65+clearance*1.15+(within?.35:-.65);
+   return {x,y,score};
+ });
+ const desired=side==='left'?-1:side==='right'?1:0;
+ let candidates=shoulders;
+ if(desired!==0){const matching=candidates.filter(c=>desired===-1?c.x<centerX:c.x>=centerX);if(matching.length)candidates=matching;}
+ candidates.sort((a,b)=>b.score-a.score);const best=candidates[0];
+ if(!best)return null;
+ const slope=vl&&vr?Math.atan2(r.y-l.y,r.x-l.x)*180/Math.PI:0;
+ let tilt=slope;
+ if(vl&&vr&&l.x>r.x)tilt=tilt>0?tilt-180:tilt+180;
+ return {x:clamp(best.x,charWidth*.15,w-charWidth*.15),y:best.y,h:charHeight,scale:1,rot:clamp(tilt*.50,-11,11)};
+}
+function detectedShoulder(result,sw,sh,mirror=false){
+ latestBody=bodyPoints(result,sw,sh,mirror);
+ return shoulderPlacement(latestBody,shoulderSide);
+}
+function detectedCamera(result,sw,sh,mirror){ if(!result?.landmarks?.length) return null; const r=coverRect(sw,sh,cv.width,cv.height); const points=result.landmarks[0].map(p=>({x:(p.x*sw-r.sx)/r.cw,y:(p.y*sh-r.sy)/r.ch})); return palmFromLandmarks(points,cv.width,cv.height,mirror); }
+async function getVision(){
+ if(!visionPromise){visionPromise=(async()=>{
+   const mp=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs');
+   const files=await mp.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm');
+   return {mp,files};
+ })().catch(e=>{visionPromise=null;throw e});}
+ return visionPromise;
+}
+async function getModel(){
+ const selected=placement;
+ if(selected==='palm'&&handModel)return handModel;
+ if(selected==='shoulder'&&shoulderModel)return shoulderModel;
+ setStatus(selected==='palm'?'<strong>Preparando detección de manos…</strong>':'<strong>Preparando detección de hombros…</strong>');
+ const {mp,files}=await getVision();
+ if(selected==='palm'){
+   handModel=await mp.HandLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',delegate:'CPU'},runningMode:'IMAGE',numHands:1,minHandDetectionConfidence:.45,minHandPresenceConfidence:.45,minTrackingConfidence:.45});
+ }else{
+   shoulderModel=await mp.PoseLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',delegate:'CPU'},runningMode:'IMAGE',outputSegmentationMasks:true,numPoses:1,minPoseDetectionConfidence:.46,minPosePresenceConfidence:.4,minTrackingConfidence:.43});
+ }
+ return selected==='palm'?handModel:shoulderModel;
+}
+
+async function stopCamera(){ captureEpoch++;trackingReady=false;cancelAnimationFrame(rafId); if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } v.srcObject=null; }
+function baseImage(source){ return {w:source.videoWidth||source.naturalWidth||source.width,h:source.videoHeight||source.naturalHeight||source.height}; }
+function syncSliders(){}
+
+async function loadPicture(img){
+  recognitionEpoch++;const job=recognitionEpoch;
+  await stopCamera();
+  fileImg=img;const {w,h}=baseImage(img);
+  if(!w||!h){setStatus('No se ha podido leer la fotografía. Elige otra imagen.');return;}
+  const maxD=1600,ratio=Math.min(1,maxD/Math.max(w,h));
+  setCanvas(Math.max(2,Math.round(w*ratio)),Math.max(2,Math.round(h*ratio)));
+  empty.classList.add('hidden');
+  frame=document.createElement('canvas');frame.width=cv.width;frame.height=cv.height;
+  drawProportional(frame.getContext('2d'),img,frame.width,frame.height,false);
+  const expectedFrame=frame,expectedPlacement=placement;
+  autoPose=null;pose=fallbackPose(placement);manualTouched=false;
+  capturedHand=null;latestHand=null;capturedBody=null;latestBody=null;shoulderOcclusionLayer=null;
+  processedSprite=null;photoProfile=null;lastProfileKey='';
+  changeMode('frozen');
+  photoProfile=measureScene(frame);preparePhotoSprite();$('magicToggle').checked=false;
+  updatePhotoModeButton();redraw();updateShareVisibility();eventCount('photo_upload');
+  setStatus('<strong>Foto lista.</strong> Puedes ajustar a Pérez mientras localizamos '+(placement==='shoulder'?'el hombro.':'la palma.') );
+  try{
+    const m=await getModel();
+    if(job!==recognitionEpoch||mode!=='frozen'||frame!==expectedFrame||placement!==expectedPlacement||resultScreen)return;
+    await m.setOptions({runningMode:'IMAGE',...(placement==='shoulder'?{outputSegmentationMasks:true}:{})});
+    if(job!==recognitionEpoch||mode!=='frozen'||frame!==expectedFrame||placement!==expectedPlacement||resultScreen)return;
+    const result=m.detect(frame);
+    if(job!==recognitionEpoch||mode!=='frozen'||frame!==expectedFrame||placement!==expectedPlacement||resultScreen)return;
+    if(placement==='shoulder'){
+      capturedBody=bodyPointsFromImage(result);autoPose=shoulderPlacement(capturedBody,shoulderSide);prepareShoulderMask(result);
+    }else{
+      capturedHand=handFromImage(result);autoPose=detected(result,cv.width,cv.height,false);
+    }
+    if(autoPose&&!manualTouched){
+      pose={...autoPose};
+      setStatus('<strong>Colocación automática lista.</strong> Ajusta a Pérez y guarda el recuerdo cuando quieras.');
+    }else if(!manualTouched){
+      setStatus('<strong>Colocación manual.</strong> Puedes mover a Pérez con el dedo.');
+    }
+  }catch(err){
+    console.warn('Photo detection fallback',err);
+    if(job===recognitionEpoch&&frame===expectedFrame&&mode==='frozen'&&!resultScreen)
+      setStatus('<strong>Foto lista.</strong> Ajusta a Pérez manualmente, sin esperar al reconocimiento.');
+  }finally{
+    if(job===recognitionEpoch&&frame===expectedFrame&&mode==='frozen'&&!resultScreen){
+      photoProfile=measureScene(frame);processedSprite=null;lastProfileKey='';preparePhotoSprite();redraw();
+    }
+  }
+}
+
+async function startCamera(){
+  recognitionEpoch++;
+  changeMode('switching');
+  setStatus('<strong>Preparando cámara…</strong> Un momento, por favor.');
+  await stopCamera();
+  model=null;
+  if(!window.isSecureContext || !navigator.mediaDevices?.getUserMedia){
+    changeMode('idle');
+    setStatus('<strong>Cámara no disponible en este contexto.</strong> Abre esta dirección HTTPS directamente en Safari.');
+    return;
+  }
+  const myEpoch=captureEpoch;
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:face},width:{ideal:1280},height:{ideal:960}}});
+    if(myEpoch!==captureEpoch){stream.getTracks().forEach(t=>t.stop());stream=null;return;}
+    v.srcObject=stream;
+    await v.play();
+    if(myEpoch!==captureEpoch)return;
+    setCanvas(900,1200);
+    empty.classList.add('hidden'); frame=null; autoPose=null; pose=null;
+    capturedHand=null;latestHand=null;capturedBody=null;latestBody=null;shoulderOcclusionLayer=null;processedSprite=null;photoProfile=null;
+    palmVisible=false;stableDetections=0;landingStart=0;trackingReady=false;
+    changeMode('live');eventCount('camera');
+    badge.classList.add('hidden');
+    setStatus(placement==='shoulder'?'<strong>Cámara activada.</strong> Encuadra rostro y hombros. Preparando reconocimiento corporal…':'<strong>Cámara activada.</strong> Muestra una palma abierta. Preparando reconocimiento de mano…');
+  }catch(err){
+    console.warn('Camera error',err);
+    await stopCamera();changeMode('idle');
+    const type=err?.name||'';
+    if(type==='NotAllowedError'||type==='PermissionDeniedError'){
+      setStatus('<strong>Safari ha denegado la cámara.</strong> Pulsa «aA» o el icono de la web, abre los ajustes de la página y permite Cámara.');
+    }else if(type==='NotFoundError'||type==='DevicesNotFoundError'){
+      setStatus('<strong>No se ha encontrado una cámara.</strong> Prueba con «Elegir foto».');
+    }else if(type==='NotReadableError'||type==='TrackStartError'){
+      setStatus('<strong>La cámara está ocupada.</strong> Cierra otras apps que la utilicen y vuelve a intentarlo.');
+    }else{
+      setStatus('<strong>Safari no pudo abrir la cámara.</strong> Revisa sus permisos o prueba a recargar la página.');
+    }
+    return;
+  }
+  // La cámara funciona independientemente de la librería de reconocimiento.
+  // Así, una descarga fallida no la cierra ni muestra un falso error de permisos.
+  loop();
+  try{
+    const m=await getModel();
+    if(myEpoch!==captureEpoch||mode!=='live')return;
+    await m.setOptions({runningMode:'VIDEO',...(placement==='shoulder'?{outputSegmentationMasks:false}:{})});
+    if(myEpoch!==captureEpoch||mode!=='live')return;
+    model=m;trackingReady=true;lastInference=0;
+    setStatus(placement==='shoulder'?'<strong>¡Cámara lista!</strong> Encuadra el rostro y un hombro para que aparezca Pérez.':'<strong>¡Cámara lista!</strong> Muestra una palma abierta para que aparezca Pérez.');
+  }catch(err){
+    console.warn('Hand model unavailable; manual mode remains available',err);
+    if(myEpoch!==captureEpoch||mode!=='live')return;
+    trackingReady=false;
+    setStatus('<strong>Cámara funcionando.</strong> No se ha podido cargar el reconocimiento. Haz la foto y arrastra a Pérez '+(placement==='shoulder'?'al hombro.':'a la palma.') );
+  }
+}
+
+function analyzeExposure(){
+  if(v.readyState<2)return '';
+  try{
+    const probe=document.createElement('canvas');probe.width=36;probe.height=48;
+    drawProportional(probe.getContext('2d'),v,36,48,face==='user');
+    const data=probe.getContext('2d').getImageData(0,0,36,48).data;
+    let sum=0,n=0;
+    for(let i=0;i<data.length;i+=16){sum+=(data[i]*.2126+data[i+1]*.7152+data[i+2]*.0722)/255;n++;}
+    const amount=sum/Math.max(1,n);
+    if(amount<.17)return 'Busca un poco más de luz';
+    if(amount>.90)return 'Evita la luz directa sobre la cámara';
+  }catch(e){}
+  return '';
+}
+function liveGuide(){
+  if(mode!=='live')return;
+  let text=brightnessHint;
+  if(!text&&pose){
+    const margin=Math.max(40,pose.h*.20);
+    if(pose.x<margin||pose.x>cv.width-margin||pose.y<pose.h*.68||pose.y>cv.height*.82)
+      text=placement==='palm'?'Separa un poco la mano de los bordes':'Aleja un poco la cámara para mostrar los hombros';
+    else text='¡Listo para hacer la foto!';
+  }
+  if(!text)text=placement==='palm'?'Muestra la palma abierta':'Enfoca rostro y hombros';
+  scanHint.textContent=text;
+}
+function captureQualityMessage(){
+  if(!frame)return '';
+  const sample=measureScene(frame);
+  if(sample.exposure<.885)return 'Consejo: prueba otra foto con algo más de luz.';
+  return '';
+}
+function loop(){
+  if(mode!=='live') return;
+  const t=performance.now();
+  if(v.readyState>=2){
+    if(trackingReady && model && t-lastInference>(placement==='shoulder'?220:120)){
+      try{
+        const result=model.detectForVideo(v,t);const candidate=placement==='shoulder'?detectedShoulder(result,v.videoWidth,v.videoHeight,face==='user'):detectedCamera(result,v.videoWidth,v.videoHeight,face==='user');if(candidate&&placement==='palm')latestHand=handProjection(result,v.videoWidth,v.videoHeight,face==='user');
+        if(candidate){
+          lastPoseSeenAt=t;
+          stableDetections++; if(!pose) pose=candidate; else { const smooth=.30; pose.x+=(candidate.x-pose.x)*smooth; pose.y+=(candidate.y-pose.y)*smooth; pose.h+=(candidate.h-pose.h)*smooth; }
+          autoPose={...pose};
+          if(!palmVisible && stableDetections>2){ palmVisible=true; landingStart=performance.now(); makeBurst(pose.x,pose.y,pose.h); maybeShowToast(); badge.classList.remove('hidden'); }
+          setStatus(placement==='shoulder'?'<strong>✓ Hombro localizado.</strong> Pérez está sobre el hombro. ¡Puedes hacer la foto!':'<strong>✓ Palma localizada.</strong> Pérez la está siguiendo. ¡Puedes hacer la foto!');
+         } else {
+          stableDetections=0;latestHand=null;latestBody=null;
+          if(t-lastPoseSeenAt>800){pose=null;autoPose=null;palmVisible=false;badge.classList.add('hidden');}
+          setStatus(placement==='shoulder'?'Buscando hombros… encuadra el rostro y la parte superior del torso.':'Buscando palma… separa los dedos y procura que se vea toda la mano.');
+        }
+      }catch(e){ console.warn(e) }
+      lastInference=t;
+    }
+    if(t-lightCheckAt>1400){lightCheckAt=t;brightnessHint=analyzeExposure();}
+    liveGuide();redraw();
+  }
+  rafId=requestAnimationFrame(loop);
+}
+function makeFrameFromVideo(){ const still=document.createElement('canvas'); still.width=cv.width; still.height=cv.height; const x=still.getContext('2d'); drawProportional(x,v,still.width,still.height,face==='user'); return still; }
+function runCountdownAndCapture(){ captureNow(); }
+
+function captureNow(){
+  if(mode!=='live') return;
+  const flash=$('cameraFlash');
+  flash.classList.add('flashOn');setTimeout(()=>flash.classList.remove('flashOn'),160);
+  recognitionEpoch++;manualTouched=false; cancelAnimationFrame(rafId); frame=makeFrameFromVideo();
+  capturedHand=placement==='palm'&&latestHand?latestHand.map(p=>({...p})):null;
+  capturedBody=placement==='shoulder'&&latestBody?latestBody.map(p=>({...p})):null;shoulderOcclusionLayer=null;
+  changeMode('frozen');if(!pose)pose=placement==='shoulder'?{x:cv.width*.7,y:cv.height*.42,h:cv.width*.24,scale:1,rot:0}:{x:cv.width*.5,y:cv.height*.55,h:cv.width*.28,scale:1,rot:0};
+  photoProfile=measureScene(frame);processedSprite=null;lastProfileKey='';preparePhotoSprite();$('magicToggle').checked=false;
+  updatePhotoModeButton();syncSliders(); redraw(); updateShareVisibility();photoJustTakenAt=Date.now();eventCount('capture');
+  const advice=captureQualityMessage();
+  setStatus(autoPose?'<strong>Foto capturada.</strong> Ajusta a Pérez sobre la imagen. '+advice:'<strong>Foto capturada.</strong> Coloca a Pérez en '+(placement==='shoulder'?'el hombro':'la palma')+' con el dedo. '+advice);
+  stopCamera();if(placement==='shoulder')analyzeCapturedShoulder(frame);
+}
+function currentCompositeCanvas(){ const temp=document.createElement('canvas'); temp.width=cv.width; temp.height=cv.height; const t=temp.getContext('2d'); t.drawImage(frame,0,0,temp.width,temp.height); paintCharacter(t,performance.now()); return temp; }
+function compositeTo(target,x,y,w,h,rounded=0,base=currentCompositeCanvas()){
+ const g=target.getContext('2d');
+ g.save();
+ if(rounded>0){
+   g.beginPath();g.moveTo(x+rounded,y);g.arcTo(x+w,y,x+w,y+h,rounded);g.arcTo(x+w,y+h,x,y+h,rounded);g.arcTo(x,y+h,x,y,rounded);g.arcTo(x,y,x+w,y,rounded);g.closePath();g.clip();
+ }
+ const cover=coverRect(base.width,base.height,w,h);
+ g.save();g.filter='blur(28px) brightness(.73)';
+ g.drawImage(base,cover.sx,cover.sy,cover.cw,cover.ch,x,y,w,h);g.restore();
+ const ratio=Math.min(w/base.width,h/base.height);
+ const fittedW=base.width*ratio,fittedH=base.height*ratio;
+ g.drawImage(base,x+(w-fittedW)/2,y+(h-fittedH)/2,fittedW,fittedH);
+ g.restore();
+}
+
+function typography(g,content,maxWidth,basePx,minPx=25,weight=700,family="system-ui"){
+  let font=basePx;
+  while(font>minPx){g.font=weight+' '+font+'px '+family;if(g.measureText(content).width<=maxWidth)break;font-=2;}
+  g.font=weight+' '+font+'px '+family;
+  return font;
+}
+function clinicDate(){
+  try{return new Intl.DateTimeFormat('es-ES',{day:'numeric',month:'long',year:'numeric'}).format(new Date());}
+  catch(e){return new Date().toLocaleDateString('es-ES');}
+}
+function drawSignature(g,x,y,size=24){
+  g.save();g.strokeStyle='#c1a267';g.lineWidth=2;g.beginPath();
+  for(let i=0;i<4;i++){g.moveTo(x+i*18,y-3);g.lineTo(x+i*18+8,y-16);g.lineTo(x+i*18+16,y-3)}
+  g.stroke();g.font='600 '+size+'px system-ui';g.fillStyle='#ad8c5b';g.fillText('VILLA PÉREZ',x+105,y);g.restore();
+}
+function renderExport(kind='photo'){
+  if(kind==='photo')return currentCompositeCanvas();
+  const photo=currentCompositeCanvas();
+  if(kind==='polaroid'){
+    const out=document.createElement('canvas');out.width=1080;out.height=1450;
+    const g=out.getContext('2d');const grd=g.createLinearGradient(0,0,1080,1450);
+    grd.addColorStop(0,'#fdfaf3');grd.addColorStop(1,'#eee8da');
+    g.fillStyle=grd;g.fillRect(0,0,1080,1450);
+    // Fibre-paper border and muted inset photo shadow.
+    g.fillStyle='#fbf8f1';g.shadowColor='#4b423122';g.shadowBlur=32;g.shadowOffsetY=8;
+    g.fillRect(56,54,968,1306);g.shadowColor='transparent';g.shadowBlur=0;g.shadowOffsetY=0;
+    g.fillStyle='#ded5c6';g.fillRect(88,88,904,1066);
+    compositeTo(out,94,94,892,1054,6,photo);
+    g.fillStyle='#153c45';g.font='italic 46px Georgia,serif';
+    g.fillText('Un encuentro para recordar',100,1220);
+    g.fillStyle='#4f686a';typography(g,clinicName,868,34,22,650);g.fillText(clinicName,100,1270);
+    g.fillStyle='#8b8a83';g.font='500 23px system-ui';g.fillText(clinicDate(),100,1314);
+    drawSignature(g,730,1322,20);
+    return out;
+  }
+  const out=document.createElement('canvas');out.width=1080;out.height=1920;
+  const g=out.getContext('2d');g.fillStyle='#0a2b35';g.fillRect(0,0,1080,1920);
+  const r=coverRect(photo.width,photo.height,1080,1540);
+  g.drawImage(photo,r.sx,r.sy,r.cw,r.ch,0,0,1080,1540);
+  const dark=g.createLinearGradient(0,1100,0,1920);
+  dark.addColorStop(0,'rgba(8,36,45,0)');dark.addColorStop(.36,'rgba(8,36,45,.74)');dark.addColorStop(1,'#0a2c35');
+  g.fillStyle=dark;g.fillRect(0,1090,1080,830);
+  g.strokeStyle='#d4b57d';g.lineWidth=2;g.beginPath();g.moveTo(72,1515);g.lineTo(1008,1515);g.stroke();
+  g.fillStyle='#f4ebd6';g.font='italic 62px Georgia,serif';g.fillText('¡Hoy hemos visto a Pérez!',72,1612);
+  g.fillStyle='#f1d399';typography(g,clinicName,936,47,26,700);g.fillText(clinicName,72,1690);
+  g.fillStyle='#b8d2ce';g.font='27px system-ui';
+  g.fillText((clinicCity?clinicCity+' · ':'')+clinicDate(),72,1750);
+  drawSignature(g,72,1835,25);
+  return out;
+}
+
+function filenameFor(kind){ const subject=placement==='shoulder'?'hombro':'palma';return kind==='photo'?'villa-perez-'+subject+'.jpg':kind==='polaroid'?'villa-perez-recuerdo-'+subject+'.jpg':'villa-perez-stories-'+subject+'.jpg'; }
+function blobFor(kind){ return new Promise(res=> renderExport(kind).toBlob(res,'image/jpeg',0.93)); }
+function setExportMode(kind){
+ exportMode=kind;
+ document.querySelectorAll('.modeBtn').forEach(b=>{
+   const active=b.dataset.export===kind;
+   b.classList.toggle('active',active);
+   b.setAttribute('aria-pressed',String(active));
+ });
+ if(resultScreen)updateFinalPreview();else redraw();
+}
+function releaseFinalPreview(){previewRequestId++;if(finalUrl){URL.revokeObjectURL(finalUrl);finalUrl=null;}}
+async function updateFinalPreview(){
+ if(!resultScreen||mode!=='frozen'||!frame)return;
+ const request=++previewRequestId,sourceFrame=frame,desired=exportMode;
+ document.querySelector('.finalLabel').textContent='Preparando tu recuerdo…';
+ let b;
+ try{b=await blobFor(desired)}catch(err){console.warn('Final preview failed',err)}
+ if(request!==previewRequestId||!resultScreen||sourceFrame!==frame||desired!==exportMode)return;
+ if(!b){document.querySelector('.finalLabel').textContent='No se pudo preparar. Prueba otro formato.';return;}
+ const u=URL.createObjectURL(b);
+ if(finalUrl)URL.revokeObjectURL(finalUrl);
+ finalUrl=u;$('finalImage').src=u;
+ document.querySelector('.finalLabel').textContent='Tu recuerdo está listo ✨';
+}
+function finishPhoto(){
+ if(mode!=='frozen'||!frame||finalizing)return;
+ recognitionEpoch++;
+ resultScreen=true;document.body.classList.add('stage-result');document.body.classList.remove('editing');
+ $('finalPreview').classList.remove('hidden');$('shareExtras').classList.remove('hidden');
+ $('finishPhoto').classList.add('hidden');$('editPhoto').classList.remove('hidden');
+ updateFinalPreview();eventCount('finish');requestAnimationFrame(syncDockHeight);
+}
+function returnToEdit(){
+ if(mode!=='frozen')return;recognitionEpoch++;
+ resultScreen=false;releaseFinalPreview();$('finalPreview').classList.add('hidden');
+ document.body.classList.remove('stage-result');document.body.classList.add('editing');
+ $('shareExtras').classList.add('hidden');$('finishPhoto').classList.remove('hidden');$('editPhoto').classList.add('hidden');redraw();requestAnimationFrame(syncDockHeight);
+}
+$('finishPhoto').onclick=finishPhoto;
+function updatePhotoModeButton(){
+  const button=$('switchPlacementPhoto');
+  button.textContent=placement==='palm'?'⇆ Pasar al hombro':'⇆ Pasar a la palma';
+}
+$('switchPlacementPhoto').onclick=async()=>{
+ if(mode!=='frozen'||!frame||resultScreen||finalizing)return;
+ recognitionEpoch++;const job=recognitionEpoch,expectedFrame=frame;
+ manualTouched=false;
+ const next=placement==='palm'?'shoulder':'palm';
+ placement=next;updatePhotoModeButton();
+ $('placePalm').classList.toggle('active',next==='palm');
+ $('placeShoulder').classList.toggle('active',next==='shoulder');
+ $('placePalm').setAttribute('aria-pressed',String(next==='palm'));
+ $('placeShoulder').setAttribute('aria-pressed',String(next==='shoulder'));
+ capturedHand=null;capturedBody=null;shoulderOcclusionLayer=null;pose=fallbackPose(next);autoPose=null;
+ setStatus('<strong>Buscando la nueva posición.</strong> Puedes mover a Pérez mientras tanto.');
+ redraw();
+ setStatus(next==='shoulder'?'<strong>Buscando hombros…</strong>':'<strong>Buscando una palma…</strong>');
+ try{
+   const m=await getModel();
+   if(job!==recognitionEpoch||mode!=='frozen'||placement!==next||frame!==expectedFrame)return;
+   await m.setOptions({runningMode:'IMAGE',...(next==='shoulder'?{outputSegmentationMasks:true}:{})});
+   if(job!==recognitionEpoch||mode!=='frozen'||placement!==next||frame!==expectedFrame)return;
+   const res=m.detect(frame);
+   if(next==='shoulder'){
+     capturedBody=bodyPointsFromImage(res);autoPose=shoulderPlacement(capturedBody,shoulderSide);
+     prepareShoulderMask(res);
+   }else{
+     capturedHand=handFromImage(res);autoPose=detected(res,cv.width,cv.height,false);
+   }
+   if(job===recognitionEpoch&&!manualTouched&&autoPose){pose={...autoPose};setStatus('<strong>Posición ajustada.</strong> Puedes terminar tu recuerdo.');}
+ }catch(e){console.warn('Position change fallback',e);}
+ if(job!==recognitionEpoch||mode!=='frozen'||placement!==next||frame!==expectedFrame)return;
+ if(!pose){
+   pose=fallbackPose(next);
+   setStatus('<strong>Ajuste manual.</strong> Mueve a Pérez sobre la imagen hasta colocarlo a tu gusto.');
+ }
+ photoProfile=measureScene(frame);processedSprite=null;lastProfileKey='';preparePhotoSprite();redraw();
+};
+$('editPhoto').onclick=returnToEdit;
+$('googleMapsButton').onclick=()=>{
+ if(clinicMaps){eventCount('maps');window.open(clinicMaps,'_blank','noopener,noreferrer')}
+};
+$('metricsDownload').onclick=()=>{
+ let obj={};try{obj=JSON.parse(localStorage.getItem(clinicKey)||'{}')}catch(e){}
+ const rows=['evento,cantidad',...Object.entries(obj).map(([key,value])=>key+','+Number(value))];
+ const blob=new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='villa-perez-metricas-dispositivo.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+function updateShareVisibility(){ $('share').disabled = !Boolean(navigator.share); }
+function selectPlacement(which,track=true){
+ if(mode!=='idle')return;
+ placement=which;
+ $('placePalm').classList.toggle('active',which==='palm');$('placeShoulder').classList.toggle('active',which==='shoulder');
+ $('placePalm').setAttribute('aria-pressed',String(which==='palm'));
+ $('placeShoulder').setAttribute('aria-pressed',String(which==='shoulder'));
+ show('shoulderSideRow',which==='shoulder');
+ placeholder();
+ if(track)eventCount(which==='palm'?'mode_palm':'mode_shoulder');
+ setStatus(which==='palm'?'<strong>Palma elegida.</strong> Extiende una mano abierta cuando actives la cámara.':'<strong>Hombro elegido.</strong> Encuadra el rostro y los hombros del niño.');
+}
+$('placePalm').onclick=()=>selectPlacement('palm');
+$('placeShoulder').onclick=()=>selectPlacement('shoulder');
+document.querySelectorAll('.side-choice').forEach(button=>button.onclick=()=>{
+ shoulderSide=button.dataset.side;
+ document.querySelectorAll('.side-choice').forEach(b=>{b.classList.toggle('active',b.dataset.side===shoulderSide);b.setAttribute('aria-pressed',String(b.dataset.side===shoulderSide));});
+ if(mode==='frozen'&&placement==='shoulder'&&capturedBody){
+   const candidate=shoulderPlacement(capturedBody,shoulderSide);
+   if(candidate){autoPose=candidate;pose={...candidate};manualTouched=false;refreshIntegration();redraw();}
+ }else if(mode==='live'&&placement==='shoulder'){pose=null;autoPose=null;latestBody=null;stableDetections=0;}
+});
+$('backToChoice').onclick=async()=>{
+ if(mode!=='live')return;
+ recognitionEpoch++;await stopCamera();model=null;pose=null;autoPose=null;
+ frame=null;fileImg=null;changeMode('idle');placeholder();empty.classList.remove('hidden');
+ setStatus('<strong>Elige una posición.</strong> Después vuelve a abrir la cámara.');
+};
+$('startCamera').onclick=()=>startCamera();
+$('switchCamera').onclick=()=>{face=face==='environment'?'user':'environment';startCamera();};
+$('file').onchange=async(e)=>{ const f=e.target.files?.[0]; if(!f) return; const url=URL.createObjectURL(f); const img=new Image(); img.onload=async()=>{ try{ await loadPicture(img); } finally { URL.revokeObjectURL(url); e.target.value=''; } }; img.onerror=()=>{ URL.revokeObjectURL(url); setStatus('No he podido abrir esa imagen.'); }; img.src=url; };
+$('takePhoto').onclick=()=>runCountdownAndCapture();
+$('retry').onclick=()=>{recognitionEpoch++;returnToEdit();releaseFinalPreview();pose=null; autoPose=null; capturedHand=null;latestHand=null;capturedBody=null;latestBody=null;shoulderOcclusionLayer=null;processedSprite=null;photoProfile=null;lastProfileKey=''; badge.classList.add('hidden'); if(fileImg){ fileImg=null; frame=null; changeMode('idle'); placeholder(); empty.classList.remove('hidden'); setStatus('Elige otra foto o abre la cámara.'); } else {changeMode('idle');placeholder();empty.classList.remove('hidden');setStatus('Elige posición y abre de nuevo la cámara.');} };
+$('download').onclick=async()=>{
+ if(mode!=='frozen')return;
+ const blob=await blobFor(exportMode);if(!blob)return setStatus('No se pudo exportar la imagen.');
+ const u=URL.createObjectURL(blob),a=document.createElement('a');a.download=filenameFor(exportMode);a.href=u;a.click();
+ eventCount('save');setTimeout(()=>URL.revokeObjectURL(u),1500);
+};
+$('share').onclick=async()=>{
+ if(mode!=='frozen')return;
+ try{
+   const blob=await blobFor(exportMode),file=new File([blob],filenameFor(exportMode),{type:'image/jpeg'});
+   if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){
+     await navigator.share({files:[file],title:'Tu foto con Pérez',text:'¡Un encuentro mágico en '+clinicName+'!'});
+     eventCount('share');
+   }else setStatus('Para compartir esta imagen, guárdala primero y envíala desde Fotos.');
+ }catch(err){if(err?.name!=='AbortError')setStatus('No se pudo compartir. Puedes guardar la fotografía.');}
+};
+
+$('reset').onclick=()=>{ if(autoPose){ pose={...autoPose}; refreshIntegration(); redraw(); } else setStatus('Todavía no tenemos una colocación automática. Puedes ajustar a Pérez manualmente.'); };
+$('magicToggle').onchange=()=>redraw();
+$('realismToggle').onchange=()=>{if($('realismToggle').checked){processedSprite=null;lastProfileKey='';preparePhotoSprite();}redraw();};
+function refreshIntegration(){if(mode!=='frozen'||!frame||!$('realismToggle').checked)return;photoProfile=measureScene(frame);processedSprite=null;lastProfileKey='';preparePhotoSprite();redraw();}
+$('occlusionToggle').onchange=()=>redraw();
+character.addEventListener('load',()=>{if(mode==='frozen'){preparePhotoSprite();redraw();}});
+document.querySelectorAll('.modeBtn').forEach(btn=>btn.onclick=()=>setExportMode(btn.dataset.export));
+function getCoord(e){
+  const rect=cv.getBoundingClientRect();
+  const scale=Math.min(rect.width/cv.width,rect.height/cv.height);
+  const x0=rect.left+(rect.width-cv.width*scale)/2;
+  const y0=rect.top+(rect.height-cv.height*scale)/2;
+  return {x:clamp((e.clientX-x0)/scale,0,cv.width),y:clamp((e.clientY-y0)/scale,0,cv.height)};
+}
+function hitControl(pt){
+ const m=characterMetrics();if(!m)return 'drag';
+ const positions=controlCenters(m),limit=clamp(m.h*.12,44,74);
+ if(Math.hypot(pt.x-positions.scale.x,pt.y-positions.scale.y)<limit)return 'scale';
+ if(Math.hypot(pt.x-positions.rotate.x,pt.y-positions.rotate.y)<limit)return 'rotate';
+ return 'drag';
+}
+cv.addEventListener('pointerdown',e=>{
+ if(mode!=='frozen'||!pose||resultScreen)return;
+ manualTouched=true;
+ cv.setPointerCapture?.(e.pointerId);
+ const pt=getCoord(e);active.set(e.pointerId,pt);
+ if(active.size===1){
+   const type=hitControl(pt);
+   gesture={type,start:pt,origX:pose.x,origY:pose.y,origScale:pose.scale,origRot:pose.rot||0,
+     startDist:Math.max(1,Math.hypot(pt.x-pose.x,pt.y-pose.y)),startAngle:Math.atan2(pt.y-pose.y,pt.x-pose.x)};
+ }else if(active.size===2){const pair=[...active.values()];gesture={type:'pinch',dist:Math.max(1,Math.hypot(pair[1].x-pair[0].x,pair[1].y-pair[0].y)),scale:pose.scale,
+  angle:Math.atan2(pair[1].y-pair[0].y,pair[1].x-pair[0].x),rot:pose.rot||0};}
+});
+cv.addEventListener('pointermove',e=>{
+ if(!active.has(e.pointerId)||mode!=='frozen'||!pose)return;
+ const pt=getCoord(e);active.set(e.pointerId,pt);
+ if(active.size===1&&gesture){
+  if(gesture.type==='drag'){pose.x=gesture.origX+pt.x-gesture.start.x;pose.y=gesture.origY+pt.y-gesture.start.y;}
+  else if(gesture.type==='scale')pose.scale=clamp(gesture.origScale*Math.hypot(pt.x-pose.x,pt.y-pose.y)/gesture.startDist,.3,3);
+  else if(gesture.type==='rotate'){
+   const angle=Math.atan2(pt.y-pose.y,pt.x-pose.x);
+   let delta=angle-gesture.startAngle;
+   while(delta>Math.PI)delta-=2*Math.PI;while(delta< -Math.PI)delta+=2*Math.PI;
+   pose.rot=gesture.origRot+delta*180/Math.PI;
+  }
+ }else if(active.size===2&&gesture?.type==='pinch'){
+  const pair=[...active.values()];
+  pose.scale=clamp(gesture.scale*Math.hypot(pair[1].x-pair[0].x,pair[1].y-pair[0].y)/gesture.dist,.3,3);
+  const angle=Math.atan2(pair[1].y-pair[0].y,pair[1].x-pair[0].x);
+  pose.rot=gesture.rot+(angle-gesture.angle)*180/Math.PI;
+ }
+ redraw();
+});
+function pointerUp(e){active.delete(e.pointerId);gesture=null;if(active.size===1&&pose){const pt=[...active.values()][0];gesture={type:'drag',start:pt,origX:pose.x,origY:pose.y};}else if(active.size===0)refreshIntegration();}
+cv.addEventListener('pointerup',pointerUp); cv.addEventListener('pointercancel',pointerUp);
+initClinic();
+if(search.get('modo')==='hombro'||search.get('mode')==='shoulder')selectPlacement('shoulder',false);
+else selectPlacement('palm',false);
+updateShareVisibility();
+</script>
+</body></html>
