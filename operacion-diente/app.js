@@ -1,14 +1,15 @@
-import {APP_CONFIG as CFG} from './config.js?v=0.5.0';
-import {createPath,pointAt,validCoordinate,compactAddress,formatDistance,postcardSvg,trailParticles,routeBearing,cinematicProgress,cinematicPhase,publicFacingRoute,nearestPublicLandmark} from './route-utils.mjs?v=0.5.0';
+import {APP_CONFIG as CFG} from './config.js?v=0.6.0';
+import {createPath,pointAt,validCoordinate,compactAddress,formatDistance,postcardSvg,trailParticles,routeBearing,cinematicProgress,cinematicPhase,publicFacingRoute,nearestPublicLandmark} from './route-utils.mjs?v=0.6.0';
 
-import {applyPremiumStreetStyle,installPremiumCityLayers,premiumRoutePaint,drawGoldenRouteFx} from './premium-map.mjs?v=0.5.0';
+import {applyPremiumStreetStyle,installPremiumCityLayers,premiumRoutePaint,drawGoldenRouteFx} from './premium-map.mjs?v=0.6.0';
+import {MagicAdventure} from './magic-adventure.mjs?v=0.6.0';
 const $ = id => document.getElementById(id);
 const screens = ['welcome','address','route','arrival'];
 const state = {
   screen:'welcome', clinic:CFG.clinic,
   origin:{label:CFG.clinic.originLabel,coordinate:CFG.clinic.origin?.slice()||null},
   destination:{label:'',coordinate:null},
-  map:null,ml:null,mouseMarker:null,originMarker:null,homeMarker:null,
+  map:null,ml:null,mouseMarker:null,originMarker:null,homeMarker:null,director:null,ratView:false,
   route:null,path:null,mapPath:null,isDemo:false,landmark:null,landmarkShown:false,landmarkTimer:0,introTimer:0,arrivalShown:false,
   soundOn:false,audioCtx:null,durationMs:CFG.stageDurationSeconds*1000,progress:0,
   playing:false,startTime:0,frame:0,follow:true,cinematic:true,lastPaint:0,lastFx:0,lastStage:-1,lastCamera:0,
@@ -158,6 +159,9 @@ const PUBLIC_LANDMARKS=[
   {name:'Plaza de España',coordinate:[-3.7128,40.4230],message:'¡Qué grande es esta plaza!'}
 ];
 function prepareJourney(demo=false){
+  state.director?.reset();
+  state.ratView=false;
+  $('raton-view').classList.remove('is-selected');$('raton-view').setAttribute('aria-pressed','false');$('raton-view').setAttribute('aria-label','Activar vista Ratón');
   state.isDemo=demo;
   state.mapPath=publicFacingRoute(state.path,{demo});
   state.landmark=nearestPublicLandmark(state.mapPath,PUBLIC_LANDMARKS,120)||
@@ -191,6 +195,7 @@ function showLandmark(){
   $('landmark-title').textContent=state.landmark.name;
   $('landmark-copy').textContent=state.landmark.message;
   $('landmark-panel').classList.remove('hidden');
+  state.director?.say('scenic');
   playChime('landmark');
   clearTimeout(state.landmarkTimer);
   state.landmarkTimer=setTimeout(()=>$('landmark-panel').classList.add('hidden'),4900);
@@ -202,6 +207,7 @@ function finishIntro(){
   if(state.path && state.map && !state.playing)playPause();
 }
 function showIntro(){
+  state.director?.say('intro');
   $('cinematic-intro').classList.remove('hidden');
   state.introTimer=setTimeout(finishIntro,state.reducedMotion?1000:3900);
 }
@@ -249,10 +255,12 @@ async function ensureMap(){
     state.originMarker=new ml.Marker({element:pin('✦ Villa Pérez')}).setLngLat(state.mapPath.points[0]).addTo(map);
     state.homeMarker=new ml.Marker({element:pin(state.isDemo?'⌂ Fin de prueba':'✧ Cerca de casa',true)}).setLngLat(state.mapPath.points.at(-1)).addTo(map);
     state.mouseMarker=new ml.Marker({element:mouseNode(),anchor:'bottom'}).setLngLat(state.mapPath.points[0]).addTo(map);
+    state.director?.attachMap(map);
     fitMap();
     paintProgress(0,true);
   } catch(e){
     // A failed first load must not poison the next route attempt.
+    state.director?.attachMap(null);
     state.map?.remove();state.map=null;state.ml=null;
     $('map-fallback').classList.remove('hidden');
     throw new Error(`No ha sido posible cargar el mapa interactivo: ${e.message}`);
@@ -302,9 +310,9 @@ function paintProgress(progress,force=false){
   if(state.follow && state.playing && !state.reducedMotion && (force||now-state.lastCamera>1350) && state.progress<.92){
     state.lastCamera=now;
     const lookAhead=pointAt(state.mapPath,Math.min(.99,state.progress+.012)).coordinate;
-    const options={center:lookAhead,zoom:state.cinematic?16.15:Math.max(14.1,Math.min(16.1,state.map.getZoom())),
-      pitch:state.cinematic?(state.progress<.12?45:state.progress>.84?35:58):27,duration:1600,essential:false};
-    if(state.cinematic)options.bearing=routeBearing(state.mapPath,Math.min(.99,state.progress+.009));
+    const options={center:lookAhead,zoom:state.ratView?17.25:state.cinematic?16.15:Math.max(14.1,Math.min(16.1,state.map.getZoom())),
+      pitch:state.ratView?64:state.cinematic?(state.progress<.12?45:state.progress>.84?35:58):27,duration:1600,essential:false};
+    if(state.cinematic||state.ratView)options.bearing=routeBearing(state.mapPath,Math.min(.99,state.progress+.009));
     state.map.easeTo(options);
   }
   const stage=journeyStage(state.progress);
@@ -313,7 +321,11 @@ function paintProgress(progress,force=false){
     state.lastStage=stage.index;
     $('route-message').textContent=stage.message;
     $('route-subtitle').textContent=stage.subtitle;
+    if(stage.index===1)state.director?.say('depart');
+    if(stage.index===3)state.director?.say('halfway');
+    if(stage.index===4)state.director?.say('near');
   }
+  if(state.playing && state.director?.tick(state.progress))return;
   if(state.progress >= (state.landmark?.progress??.52) && state.progress<.87 && !state.landmarkShown && !force){
     showLandmark();
   }
@@ -340,6 +352,7 @@ function animate(t){
   if(!state.playing)return;
   const f=cinematicProgress(Math.min(1,(t-state.startTime)/state.durationMs));
   paintProgress(f);
+  if(!state.playing)return; // Challenge has paused the animation.
   if(f>=1){finishAnimation();return;}
   state.frame=requestAnimationFrame(animate);
 }
@@ -356,8 +369,8 @@ function playPause(){
   $('skip').textContent='Terminar misión';
   if(state.follow&&!state.reducedMotion){
     const position=pointAt(state.mapPath,state.progress).coordinate;
-    state.map.flyTo({center:position,zoom:16.05,pitch:state.cinematic?54:30,
-      bearing:state.cinematic?routeBearing(state.mapPath,state.progress):0,duration:1650,essential:false});
+    state.map.flyTo({center:position,zoom:state.ratView?17.2:16.05,pitch:state.ratView?64:state.cinematic?54:30,
+      bearing:(state.cinematic||state.ratView)?routeBearing(state.mapPath,state.progress):0,duration:1650,essential:false});
     state.lastCamera=performance.now();
   }
   state.frame=requestAnimationFrame(animate);
@@ -366,27 +379,44 @@ function finishMission(){
   if(!state.path)return;
   stopAnimation();
   $('recap-distance').textContent=formatDistance(state.route.serviceMeters);
+  state.director?.updateHud();state.director?.say('done');
   showScreen('arrival');
 }
 function reset(){
   clearTimeout(state.introTimer);clearTimeout(state.landmarkTimer);
+  state.director?.reset();
   stopAnimation();state.map?.remove();state.map=null;state.mouseMarker=null;state.originMarker=null;state.homeMarker=null;state.path=null;state.mapPath=null;state.route=null;state.landmark=null;state.landmarkShown=false;state.arrivalShown=false;state.isDemo=false;
   $('cinematic-intro').classList.add('hidden');$('landmark-panel').classList.add('hidden');$('final-curtain').classList.add('hidden');
   state.progress=0;state.lastStage=-1;state.lastPaint=0;state.lastFx=0;state.lastCamera=0;const fx=$('route-fx');fx?.getContext('2d')?.clearRect(0,0,fx.width,fx.height);state.destination={label:'',coordinate:null};
   $('destination-address').value='';$('adult-confirm').checked=false;
   $('route-message').textContent='¡Mi mochila está lista! Voy a salir de la clínica.';$('play-pause').textContent='Comenzar el viaje ▶';$('skip').textContent='Terminar misión';
   $('map-fallback').classList.add('hidden');$('follow-map').classList.add('is-selected');$('follow-map').setAttribute('aria-pressed','true');state.follow=true;
+  state.ratView=false;$('raton-view').classList.remove('is-selected');$('raton-view').setAttribute('aria-pressed','false');
   state.cinematic=true;$('cinematic-map').classList.add('is-selected');$('cinematic-map').setAttribute('aria-pressed','true');
   showScreen('welcome');
 }
 function downloadPostcard(){
   if(!state.path)return;
-  const doc=postcardSvg({clinicName:CFG.clinic.name,distanceMeters:state.route.serviceMeters});
+  const doc=postcardSvg({clinicName:CFG.clinic.name,distanceMeters:state.route.serviceMeters,stars:state.director?.earned.size||0});
   const blob=new Blob([doc],{type:'image/svg+xml;charset=utf-8'}),href=URL.createObjectURL(blob);
   const link=document.createElement('a');link.href=href;link.download='mi-viaje-raton-perez-villa-perez.svg';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(href),3000);
 }
 function setup(){
   updateConfig();
+  state.director=new MagicAdventure({
+    getMap:()=>state.map,
+    getPath:()=>state.mapPath,
+    onPause:()=>{
+      if(!state.playing)return;
+      state.progress=cinematicProgress(Math.min(1,(performance.now()-state.startTime)/state.durationMs));
+      stopAnimation();
+    },
+    onResume:()=>{
+      if(state.screen==='route'&&state.mapPath&&!state.playing&&state.progress<1)playPause();
+    },
+    onSound:()=>{},
+    getAudioUrls:()=>CFG.narrationAudio||{}
+  });
   $('start').addEventListener('click',()=>showScreen('address'));
   $('skip-intro').addEventListener('click',finishIntro);
   $('close-landmark').addEventListener('click',()=>{
@@ -404,9 +434,11 @@ function setup(){
         playChime('sparkle');
       }catch(e){state.soundOn=false;console.warn('Sin sonido',e);}
     }
+    state.director?.setAudio(state.soundOn,state.audioCtx);
+    if(state.soundOn)state.director?.say('depart',true);
     toggle.setAttribute('aria-pressed',String(state.soundOn));
     toggle.classList.toggle('is-selected',state.soundOn);
-    toggle.setAttribute('aria-label',state.soundOn?'Silenciar efectos de sonido':'Activar efectos de sonido');
+    toggle.setAttribute('aria-label',state.soundOn?'Silenciar narración y efectos':'Activar narración y efectos de demostración');
   });
   $('try-demo').addEventListener('click',startMadridDemo);
   // Deep link for testing directly on a phone without storing a home address.
@@ -443,7 +475,22 @@ function setup(){
     $('cinematic-map').setAttribute('aria-pressed',String(state.cinematic));
     if(state.map&&state.mapPath)state.map.easeTo({pitch:state.cinematic?58:26,bearing:state.cinematic?routeBearing(state.mapPath,state.progress):0,duration:850});
   });
-  $('play-pause').addEventListener('click',playPause);
+  $('raton-view').addEventListener('click',()=>{
+    state.ratView=!state.ratView;
+    $('raton-view').classList.toggle('is-selected',state.ratView);
+    $('raton-view').setAttribute('aria-pressed',String(state.ratView));
+    $('raton-view').setAttribute('aria-label',state.ratView?'Desactivar vista Ratón':'Activar vista Ratón');
+    if(state.ratView){state.follow=true;$('follow-map').classList.add('is-selected');$('follow-map').setAttribute('aria-pressed','true');}
+    if(state.map&&state.mapPath){
+      state.map.easeTo({center:pointAt(state.mapPath,state.progress).coordinate,
+        zoom:state.ratView?17.2:15.9,pitch:state.ratView?64:state.cinematic?56:25,
+        bearing:(state.ratView||state.cinematic)?routeBearing(state.mapPath,state.progress):0,duration:900,essential:false});
+    }
+  });
+  $('play-pause').addEventListener('click',()=>{
+    if(state.director?.active)return;
+    playPause();
+  });
   $('skip').addEventListener('click',()=>{
     if(!state.path)return;
     if(state.progress>=1){finishMission();return;}
@@ -463,13 +510,14 @@ function setup(){
     });
   }
   document.addEventListener('visibilitychange',()=>{
+    if(document.hidden)state.director?.cancelSpeech();
     if(document.hidden&&state.playing){
       state.progress=cinematicProgress(Math.min(1,(performance.now()-state.startTime)/state.durationMs));stopAnimation();
     }
   });
   window.addEventListener('beforeunload',()=>{
     clearTimeout(state.introTimer);clearTimeout(state.landmarkTimer);
-    stopAnimation();state.destination.coordinate=null;
+    state.director?.destroy();stopAnimation();state.destination.coordinate=null;
     state.audioCtx?.close?.().catch?.(()=>{});
   });
 }
