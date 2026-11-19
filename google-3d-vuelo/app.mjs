@@ -43,7 +43,7 @@ const state={
  originLabel:'Origen de prueba · Puerta de Alcalá',clinicVerified:false,originMarker:null,
  destinationMarker:null,routeGlow:null,routeLine:null,overview:false,overviewTimer:0,
  overviewWasPlaying:false,originStored:false,
- terrainSamples:[],turnLastTs:0
+ terrainSamples:[],turnLastTs:0,takeoffMs:0,takeoffDurationMs:2600,overviewSnapshot:null,takeoffBearing:0
 };
 const R=Earth=>Earth*Math.PI/180;
 function distance(a,b){
@@ -317,6 +317,7 @@ function overviewCamera(){
  const range=Math.min(32000,Math.max(1800,diag*(innerWidth<680?2.35:1.7)+650));
  try{
   state.map.stopCameraAnimation?.();
+  state.overviewSnapshot={center:middle,altitude:790,heading:0,tilt:28,range};
   state.map.center={...middle,altitude:790};
   state.map.heading=0;state.map.tilt=28;state.map.range=range;
  }catch(e){console.warn('Could not show full route:',e)}
@@ -333,7 +334,8 @@ function closeOverview(){
   flightStart();
   return;
  }
- if(state.phase==='route')renderRoute(state.progressMs/state.routeDurationMs);
+ if(state.phase==='takeoff')renderTakeoff(state.takeoffMs/state.takeoffDurationMs);
+ else if(state.phase==='route')renderRoute(state.progressMs/state.routeDurationMs);
  else if(state.phase==='orbit')renderOrbit(state.orbitElapsedMs/state.orbitDurationMs);
  if(state.playing&&!state.paused)state.frameId=requestAnimationFrame(renderTick);
 }
@@ -511,6 +513,33 @@ function scene(n,total){
   'Por privacidad, los últimos metros serán un secreto.'
  ][chapter];
 }
+function cinematicEase(t){
+ const p=clamp01(t);
+ return p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+}
+function renderTakeoff(progress){
+ const p=cinematicEase(progress);
+ const from=state.overviewSnapshot||{
+  center:state.origin,altitude:terrainAltitudeAt(0)+100,
+  heading:state.takeoffBearing,tilt:28,range:1500
+ };
+ if(!state.map)return;
+ try{
+  const location=lerp(from.center,routePosition(0),p);
+  const altitude=from.altitude+(terrainAltitudeAt(0)-from.altitude)*p;
+  // Zoom geometrically (not linearly) to avoid a jarring zoom near the end.
+  const range=from.range*Math.pow(CAMERA.range/Math.max(1,from.range),p);
+  const tilt=from.tilt+(CAMERA.tilt-from.tilt)*p;
+  const target=normHeading(state.takeoffBearing-9);
+  const h=normHeading(from.heading+shortestTurn(from.heading,target)*p);
+  state.map.center={...location,altitude};
+  state.map.range=range;state.map.tilt=tilt;state.map.heading=h;
+ }catch(e){console.warn('Takeoff zoom fallback:',e)}
+ $('balloon').hidden=progress<.53;
+ $('balloon').style.opacity=String(clamp01((progress-.53)/.36));
+ $('chapterEyebrow').textContent='VILLA PÉREZ · COMIENZA EL VUELO';
+ $('chapterTitle').textContent='¡Despegamos!';
+}
 function renderRoute(t){
  const p=clamp01(t);
  // Direction is estimated over the next ~55–115 m, not over an abrupt road
@@ -534,6 +563,7 @@ function renderRoute(t){
  }
  setCamera(cameraPoint(p),state.filteredHeading-9,p);
  $('balloon').hidden=state.overview;
+ $('balloon').style.opacity='1';
  progress(p*.82,1);
  scene(p,1);
 }
@@ -573,7 +603,15 @@ function renderTick(now){
  // Safari sometimes backgrounds a frame for seconds: prevent skipping the film.
  delta=Math.min(90,delta);
  state.lastFrame=now;
- if(state.phase==='route'){
+ if(state.phase==='takeoff'){
+  state.takeoffMs=Math.min(state.takeoffDurationMs,state.takeoffMs+delta);
+  if(state.takeoffMs>=state.takeoffDurationMs){
+   state.phase='route';state.lastPaint=0;state.turnLastTs=0;
+   renderRoute(0);
+  }else if(now-state.lastPaint>=40){
+   state.lastPaint=now;renderTakeoff(state.takeoffMs/state.takeoffDurationMs);
+  }
+ }else if(state.phase==='route'){
   state.progressMs=Math.min(state.routeDurationMs,state.progressMs+delta);
   if(state.progressMs>=state.routeDurationMs){
    const end=state.points[state.points.length-1];
@@ -600,12 +638,15 @@ function flightStart(){
  stopFrame();
  state.progressMs=0;state.orbitElapsedMs=0;state.filteredHeading=null;state.orbitView=-1;
  state.turnLastTs=0;state.cameraFaulted=false;
- state.phase='route';state.playing=true;state.paused=false;
+ state.phase='takeoff';state.playing=true;state.paused=false;
+ state.takeoffMs=0;state.takeoffDurationMs=2600;
+ const previewSpan=Math.min(.035,75/Math.max(1,state.routeLength));
+ state.takeoffBearing=heading(routePosition(0),routePosition(previewSpan));
  state.routeDurationMs=Math.max(42000,Math.min(85000,state.routeLength/28*1000));
  state.orbitDurationMs=21000;
  state.lastFrame=getNow();state.lastPaint=0;
  $('pause').textContent='⏸ Pausar';
- renderRoute(0);
+ renderTakeoff(0);
  state.frameId=requestAnimationFrame(renderTick);
 }
 async function fly(){
@@ -664,12 +705,14 @@ function pause(){
 function restart(){
  stopFrame();clearTimeout(state.overviewTimer);state.overviewTimer=0;state.overview=false;
  state.flightToken++;state.playing=false;state.paused=false;state.busy=false;
- state.phase='idle';state.progressMs=0;state.orbitElapsedMs=0;
+ state.phase='idle';state.progressMs=0;state.orbitElapsedMs=0;state.takeoffMs=0;
+ state.overviewSnapshot=null;
  clearRouteMap();createOriginMarker();
  state.filteredHeading=null;state.orbitView=-1;state.turnLastTs=0;
  state.terrainSamples=[];
  $('pause').textContent='⏸ Pausar';
- $('balloon').hidden=true;$('flightUI').hidden=true;$('arrival').hidden=true;
+ $('balloon').hidden=true;$('balloon').style.opacity='1';
+ $('flightUI').hidden=true;$('arrival').hidden=true;
  $('setup').classList.remove('off');$('launch').disabled=!state.loaded;
  $('travelLabel').textContent=state.originLabel.toUpperCase()+' → '+(state.activeDestination?.label||routes[state.route].label).toUpperCase();
  $('overviewToggle').textContent='🗺 Ver recorrido completo';
