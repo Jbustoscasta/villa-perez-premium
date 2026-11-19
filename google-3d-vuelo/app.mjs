@@ -42,7 +42,8 @@ const state={
  origin:{lat:START.lat,lng:START.lng},clinicName:'Clínica del Doctor Abreu',
  originLabel:'Origen de prueba · Puerta de Alcalá',clinicVerified:false,originMarker:null,
  destinationMarker:null,routeGlow:null,routeLine:null,overview:false,overviewTimer:0,
- overviewWasPlaying:false,originStored:false
+ overviewWasPlaying:false,originStored:false,
+ terrainSamples:[],turnLastTs:0
 };
 const R=Earth=>Earth*Math.PI/180;
 function distance(a,b){
@@ -327,7 +328,7 @@ function closeOverview(){
  $('overviewToggle').textContent='🗺 Ver recorrido completo';
  $('overviewToggle').setAttribute('aria-pressed','false');
  $('balloon').hidden=state.phase==='done';
- state.lastFrame=getNow();state.lastPaint=0;
+ state.lastFrame=getNow();state.lastPaint=0;state.turnLastTs=0;
  if(state.phase==='preview'){
   flightStart();
   return;
@@ -366,7 +367,11 @@ function toggleOverview(){
  * interpolate the map camera directly at a constant RANGE and TILT.
  * The panorama ends with an orbit on the same fixed camera distance.
  */
-const CAMERA={altitude:748,range:495,tilt:71};
+// Low-altitude flight: roughly half the previous camera-to-subject distance.
+// Altitude is absolute (sea level). Where available, terrain elevations
+// supply a safe, smoothed 52 m clearance for the target point.
+const CAMERA={altitude:733,range:270,tilt:67,clearance:52,headingLimit:19};
+
 const ORBIT_CHAPTERS=[
  ['Primera vista del destino','Los tejados y las calles aparecen justo bajo el globo.'],
  ['Desde el otro lado','Giramos suavemente para reconocer los edificios desde otro ángulo.'],
@@ -377,22 +382,75 @@ function clamp01(v){return Math.max(0,Math.min(1,v))}
 function normHeading(v){return (v%360+360)%360}
 function shortestTurn(from,to){return ((to-from+540)%360)-180}
 function getNow(){return performance.now()}
+function terrainAltitudeAt(progress){
+ const list=state.terrainSamples;
+ if(!list?.length)return CAMERA.altitude;
+ const p=clamp01(progress),x=p*(list.length-1),i=Math.floor(x);
+ // Smooth changes in the ground height without sudden jumps at the samples.
+ const sample=t=>{
+  const k=clamp01(t)*(list.length-1),n=Math.floor(k),u=k-n;
+  const a=list[n],b=list[Math.min(list.length-1,n+1)];
+  return a+(b-a)*u;
+ };
+ const smooth=(sample(Math.max(0,p-.035))+sample(p)+sample(Math.min(1,p+.035)))/3;
+ return smooth+CAMERA.clearance;
+}
+async function prepareTerrain(){
+ state.terrainSamples=[];
+ // Optional enhancement: a single Elevation API call per journey.
+ // When unavailable, the already-lower fixed camera still works.
+ try{
+  const {ElevationService}=await google.maps.importLibrary('elevation');
+  if(!ElevationService)return;
+  const service=new ElevationService();
+  const stride=Math.max(1,Math.ceil(state.points.length/24));
+  const path=state.points.filter((_,i)=>i%stride===0);
+  if(path.at(-1)!==state.points.at(-1))path.push(state.points.at(-1));
+  if(path.length<2)return;
+  const result=await Promise.race([
+   service.getElevationAlongPath({path,samples:20}),
+   new Promise((_,reject)=>setTimeout(()=>reject(new Error('Elevation timeout')),2800))
+  ]);
+  const heights=result?.results?.map(r=>r.elevation)||[];
+  if(heights.length>=2&&heights.every(x=>Number.isFinite(x)&&x>-450&&x<5000)){
+   // Widen clearance if nearby steep topography is detected.
+   state.terrainSamples=heights;
+  }
+ }catch(e){console.info('Optional terrain elevation unavailable; using safe low camera',e)}
+}
+function cameraPoint(progress){
+ // Keep map route exact; smooth the camera position by <= 9 m at a corner,
+ // instead of cutting visibly through the neighbouring buildings.
+ const p=clamp01(progress);
+ const here=routePosition(p);
+ const windowMeters=Math.min(40,Math.max(14,state.routeLength*.012));
+ const span=windowMeters/Math.max(1,state.routeLength);
+ const prev=routePosition(Math.max(0,p-span));
+ const next=routePosition(Math.min(1,p+span));
+ const midpoint=lerp(prev,next,.5);
+ const offset=distance(here,midpoint);
+ const blend=Math.min(.52,9/Math.max(1,offset));
+ const softened=lerp(here,midpoint,blend);
+ const ahead=routePosition(Math.min(1,p+15/Math.max(1,state.routeLength)));
+ return lerp(softened,ahead,.14);
+}
 function stopFrame(){if(state.frameId){cancelAnimationFrame(state.frameId);state.frameId=0}}
 function resetCamera(){
  if(!state.map)return;
  try{
   state.map.stopCameraAnimation();
-  state.map.center={lat:state.origin.lat,lng:state.origin.lng,altitude:CAMERA.altitude};
+  state.map.center={lat:state.origin.lat,lng:state.origin.lng,altitude:terrainAltitudeAt(0)};
   state.map.range=CAMERA.range;
   state.map.heading=244;
   state.map.tilt=CAMERA.tilt;
  }catch(e){console.warn('Camera reset unavailable:',e)}
 }
-function setCamera(point,headingAngle){
+function setCamera(point,headingAngle,progress=0){
  if(!state.map)return;
- // Keep height AND distance strictly constant; no keyframed zooms or vertical bobs.
+ // Target stays close to the neighbourhood; when Elevation is enabled the
+ // camera follows a smoothed terrain profile rather than a flat sea-level plane.
  try{
-  state.map.center={lat:point.lat,lng:point.lng,altitude:CAMERA.altitude};
+  state.map.center={lat:point.lat,lng:point.lng,altitude:terrainAltitudeAt(progress)};
   state.map.heading=normHeading(headingAngle);
   // Only set these when necessary so Safari does not request needless redraws.
   if(Math.abs(state.map.range-CAMERA.range)>0.5)state.map.range=CAMERA.range;
@@ -455,26 +513,36 @@ function scene(n,total){
 }
 function renderRoute(t){
  const p=clamp01(t);
- const here=routePosition(p);
- const before=routePosition(Math.max(0,p-.003));
- const after=routePosition(Math.min(1,p+.003));
+ // Direction is estimated over the next ~55–115 m, not over an abrupt road
+ // vertex. This anticipates turns while keeping the geographic route intact.
+ const lead=Math.min(115,Math.max(55,state.routeLength*.028));
+ const span=lead/Math.max(1,state.routeLength);
+ const before=routePosition(Math.max(0,p-span*.58));
+ const after=routePosition(Math.min(1,p+span));
  const desired=heading(before,after);
- if(state.filteredHeading===null||!Number.isFinite(state.filteredHeading))state.filteredHeading=desired;
- else state.filteredHeading=normHeading(state.filteredHeading+shortestTurn(state.filteredHeading,desired)*.19);
- // Aim just ahead of the globo, keeping the street geometry recognizable.
- const lookAhead=routePosition(Math.min(1,p+.006));
- setCamera(geoLerp(here,lookAhead,.18),state.filteredHeading+350);
+ const now=getNow();
+ const dt=state.turnLastTs?Math.min(.11,Math.max(.016,(now-state.turnLastTs)/1000)):.05;
+ state.turnLastTs=now;
+ if(state.filteredHeading===null||!Number.isFinite(state.filteredHeading)){
+  state.filteredHeading=desired;
+ }else{
+  const difference=shortestTurn(state.filteredHeading,desired);
+  const damping=1-Math.exp(-dt/.95);
+  const maxTurn=CAMERA.headingLimit*dt;
+  const change=Math.max(-maxTurn,Math.min(maxTurn,difference*damping));
+  state.filteredHeading=normHeading(state.filteredHeading+change);
+ }
+ setCamera(cameraPoint(p),state.filteredHeading-9,p);
  $('balloon').hidden=state.overview;
- // The SVG balloon and untouched mouse PNG stay centered as the real 3D city moves.
- // No native Model3DElement or image marker can occlude or magnify Ratón Pérez.
  progress(p*.82,1);
  scene(p,1);
 }
 function renderOrbit(t){
  const p=clamp01(t);
  const waypoint=state.points[state.points.length-1];
- // Four recognizable perspectives, one full turn, no height/range changes.
- setCamera(waypoint,state.orbitStartHeading+p*360);
+ // A gentle 270° arrival panorama with an eased start and finish.
+ const ease=(1-Math.cos(Math.PI*p))/2;
+ setCamera(waypoint,state.orbitStartHeading+ease*270,1);
  $('balloon').hidden=state.overview;
  const view=Math.min(3,Math.floor(p*4));
  if(view!==state.orbitView){
@@ -531,10 +599,10 @@ function renderTick(now){
 function flightStart(){
  stopFrame();
  state.progressMs=0;state.orbitElapsedMs=0;state.filteredHeading=null;state.orbitView=-1;
- state.cameraFaulted=false;
+ state.turnLastTs=0;state.cameraFaulted=false;
  state.phase='route';state.playing=true;state.paused=false;
- state.routeDurationMs=Math.max(39000,Math.min(72000,state.routeLength/33*1000));
- state.orbitDurationMs=14000;
+ state.routeDurationMs=Math.max(42000,Math.min(85000,state.routeLength/28*1000));
+ state.orbitDurationMs=21000;
  state.lastFrame=getNow();state.lastPaint=0;
  $('pause').textContent='⏸ Pausar';
  renderRoute(0);
@@ -559,6 +627,9 @@ async function fly(){
  state.points=destination.points;state.activeDestination=destination;
  state.custom=!!destination.custom;
  buildRouteLengths(state.points);
+ // Optional elevation sample lets the camera fly low over varied terrain.
+ // If this API is not enabled, the flight still starts with the fallback.
+ await prepareTerrain();
  $('setup').classList.add('off');
  $('flightUI').hidden=false;$('arrival').hidden=true;
  // Use photorealistic Google's buildings, NOT procedurally modelled houses.
@@ -584,7 +655,7 @@ function pause(){
   state.paused=true;stopFrame();
   $('pause').textContent='▶ Continuar';status('VUELO EN PAUSA');
  }else{
-  state.paused=false;state.lastFrame=getNow();state.lastPaint=0;
+  state.paused=false;state.lastFrame=getNow();state.lastPaint=0;state.turnLastTs=0;
   $('pause').textContent='⏸ Pausar';
   status(state.phase==='orbit'?'VISTAS DEL DESTINO':'VUELO 3D · ALTURA ESTABLE');
   state.frameId=requestAnimationFrame(renderTick);
@@ -595,7 +666,8 @@ function restart(){
  state.flightToken++;state.playing=false;state.paused=false;state.busy=false;
  state.phase='idle';state.progressMs=0;state.orbitElapsedMs=0;
  clearRouteMap();createOriginMarker();
- state.filteredHeading=null;state.orbitView=-1;
+ state.filteredHeading=null;state.orbitView=-1;state.turnLastTs=0;
+ state.terrainSamples=[];
  $('pause').textContent='⏸ Pausar';
  $('balloon').hidden=true;$('flightUI').hidden=true;$('arrival').hidden=true;
  $('setup').classList.remove('off');$('launch').disabled=!state.loaded;
