@@ -289,39 +289,77 @@ function paintProgress(progress,force=false){
   $('track-fill').style.width=`${state.progress*100}%`;
   $('route-track').setAttribute('aria-valuenow',String(Math.round(state.progress*100)));
   updateMilestones(state.progress);
-  if(!state.path || !state.map || !state.mouseMarker)return;
-  const now=performance.now();if(!force&&now-state.lastPaint<90)return;
+  if(!state.mapPath || !state.map || !state.mouseMarker)return;
+  const now=performance.now();
+  if(!force&&now-state.lastPaint<95)return;
   state.lastPaint=now;
-  const along=pointAt(state.path,state.progress);
+  // Only map the genuine road section that does not expose a family's front door.
+  const along=pointAt(state.mapPath,state.progress);
   state.mouseMarker.setLngLat(along.coordinate);
   const partial=along.partial.length===1?[along.partial[0],along.partial[0]]:along.partial;
   state.map.getSource('journey-completed')?.setData(line(partial));
-  if(!state.reducedMotion)state.map.getSource('journey-sparks')?.setData(trailParticles(state.path,state.progress));
-  if(state.follow && state.playing && !state.reducedMotion && (force||now-state.lastCamera>650)){
+  if(!state.reducedMotion)state.map.getSource('journey-sparks')?.setData(trailParticles(state.mapPath,state.progress,18,.0028));
+  if(state.follow && state.playing && !state.reducedMotion && (force||now-state.lastCamera>1350) && state.progress<.92){
     state.lastCamera=now;
-    const options={center:along.coordinate,zoom:state.cinematic?15.3:Math.max(13.2,Math.min(15,state.map.getZoom())),pitch:state.cinematic?58:30,duration:850,essential:false};
-    if(state.cinematic)options.bearing=routeBearing(state.path,state.progress);
+    const lookAhead=pointAt(state.mapPath,Math.min(.99,state.progress+.012)).coordinate;
+    const options={center:lookAhead,zoom:state.cinematic?15.15:Math.max(13.3,Math.min(15,state.map.getZoom())),
+      pitch:state.cinematic?(state.progress<.12?45:state.progress>.84?35:58):27,duration:1600,essential:false};
+    if(state.cinematic)options.bearing=routeBearing(state.mapPath,Math.min(.99,state.progress+.009));
     state.map.easeTo(options);
   }
   const stage=journeyStage(state.progress);
-  if(force||state.lastStage!==stage.index){state.lastStage=stage.index;$('route-message').textContent=stage.message;$('route-subtitle').textContent=stage.subtitle;}
+  if(force||state.lastStage!==stage.index){
+    if(!force && stage.index>0 && stage.index!==5)playChime('sparkle');
+    state.lastStage=stage.index;
+    $('route-message').textContent=stage.message;
+    $('route-subtitle').textContent=stage.subtitle;
+  }
+  if(state.progress >= (state.landmark?.progress??.52) && state.progress<.87 && !state.landmarkShown && !force){
+    showLandmark();
+  }
+  if(state.progress>=.92 && !state.arrivalShown){
+    state.arrivalShown=true;
+    $('landmark-panel').classList.add('hidden');
+    $('final-curtain').classList.remove('hidden');
+    playChime('arrival');
+  } else if(state.progress<.92 && state.arrivalShown){
+    state.arrivalShown=false;
+    $('final-curtain').classList.add('hidden');
+  }
 }
-function stopAnimation(){cancelAnimationFrame(state.frame);state.frame=0;state.playing=false;$('play-pause').textContent=state.progress>=1?'Ver el recorrido ↻':'Continuar viaje ▶';}
-function finishAnimation(){stopAnimation();state.progress=1;paintProgress(1,true);$('play-pause').textContent='Volver a ver ↻';$('skip').textContent='Ver sorpresa final →';}
+function stopAnimation(){
+  cancelAnimationFrame(state.frame);state.frame=0;state.playing=false;
+  $('play-pause').textContent=state.progress>=1?'Ver sorpresa final →':state.progress>0?'Continuar viaje ▶':'Comenzar el viaje ▶';
+}
+function finishAnimation(){
+  state.progress=1;paintProgress(1,true);
+  stopAnimation();
+  $('skip').textContent='Ver sorpresa final →';
+}
 function animate(t){
   if(!state.playing)return;
-  const f=Math.min(1,(t-state.startTime)/state.durationMs);
+  const f=cinematicProgress(Math.min(1,(t-state.startTime)/state.durationMs));
   paintProgress(f);
   if(f>=1){finishAnimation();return;}
   state.frame=requestAnimationFrame(animate);
 }
 function playPause(){
-  if(!state.path||!state.map)return;
-  if(state.playing){state.progress=Math.min(1,(performance.now()-state.startTime)/state.durationMs);stopAnimation();return;}
-  if(state.progress>=1) paintProgress(0,true);
-  state.playing=true;state.startTime=performance.now()-state.progress*state.durationMs;
-  $('play-pause').textContent='Pausar viaje ❚❚';$('skip').textContent='Terminar misión';
-  if(state.follow){const position=pointAt(state.path,state.progress).coordinate;state.map.easeTo({center:position,zoom:14,pitch:34,duration:800});}
+  if(!state.mapPath||!state.map)return;
+  if(state.playing){
+    state.progress=cinematicProgress(Math.min(1,(performance.now()-state.startTime)/state.durationMs));
+    stopAnimation();return;
+  }
+  if(state.progress>=1){finishMission();return;}
+  state.playing=true;
+  state.startTime=performance.now()-cinematicPhase(state.progress)*state.durationMs;
+  $('play-pause').textContent='Pausar viaje ❚❚';
+  $('skip').textContent='Terminar misión';
+  if(state.follow&&!state.reducedMotion){
+    const position=pointAt(state.mapPath,state.progress).coordinate;
+    state.map.flyTo({center:position,zoom:14.7,pitch:state.cinematic?53:28,
+      bearing:state.cinematic?routeBearing(state.mapPath,state.progress):0,duration:1650,essential:false});
+    state.lastCamera=performance.now();
+  }
   state.frame=requestAnimationFrame(animate);
 }
 function finishMission(){
