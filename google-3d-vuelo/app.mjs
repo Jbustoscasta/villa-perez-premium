@@ -641,7 +641,20 @@ function restart(){
 }
 function toggleTwilight(){
  state.dusk=!state.dusk;
- if(!state.nightFx)state.nightFx=new CinemaNight($('nightCanvas'));
+ if(!state.nightFx)state.nightFx=new CinemaNight($('nightCanvas'),enabled=>{
+   if(!state.map)return;
+   if(enabled){
+    state.map.mode='ROADMAP';
+    state.map.colorScheme='DARK';
+    $('routeMode').textContent='NOCHE GOOGLE · MAPA 3D ESTILIZADO';
+   }else{
+    state.map.mode='SATELLITE';
+    state.map.colorScheme='LIGHT';
+    $('routeMode').textContent=state.routeSource==='google'
+      ?'RUTA POR CALLES REALES · GOOGLE'
+      :'VUELO PANORÁMICO · RUTA APROXIMADA';
+   }
+ });
  state.nightFx.setNight(state.dusk);
  $('twilight').textContent=state.dusk?'☀ Amanecer':'☾ Anochecer';
  $('twilight').setAttribute('aria-pressed',String(state.dusk));
@@ -650,8 +663,10 @@ function toggleTwilight(){
  // Preserve the photorealistic SATELLITE mode and full image detail.
  // WebGL creates atmospheric color and distant lights; does NOT relight real windows.
  info(state.dusk
-   ? 'Anochecer cinematográfico WebGL: luces y estrellas simuladas sobre fotografía 3D.'
-   : 'Restaurando la fotografía aérea original.');
+   ? (state.nightFx.disabled
+      ? 'Safari no admite el efecto WebGL: activado el modo nocturno 3D estilizado de Google (sin fotografía).'
+      : 'Anochecer WebGL activo: hora azul y luces simuladas sobre fotografía aérea 3D.')
+   : 'Restaurando la cartografía diurna original.');
 }
 $('launch').addEventListener('click',fly);
 $('overviewToggle').addEventListener('click',toggleOverview);
