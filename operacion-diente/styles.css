@@ -106,3 +106,43 @@
 .map-signature{left:auto;right:12px;bottom:12px}
 .maplibregl-ctrl-bottom-left{z-index:9!important;max-width:48%}
 .maplibregl-ctrl-bottom-left .maplibregl-ctrl-attrib{margin:0 0 4px 5px}
+
+/* Operación Diente Perdido 1.0 — full-bleed cinematic journey */
+.screen--welcome .welcome-art{min-height:340px}
+.screen--welcome .official-facade{filter:drop-shadow(0 22px 25px rgba(0,0,0,.65)) drop-shadow(0 0 40px rgba(247,207,133,.32))}
+.clinic-fixed-origin{display:flex;align-items:center;gap:15px;border:1px solid rgba(191,157,98,.5);border-radius:16px;padding:15px;background:rgba(28,59,60,.08);margin-bottom:15px}
+.clinic-fixed-origin .clinic-fixed-icon{font-size:30px;color:#ad7732}
+.clinic-fixed-origin small{display:block;font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#6d6552}
+.clinic-fixed-origin strong{display:block;font:700 17px/1.25 Georgia,serif;color:#254a4d}
+.clinic-fixed-origin p{font-size:11px;line-height:1.35;margin:5px 0 0;color:#81603a}
+.parent-consent{color:#bed4d0;font-size:11px;line-height:1.45;margin:13px 3px 18px}
+.screen--address .field-stack input{min-height:58px;font-size:16px;border-radius:12px}
+.screen--route{height:calc(100dvh - 69px);min-height:560px;display:block;overflow:hidden}
+.screen--route .map-stage{position:absolute;inset:0;width:100%;height:100%!important;min-height:0;max-height:none!important}
+.screen--route .route-sheet{position:absolute;bottom:0;left:0;right:0;border-radius:24px 24px 0 0;padding:11px 18px max(15px,env(safe-area-inset-bottom));background:linear-gradient(160deg,rgba(12,48,60,.98),rgba(6,28,42,.98));border:1px solid rgba(235,199,125,.54);border-bottom:0;backdrop-filter:blur(18px);max-height:225px;overflow:auto;z-index:10;box-shadow:0 -13px 40px #00101ccc}
+.screen--route .route-sheet .sheet-handle{margin:0 auto 9px}
+.screen--route .route-sheet .journey-head h2{font-size:18px;margin:4px 0}
+.screen--route .route-sheet .journey-head .eyebrow{font-size:8px}
+.screen--route .route-sheet .missions-hud,.screen--route .route-sheet .travel-choices,.screen--route .route-sheet .sheet-note{display:none!important}
+.screen--route .route-sheet .route-track{margin:9px 0 3px}
+.screen--route .route-sheet .journey-milestones{margin:9px 0 3px}
+.screen--route .route-sheet .trip-facts{font-size:10px;margin:6px 0 9px}
+.screen--route .route-sheet .action-row .button{min-height:42px;padding:9px 12px}
+.screen--route .route-sheet .action-row #skip{font-size:10px;max-width:125px}
+.screen--route .map-heading{top:18px;right:72px}
+.screen--route .map-heading h1{font-size:clamp(25px,7.5vw,35px);margin:8px 0 5px}
+.screen--route .map-heading p{font-size:12px;max-width:255px}
+.screen--route .map-buttons{top:105px;right:11px}
+.screen--route .floating-message{bottom:230px;z-index:7;background:rgba(14,47,58,.93);color:#fff0c7;border:1px solid #e7c68095;max-width:83%;box-shadow:0 6px 26px #0009;font-size:13px}
+.screen--route .map-signature{bottom:226px;right:9px;font-size:8px;max-width:160px;z-index:5;opacity:.92}
+.street-locator{position:absolute;left:12px;top:132px;max-width:calc(100% - 90px);padding:10px 14px;border-radius:13px;background:linear-gradient(110deg,rgba(6,28,41,.93),rgba(22,66,72,.86));border:1px solid rgba(247,205,126,.54);z-index:7;box-shadow:0 7px 24px #0008;backdrop-filter:blur(8px)}
+.street-locator span{display:block;color:#e0bf7c;font-size:9px;letter-spacing:1.25px;font-weight:800}
+.street-locator strong{display:block;color:#fff7de;font:700 19px/1.2 Georgia,serif;margin-top:5px;max-width:235px;overflow-wrap:break-word}
+.magic-event{position:absolute;top:37%;left:50%;width:min(85%,330px);display:flex;gap:12px;align-items:center;padding:16px 17px;z-index:10;background:linear-gradient(145deg,rgba(13,53,66,.97),rgba(11,32,48,.97));border:1px solid rgba(255,222,156,.75);border-radius:20px;box-shadow:0 0 0 1px rgba(255,222,156,.16),0 0 45px rgba(247,191,97,.36),0 15px 50px #0009;transform:translate(-50%,25px) scale(.94);opacity:0;pointer-events:none;transition:opacity .55s,transform .55s}
+.magic-event.visible{opacity:1;transform:translate(-50%,0) scale(1)}
+.magic-event .event-symbol{font-size:48px;color:#ffe6a8;text-shadow:0 0 23px #ffce80;animation:introBreath 2.5s ease-in-out infinite}
+.magic-event small{font-size:9px;letter-spacing:1.2px;color:#e6bd71;font-weight:800}
+.magic-event strong{display:block;margin:4px 0;font:700 22px/1.12 Georgia,serif;color:#fff0c4}
+.magic-event p{margin:0;color:#cfe1dd;font-size:12px;line-height:1.45}
+@media(max-height:720px){.screen--route .route-sheet{max-height:190px}.screen--route .route-sheet .journey-milestones{display:none}.screen--route .floating-message{bottom:196px}.screen--route .map-signature{bottom:193px}.screen--route .map-heading h1{font-size:26px}}
+@media(prefers-reduced-motion:reduce){.magic-event,.magic-event .event-symbol{transition:none;animation:none}}
