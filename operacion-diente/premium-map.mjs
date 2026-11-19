@@ -130,7 +130,7 @@ export function drawGoldenRouteFx(map,path,progress,canvas,time,reducedMotion=fa
   if(!canvas||!map||!path?.points||!path.total)return;
   const w=canvas.clientWidth, h=canvas.clientHeight;
   if(w<8||h<8)return;
-  const dpr=Math.min(1.7,window.devicePixelRatio||1);
+  const dpr=Math.min(1.7,(typeof window!=='undefined'&&window.devicePixelRatio)||1);
   const width=Math.round(w*dpr),height=Math.round(h*dpr);
   if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
   const ctx=canvas.getContext('2d',{alpha:true});
