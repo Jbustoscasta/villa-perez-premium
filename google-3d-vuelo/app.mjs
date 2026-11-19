@@ -366,7 +366,7 @@ function resetCamera(){
  if(!state.map)return;
  try{
   state.map.stopCameraAnimation();
-  state.map.center={lat:START.lat,lng:START.lng,altitude:CAMERA.altitude};
+  state.map.center={lat:state.origin.lat,lng:state.origin.lng,altitude:CAMERA.altitude};
   state.map.range=CAMERA.range;
   state.map.heading=244;
   state.map.tilt=CAMERA.tilt;
@@ -403,7 +403,7 @@ function catmullRom(a,b,c,d,t){
 }
 function routePosition(progress){
  const points=state.points;
- if(!points?.length)return START;
+ if(!points?.length)return state.origin;
  const p=clamp01(progress);
  if(p===0)return points[0];
  if(p===1)return points[points.length-1];
@@ -440,7 +440,7 @@ function scene(n,total){
 function nativeFallback(reason){
  console.warn('GLB fallback:',reason);
  state.native?.reset();state.native=null;
- $('balloon').hidden=false;
+ $('balloon').hidden=state.overview;
  $('modelMode').textContent='GLOBO PNG · PULSA PARA 3D';
 }
 function safeNativePose(method,...params){
@@ -455,7 +455,7 @@ function switchGlobe(){
     Model3DElement:state.Model3DElement,
     Marker3DElement:state.Marker3DElement,
     Polyline3DElement:state.Polyline3DElement
-  },()=>nativeFallback('Error del modelo 3D'));
+  },()=>nativeFallback('Error del modelo 3D'),state.origin);
   scene.create();scene.setEffects(state.effectsOn);
   state.native=scene;$('balloon').hidden=true;
   $('modelMode').textContent='GLOBO 3D · OCLUSIÓN NATIVA';
@@ -496,7 +496,8 @@ function renderOrbit(t){
  progress(.82+.18*p,1);
 }
 function finishFlight(){
- stopFrame();state.playing=false;state.paused=false;state.phase='done';
+ stopFrame();clearTimeout(state.overviewTimer);state.overviewTimer=0;state.overview=false;
+ state.playing=false;state.paused=false;state.phase='done';
  state.native?.reset();state.native=null;
  state.progressMs=state.routeDurationMs;state.orbitElapsedMs=state.orbitDurationMs;
  progress(1,1);
@@ -550,18 +551,20 @@ function flightStart(){
 }
 async function fly(){
  if(!state.loaded){error('Debes conectar primero Google Maps 3D.');return}
- if(state.playing||state.paused||state.busy)return;
+ if(state.playing||state.paused||state.busy||state.overview)return;
  state.busy=true;clearError();
- $('launch').disabled=true;$('launch').textContent='Buscando calles reales…';
+ $('launch').disabled=true;$('launch').textContent='Preparando mapa y ruta…';
  let destination;
- try{destination=await getDestination()}
- catch(e){
-  error('No se ha podido localizar el destino: '+(e.message||String(e)));
+ try{
+  await locateClinicOrigin();
+  destination=await getDestination();
+  await improveRoute(destination);
+ }catch(e){
+  error('No se ha podido preparar el vuelo: '+(e.message||String(e)));
   $('launch').textContent='✦ Despegar sobre Madrid';
   $('launch').disabled=false;state.busy=false;return;
  }
  state.busy=false;state.flightToken++;
- await improveRoute(destination);
  state.points=destination.points;state.activeDestination=destination;
  state.custom=!!destination.custom;
  buildRouteLengths(state.points);
@@ -574,7 +577,7 @@ async function fly(){
     Model3DElement:state.Model3DElement,
     Marker3DElement:state.Marker3DElement,
     Polyline3DElement:state.Polyline3DElement
-  },()=>nativeFallback('Modelo 3D no disponible'));
+  },()=>nativeFallback('Modelo 3D no disponible'),state.origin);
   native.create();native.setEffects?.(state.effectsOn);
   state.native=native;
   $('balloon').hidden=true;
@@ -589,14 +592,16 @@ async function fly(){
     :'VUELO PANORÁMICO · RUTA APROXIMADA';
  $('launch').textContent='✦ Despegar sobre Madrid';
  $('launch').disabled=false;
- $('travelLabel').textContent='PUERTA DE ALCALÁ → '+destination.label.toUpperCase();
- makePolyline(state.points);
+ $('travelLabel').textContent=state.originLabel.toUpperCase()+' → '+destination.label.toUpperCase();
+ $('originBadge').textContent=state.clinicVerified?'SALIDA · '+state.clinicName:state.originLabel;
+ makePolyline(state.points,destination);
  try{state.map.stopCameraAnimation()}catch(e){}
- status('VUELO 3D · ALTURA ESTABLE');
- flightStart();
+ status('VISTA GENERAL · RECORRIDO COMPLETO');
+ progress(0,1);
+ enterOverview({intro:true});
 }
 function pause(){
- if(!state.playing)return;
+ if(!state.playing||state.overview)return;
  if(!state.paused){
   state.paused=true;stopFrame();
   $('pause').textContent='▶ Continuar';status('VUELO EN PAUSA');
@@ -608,15 +613,18 @@ function pause(){
  }
 }
 function restart(){
- stopFrame();
+ stopFrame();clearTimeout(state.overviewTimer);state.overviewTimer=0;state.overview=false;
  state.flightToken++;state.playing=false;state.paused=false;state.busy=false;
  state.phase='idle';state.progressMs=0;state.orbitElapsedMs=0;
  state.native?.reset();state.native=null;
+ clearRouteMap();createOriginMarker();
  state.filteredHeading=null;state.orbitView=-1;
  $('pause').textContent='⏸ Pausar';
  $('balloon').hidden=true;$('flightUI').hidden=true;$('arrival').hidden=true;
  $('setup').classList.remove('off');$('launch').disabled=!state.loaded;
- $('travelLabel').textContent='PUERTA DE ALCALÁ → '+(state.activeDestination?.label||routes[state.route].label).toUpperCase();
+ $('travelLabel').textContent=state.originLabel.toUpperCase()+' → '+(state.activeDestination?.label||routes[state.route].label).toUpperCase();
+ $('overviewToggle').textContent='🗺 Ver recorrido completo';
+ $('overviewToggle').setAttribute('aria-pressed','false');
  if(state.loaded){resetCamera();status('GOOGLE MAPS · FOTOGRAFÍA 3D')}
  progress(0,1);
 }
@@ -626,6 +634,8 @@ function toggleTwilight(){
  state.nightFx.setNight(state.dusk);
  $('twilight').textContent=state.dusk?'☀ Amanecer':'☾ Anochecer';
  $('twilight').setAttribute('aria-pressed',String(state.dusk));
+ document.documentElement.classList.toggle('night-active',state.dusk);
+ status(state.dusk?'HORA AZUL · NOCHE SIMULADA':'GOOGLE MAPS · FOTOGRAFÍA 3D');
  // Preserve the photorealistic SATELLITE mode and full image detail.
  // WebGL creates atmospheric color and distant lights; does NOT relight real windows.
  info(state.dusk
@@ -633,6 +643,7 @@ function toggleTwilight(){
    : 'Restaurando la fotografía aérea original.');
 }
 $('launch').addEventListener('click',fly);
+$('overviewToggle').addEventListener('click',toggleOverview);
 $('pause').addEventListener('click',pause);
 $('restart').addEventListener('click',restart);
 $('again').addEventListener('click',restart);
@@ -654,6 +665,13 @@ for(let i=0;i<27;i++){
  $('dustLayer').append(el);
 }
 setActiveChoice('plaza');
+try{
+ const clinic=JSON.parse(localStorage.getItem('vp_clinic_origin')||'null');
+ if(clinic&&typeof clinic.name==='string'&&typeof clinic.address==='string'){
+  $('clinicName').value=clinic.name;
+  $('clinicAddress').value=clinic.address;
+ }
+}catch(e){console.warn('Clinic setting unavailable',e)}
 try{
  const cached=sessionStorage.getItem('vp_google3d_trial_key');
  if(cached&&cached.startsWith('AIza')){
