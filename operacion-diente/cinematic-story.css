@@ -1,0 +1,122 @@
+/* Villa Pérez v0.7 — a cinematic film atop true geography, without minigames. */
+
+/* Cinematic opening: original facade and original mouse PNG are untouched image layers. */
+.cinematic-intro{isolation:isolate;z-index:19;will-change:transform,opacity;transition:opacity 1.2s ease,transform 1.2s cubic-bezier(.2,.58,.22,1),filter 1.2s ease}
+.cinematic-intro.is-revealing{opacity:0;transform:scale(1.28) translateY(-11%);filter:blur(7px);pointer-events:none}
+.cinematic-intro-copy{z-index:5;position:relative}
+.cinematic-intro-copy h2{font-size:clamp(28px,7.8vw,38px);letter-spacing:-.6px;text-shadow:0 5px 14px #000d}
+.cinematic-intro-copy p{font-size:13px;max-width:325px}
+.cinematic-illustration{isolation:isolate;max-width:420px;max-height:420px;width:100%;height:66%;display:grid;place-items:center}
+.cinematic-facade{z-index:1;position:relative;filter:drop-shadow(0 13px 32px #000e) drop-shadow(0 0 26px #eab96165)}
+.cinematic-windows{position:absolute;inset:0;z-index:2;pointer-events:none;mix-blend-mode:screen}
+.cinematic-windows b{position:absolute;width:10%;height:11%;border-radius:49%;background:radial-gradient(ellipse,#fffdd1 0%,#fbd279b3 20%,#f5ab3190 32%,transparent 72%);filter:blur(5px);opacity:0;animation:windowWakes 3.8s ease-in-out forwards}
+.cinematic-windows b:nth-child(1){left:38%;top:36%;animation-delay:.2s}
+.cinematic-windows b:nth-child(2){left:55%;top:26%;animation-delay:.6s}
+.cinematic-windows b:nth-child(3){left:69%;top:44%;animation-delay:1s}
+.cinematic-windows b:nth-child(4){left:25%;top:59%;animation-delay:1.4s}
+.cinematic-windows b:nth-child(5){left:54%;top:62%;animation-delay:1.8s}
+@keyframes windowWakes{0%,13%{opacity:0;transform:scale(.5)}35%,72%{opacity:.9;transform:scale(1.25)}100%{opacity:.65;transform:scale(1.1)}}
+.cinematic-trace{position:absolute;inset:0;z-index:3;width:100%;height:100%;pointer-events:none;overflow:visible;filter:drop-shadow(0 0 12px #ffd888)}
+.trace-light{filter:drop-shadow(0 0 6px #fff1a8) drop-shadow(0 0 17px #f6bd67)}
+.cinematic-door-glow{position:absolute;z-index:3;bottom:5%;left:54%;width:28%;height:30%;border-radius:40%;background:radial-gradient(ellipse,#ffeebc99,#ffd27b78 27%,transparent 69%);filter:blur(9px);opacity:0;animation:doorAwakens 5.3s ease-in-out forwards}
+@keyframes doorAwakens{0%,35%{opacity:0;transform:scale(.35)}60%{opacity:.85}100%{opacity:1;transform:scale(1.45)}}
+.cinematic-mouse{z-index:4;filter:drop-shadow(0 6px 7px #03121f) drop-shadow(0 0 16px #fff0abaf);animation:mouseEmbarques 5.8s ease-in-out both!important}
+@keyframes mouseEmbarques{0%,46%{opacity:0;transform:translate(-33px,18px) scale(.56)}63%{opacity:1}82%{transform:translate(14px,-7px) scale(.92)}100%{opacity:1;transform:translate(25px,-14px) scale(1.04)}}
+.cinematic-moonbeam{position:absolute;z-index:0;bottom:-12%;left:40%;width:50%;height:100%;background:conic-gradient(from 175deg at 45% 20%,transparent 0deg,#e8cb7768 18deg,transparent 45deg);opacity:.6;filter:blur(23px)}
+.cinematic-intro.is-revealing .cinematic-moonbeam{opacity:.85}
+
+/* The lit city is tied to actual road-route points by JS projection. */
+.street-magic{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+.street-magic i{position:absolute;width:42px;height:42px;border-radius:50%;background:radial-gradient(circle,#fff6ca 0 5%,#ffc96378 12%,#ffac4a2f 40%,transparent 72%);filter:blur(1px) drop-shadow(0 0 12px #ffb65e9a);transform:translate(-50%,-50%) scale(.8);opacity:0;transition:opacity .45s ease,transform .6s ease}
+.street-magic i.visible{opacity:.95;transform:translate(-50%,-50%) scale(1.2)}
+.street-magic i:after{content:'';position:absolute;inset:-12px;border:1px solid #f9d3867a;border-radius:50%;animation:streetHalo 2.3s ease-in-out infinite}
+@keyframes streetHalo{0%,100%{opacity:.18;transform:scale(.7)}50%{opacity:.75;transform:scale(1.18)}}
+
+/* View compass: one button toggles city overview and a low chase camera. */
+.map-btn.compass-btn{width:54px;height:58px;border-radius:19px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px}
+.compass-needle{font-size:25px;line-height:1;display:block;filter:drop-shadow(0 0 7px #ffdf86)}
+.compass-btn small{font-size:8px;font-weight:850;letter-spacing:.35px}
+.compass-btn.is-selected .compass-needle{transform:rotate(45deg)}
+.map-buttons{gap:8px;top:139px}
+.map-heading{right:80px}
+
+/* Public place shows as one short scenic cinematic card. */
+.landmark-panel{border:1.5px solid #fae1a8;background:linear-gradient(145deg,rgba(27,64,74,.98),rgba(7,31,46,.98));box-shadow:0 18px 46px #000c,0 0 42px #daa86880}
+.landmark-panel strong{font-size:25px}
+.landmark-panel p{font-size:13px}
+.landmark-panel:after{content:'✧';position:absolute;right:46px;bottom:12px;color:#f4ca76;opacity:.45;font-size:39px}
+
+/* A fantastic door replaces the hidden final street. */
+.final-curtain{z-index:14;animation:mistReveal 2.4s ease-out both}
+.final-curtain:before{background:radial-gradient(ellipse at 40% 55%,#dfbb6566,transparent 65%);filter:blur(28px);animation:arrivalMist 5s ease-in-out infinite}
+.enchanted-door{position:relative;width:115px;height:160px;margin:7px 0 19px;border:5px solid #f6db9a;border-radius:60px 60px 9px 9px;background:radial-gradient(ellipse at 48% 24%,#416b67,#1f494e 53%,#0a2733 100%);box-shadow:0 0 0 10px #fbd58e25,0 0 55px 14px #efbe6f99,inset 0 0 18px 3px #f9dc8c80;transform-origin:center bottom;animation:doorBreathe 3s ease-in-out infinite}
+.enchanted-door-panel{position:absolute;inset:5px;border:2px solid #d5af65;border-radius:51px 51px 5px 5px;background:linear-gradient(112deg,#20444a 0%,#2d5a5a 61%,#163b46 100%);box-shadow:inset 8px 0 18px #081d2d8a}
+.enchanted-door-panel:after{content:'';position:absolute;inset:15px 12px;border:1px solid #edcc8a;border-radius:39px 39px 4px 4px;opacity:.7}
+.enchanted-door-knob{position:absolute;z-index:2;right:18px;top:94px;width:13px;height:13px;border-radius:50%;background:#ffedb2;box-shadow:0 0 18px #ffe4a3,0 0 5px 2px #fff3c3}
+.enchanted-door-steps{position:absolute;left:-23px;right:-23px;bottom:-19px;height:15px;border-radius:50%;background:radial-gradient(ellipse,#ffdda2 0%,#a0784d 47%,transparent 75%)}
+@keyframes doorBreathe{0%,100%{box-shadow:0 0 0 10px #fbd58e20,0 0 48px #efbe6f8a,inset 0 0 18px #f9dc8c80}50%{box-shadow:0 0 0 14px #fbd58e37,0 0 70px 17px #efbe6fbf,inset 0 0 25px #f9dc8cc0}}
+
+/* The parent controls night-to-morning handoff. */
+.screen--morning{position:relative;padding:26px 21px max(24px,env(safe-area-inset-bottom));align-items:center;justify-content:center;gap:12px;text-align:center;background:radial-gradient(ellipse at 50% 7%,#4d7b7b 0%,#173d47 50%,#0a2733 100%);overflow:hidden}
+.screen--morning >:not(.morning-sky){position:relative;z-index:2}
+.screen--morning h1{font:700 clamp(31px,8vw,39px)/1.1 Georgia,serif;color:#ffefc4;margin:0}
+.screen--morning>p{max-width:360px;line-height:1.55;color:#e0ece7;font-size:14px;margin:0 0 6px}
+.morning-sky{position:absolute;top:0;left:0;right:0;height:275px;pointer-events:none;background:radial-gradient(ellipse at top,#b3b58b44,transparent 60%)}
+.morning-sun{position:absolute;width:115px;height:115px;top:48px;left:calc(50% - 57px);border-radius:50%;background:radial-gradient(circle,#fff8d0 0%,#f8d78b 43%,#f1b5646b 67%,transparent 72%);filter:drop-shadow(0 0 55px #f3c67d)}
+.morning-stars{position:absolute;top:33px;left:0;right:0;color:#ffefb0;letter-spacing:30px;font-size:20px;opacity:.75}
+.morning-scroll{display:flex;flex-direction:column;align-items:center;gap:9px;width:100%;max-width:430px;border-radius:22px;padding:20px 15px 23px;background:linear-gradient(150deg,#fff3d6,#e9cca0);box-shadow:0 20px 42px #051721a6,0 0 0 2px #caa668;color:#28444a;transform:rotate(-.7deg)}
+.morning-seal{font-size:35px;line-height:1;color:#a17837}
+.morning-scroll .eyebrow{color:#786237;font-size:9px}
+.morning-scroll>strong{font:700 23px/1.25 Georgia,serif;color:#263c42}
+.morning-distance,.morning-awards{display:flex;flex-direction:column;gap:4px;align-items:center;padding:8px 0;border-top:1px solid #b99b6a66;width:100%}
+.morning-distance span,.morning-awards span{font-size:12px;color:#5e6259}
+.morning-distance b{font-size:28px;color:#36585b}
+.morning-awards b{font-size:23px;color:#a97b2c;letter-spacing:6px}
+.morning-scroll p{font:italic 15px/1.45 Georgia,serif;color:#5e6359;margin:0}
+.screen--morning .button{width:100%;max-width:430px}
+#open-morning-gift{margin-top:11px}
+#save-morning-status{font-size:12px;color:#ffe8ac;line-height:1.5}
+.screen--arrival .achievement-summary .arrival-badges span{font-size:11px}
+@media(max-height:690px){.cinematic-illustration{max-height:285px}.screen--morning{justify-content:flex-start}.morning-scroll{padding:13px 11px}}
+@media(prefers-reduced-motion:reduce){
+  .cinematic-intro,.cinematic-mouse,.cinematic-windows b,.cinematic-door-glow,.enchanted-door,.street-magic i,.street-magic i:after{animation:none!important;transition:none!important}
+  .cinematic-windows b{opacity:.5}.cinematic-door-glow{opacity:.65}
+  .cinematic-intro.is-revealing{filter:none}
+}
+
+
+/* Minimal HUD retained from v0.6; games are removed entirely. */
+.missions-hud{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #e5ca8942;border-radius:12px;padding:7px 10px;color:#dbebe7;background:#214b4e9c;font-size:11px;margin:6px 0 11px}
+.missions-hud strong{color:#ffdda2}
+.missions-hud-stars{color:#ffe2a3;font-size:18px;letter-spacing:2px;text-shadow:0 0 10px #e6bb7c}
+.voice-hint{display:block;color:#d7c3a1!important;margin-bottom:5px}
+.achievement-summary{max-width:450px;width:100%;background:linear-gradient(135deg,#173e47,#12343d);border:1px solid #edce94a8;border-radius:18px;padding:13px 16px;text-align:left}
+.achievement-summary>strong{color:#fff0c4;font:700 18px Georgia,serif}
+.achievement-summary p{font-size:12px;color:#c8e1db;margin:5px 0 10px}
+.arrival-badges{display:flex;flex-wrap:wrap;gap:6px}
+.arrival-badges span{font-size:10px;padding:6px 8px;border:1px solid #c9ae7859;border-radius:100px}
+.arrival-badges .earned{color:#fff0bc;background:#8d6a3780}
+.arrival-badges .unearned{color:#acc7c1;background:#22424a}
+.welcome-sound{appearance:none;display:block;margin:9px auto 2px;border:1px solid #edcb8678;border-radius:999px;background:#1c4850a8;color:#ffedc1;min-height:38px;padding:8px 17px;font-size:12px;font-weight:650;line-height:1.3}
+.welcome-sound.is-selected{background:#e8cb8f;color:#1c4350}
+.welcome-sound:focus-visible{outline:3px solid #fff0c6;outline-offset:3px}
+@media(max-height:720px){
+  .map-buttons{display:grid;grid-template-columns:repeat(2,38px);gap:6px;right:9px;top:148px}
+  .map-btn{width:38px;height:38px;font-size:18px}
+  .map-btn.compass-btn{width:38px;height:45px;border-radius:14px}
+  .compass-needle{font-size:21px}
+  .compass-btn small{font-size:7px}
+  .map-heading{right:90px}
+}
+
+/* Keep every control reachable on shorter iPhones. */
+@media(max-height:740px){
+  .screen--arrival,.screen--morning{justify-content:flex-start;overflow-y:auto;overscroll-behavior:contain}
+  .screen--arrival{padding-top:22px}
+  .screen--morning{padding-top:22px}
+  .screen--arrival .arrival-icon{width:84px;height:84px;font-size:49px;margin-bottom:0}
+  .screen--arrival h1{font-size:28px}
+  .screen--arrival .letter{padding:12px 14px}
+  .morning-scroll{padding:12px 13px;gap:7px}
+  .morning-sun{top:34px}
+}
