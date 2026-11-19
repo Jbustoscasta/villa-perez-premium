@@ -7,7 +7,7 @@
   <meta name="description" content="Prototipo interactivo del vuelo nocturno de Villa Pérez sobre calles reales: una experiencia mágica de camino a casa.">
   <title>El vuelo nocturno · Villa Pérez</title>
   <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin>
-  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.19.0/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.19.0/dist/maplibre-gl.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/maplibre-gl@6.19.0/dist/maplibre-gl.css'">
   <style>
     :root { color-scheme:dark; --navy:#071327;--navy2:#0b1b32;--cream:#fff3d7;--gold:#f5cb7a;--muted:#c3cfdd;--line:rgba(245,203,122,.24);--success:#a6e2cc; --safe-bottom:env(safe-area-inset-bottom, 0px);font-family:ui-rounded,"Avenir Next",Avenir,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
     *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--navy);overflow:hidden;color:var(--cream)}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--gold);outline-offset:3px}button:disabled{opacity:.48;cursor:not-allowed}#map{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 60%,#122842 0,#071327 65%,#030910 100%)}
@@ -64,14 +64,43 @@
 
   <section class="finish" id="finish" aria-labelledby="finish-title"><div class="finish-card"><div class="star-medallion">✦</div><div class="eyebrow">La misión ha llegado a su destino</div><h2 class="headline" id="finish-title">¡Ya estamos <em>en casa!</em></h2><p class="lead">El Ratón Pérez conoce ahora el camino. ¿Volamos de nuevo?</p><button type="button" class="primary" id="finish-restart">✦ &nbsp; REPETIR EL VUELO</button><button type="button" class="control" style="margin-top:14px" id="finish-edit">Elegir otro destino</button></div></section>
 
-  <script src="https://unpkg.com/maplibre-gl@6.19.0/dist/maplibre-gl.js"></script>
-  <script>
+  <script type="module">
     'use strict';
     // Esta experiencia usa servicios de demostración. No enviar domicilios personales hasta contar con
     // contratos apropiados, evaluación de privacidad y una pasarela de geocodificación propia.
     const DEFAULT_ORIGIN = { text: 'Puerta del Sol, Madrid', coord: [-3.70379,40.41687] };
     const DEFAULT_DESTINATION = { text: 'Plaza de España, Madrid', coord: [-3.71211,40.42309] };
     const DARK_STYLE = 'https://tiles.openfreemap.org/styles/dark';
+    const CARTO_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+    // MapLibre v6 is ESM-only. The old global maplibregl .js URL cannot work with v6.
+    // Retry through a second CDN before showing a genuine error.
+    let maplibregl = null;
+    let enginePromise = null;
+    async function loadMapEngine(){
+      if(maplibregl) return maplibregl;
+      if(enginePromise) return enginePromise;
+      enginePromise = (async () => {
+        const sources = [
+          'https://cdn.jsdelivr.net/npm/maplibre-gl@6.19.0/dist/maplibre-gl.mjs',
+          'https://unpkg.com/maplibre-gl@6.19.0/dist/maplibre-gl.mjs'
+        ];
+        for(const source of sources){
+          let timer;
+          try {
+            const mod = await Promise.race([
+              import(source),
+              new Promise((_,reject) => timer=setTimeout(()=>reject(new Error('Tiempo de espera agotado')),10000))
+            ]);
+            if(typeof mod.Map !== 'function' || typeof mod.Marker !== 'function')throw Error('Módulo incompatible');
+            maplibregl=mod;
+            return maplibregl;
+          }catch(err){console.warn('Servidor MapLibre alternativo:',source,err)}
+          finally{clearTimeout(timer)}
+        }
+        throw Error('No se pudo descargar el motor 3D desde los dos servidores de mapas. Revisa si Safari bloquea recursos externos y vuelve a intentarlo.');
+      })().catch(err=>{enginePromise=null;throw err});
+      return enginePromise;
+    }
     const $ = id => document.getElementById(id);
     const state = {map:null, origin:null, destination:null, coords:[], cumulative:[], total:0,
       duration:35000, progress:0, elapsed:0, lastTick:null, raf:null, playing:false, speed:1,
@@ -131,12 +160,29 @@
     }
     function clearGeoLayers(){if(!state.map)return;for(const id of ['magic-route-done','magic-route-done-glow','magic-route-base','magic-route-glow'])if(state.map.getLayer(id))state.map.removeLayer(id);
       for(const id of ['magic-full','magic-done'])if(state.map.getSource(id))state.map.removeSource(id);if(state.marker){state.marker.remove();state.marker=null}}
-    async function ensureMap(){if(state.map)return state.map;
-      if(typeof maplibregl==='undefined')throw Error('No se ha podido cargar el motor de mapas. Comprueba la conexión a Internet.');
-      state.map=new maplibregl.Map({container:'map',style:DARK_STYLE,center:DEFAULT_ORIGIN.coord,zoom:14.7,pitch:64,bearing:-28,antialias:true,attributionControl:true,interactive:false,fadeDuration:0,maxPitch:75});
-      const map=state.map;
-      await Promise.race([new Promise((resolve,reject)=>{if(map.isStyleLoaded())return resolve();map.once('load',resolve);map.once('error',ev=>{if(!state.mapReady)reject(new Error('No se ha podido cargar la cartografía. Comprueba tu conexión.'))})}),new Promise((_,reject)=>setTimeout(()=>reject(new Error('El mapa está tardando demasiado en responder.')),17000))]);
-      state.mapReady=true;return map;
+    async function ensureMap(){
+      if(state.map && state.mapReady)return state.map;
+      await loadMapEngine();
+      for(const styleURL of [DARK_STYLE,CARTO_STYLE]){
+        let map=null,timer;
+        try{
+          map=new maplibregl.Map({container:'map',style:styleURL,center:DEFAULT_ORIGIN.coord,zoom:14.7,pitch:64,bearing:-28,antialias:true,attributionControl:true,interactive:false,fadeDuration:0,maxPitch:75});
+          await Promise.race([
+            new Promise((resolve,reject)=>{
+              if(map.isStyleLoaded())return resolve();
+              map.once('load',resolve);
+              map.once('error',event=>reject(new Error('Proveedor no disponible: '+String(event?.error?.message||'error de cartografía'))));
+            }),
+            new Promise((_,reject)=>timer=setTimeout(()=>reject(new Error('El servidor de cartografía no ha respondido')),12000))
+          ]);
+          state.map=map;state.mapReady=true;state.mapProvider=styleURL===DARK_STYLE?'OpenFreeMap':'CARTO';
+          return map;
+        }catch(err){console.warn('Proveedor de cartografía alternativo:',styleURL,err);
+          try{map?.remove()}catch(_){}
+          state.map=null;state.mapReady=false;
+        }finally{clearTimeout(timer)}
+      }
+      throw Error('El motor 3D se ha descargado, pero los dos proveedores de cartografía no responden. Inténtalo de nuevo desde Safari.');
     }
     function chapterFor(p){if(p<.15)return ['Capítulo I · El despegue','La magia despega','Los tejados de la ciudad aparecen bajo el globo.'];if(p<.48)return ['Capítulo II · Sobre la ciudad','Luces bajo las estrellas','Cada calle nos acerca un poquito más al destino.'];if(p<.8)return ['Capítulo III · El camino','Un viaje entre tejados','¿Reconoces estas calles desde el cielo?'];return ['Capítulo IV · Ya casi estamos','¡Mira, estamos llegando!','El globo se prepara para su última parada.']}
     function render(progress){if(!state.map||!state.coords.length)return;
@@ -164,7 +210,7 @@
         const [coords]=await Promise.all([computeRoadRoute(a,b),ensureMap()]);
         if(!coords.length)throw Error('No se ha podido preparar el recorrido.');
         clearGeoLayers();buildDistances(coords);installGeoLayers();state.map.resize();state.speed=1;$('speed').textContent='Velocidad ×1';
-        $('credits').textContent=`© OpenStreetMap contributors · OpenMapTiles / OpenFreeMap · ${state.preferredMode==='road'?'Ruta aproximada por vías OSRM':'Trayectoria aérea directa (respaldo)'} · Recreación artística, no vuelo real.`;
+        $('credits').textContent=`© OpenStreetMap contributors · ${state.mapProvider||'OpenFreeMap'} · ${state.preferredMode==='road'?'Ruta aproximada por vías OSRM':'Trayectoria aérea directa (respaldo)'} · Recreación artística, no vuelo real.`;
         $('intro').classList.add('closed');$('cinematic').classList.add('visible');restart();
       }catch(err){console.error(err);showError(err.message||'No se ha podido iniciar el vuelo. Comprueba la conexión.')}finally{setBusy(false)}
     }
