@@ -1,4 +1,4 @@
-# Operación Diente Perdido — módulo Villa Pérez v0.1
+# Operación Diente Perdido — módulo Villa Pérez v0.2
 
 Módulo web independiente, **sin tocar el flujo de Foto con Pérez**. Diseñado para alojarse en `villa-perez-premium/operacion-diente/` y reutilizar `../perez.png` (máster oficial intacto) y `../villa-hero.webp` (fachada oficial existente). No se dibuja ni se sustituye el personaje.
 
@@ -9,6 +9,9 @@ Módulo web independiente, **sin tocar el flujo de Foto con Pérez**. Diseñado 
 - Geocodificación Photon (OSM) y **ruta real a pie** a través del servidor de pruebas FOSSGIS OSRM.
 - Mapa real interactivo con MapLibre + OpenFreeMap (tema oscuro); línea dorada de progreso a lo largo de geometría real.
 - Posición interpolada sobre la ruta por distancia, controles iniciar/pausar/continuar/ver todo/seguir, dos ritmos.
+- **NUEVO v0.2:** estela de 13 partículas geolocalizadas sobre la ruta de verdad, vista cinematográfica con orientación según el tramo, seguimiento suave (sin saltos de cámara cada 90 ms), hitos visuales de salida/en camino/cerca/llegada y accesibilidad mejorada.
+- **Corrección de privacidad v0.2:** la postal es puramente decorativa y NUNCA reproduce la forma geográfica de la ruta, que podría dar pistas sobre la vivienda. Test explícito contra filtraciones.
+- **Robustez:** las búsquedas de direcciones invalidan peticiones obsoletas incluso al borrar el texto; los fallos al cargar el mapa dejan reintentar.
 - Mensajes de misión, final controlado por adulto y postal descargable como SVG sin datos del domicilio.
 - No usa cookies, analítica ni almacenamiento local. El domicilio se mantiene solo en memoria de la pestaña mientras dura el viaje.
 - Responsive móvil (iPhone Safari por comprobar in situ).
@@ -47,13 +50,13 @@ Para usar el ZIP aislado crea una carpeta superior con `perez.png` y `villa-hero
 - Reusar archivos `../perez.png` y `../villa-hero.webp` sin procesarlos.
 - Mostrar la experiencia solo con suscripción activa o modo gratuito Ilusiono según reglas de negocio.
 - Capa opcional de mensajes de voz con asset ElevenLabs ya aprobado; no integrado aquí.
-- Próxima fase: efectos de partículas sobre ruta, pins diseñados, postal PNG 1080×1350, biblioteca de frases narrativas, geocoding/routing de producción y pruebas Safari.
+- Próxima fase: completar postal PNG 1080×1350, biblioteca de frases narrativas, geocoding/routing de producción y pruebas Safari.
 
 ## Verificación
 
 `node --test ./tests/*.test.mjs`
 
-Las pruebas automáticas solo validan geometría/interpolación/seguridad del SVG. No verifican que proveedores externos respondan ni Safari real. La conexión externa debe probarse en una web HTTPS desplegada.
+Las pruebas automáticas validan geometría, rumbo, partículas en ruta y no divulgación de geometría privada. No verifican que proveedores externos respondan ni Safari real. La conexión externa debe probarse en una web HTTPS desplegada.
 
 ## Licencias y atribución
 
