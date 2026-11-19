@@ -33,7 +33,7 @@ test('cinematic time curve is monotone and pauses/resumes without jumps',()=>{
  for(let i=0;i<=100;i++){const x=i/100,f=cinematicProgress(x);assert.ok(f+1e-10>=last);assert.ok(f>=0&&f<=1);assert.ok(Math.abs(cinematicPhase(f)-x)<.000001);last=f;}
  assert.equal(cinematicProgress(0),0);assert.equal(cinematicProgress(1),1);
 });
-test('a child's map truncates actual home street while demo keeps full route',()=>{
+test("a child's map truncates actual home street while demo keeps full route",()=>{
  const route=createPath([[-3.7,40.41],[-3.69,40.42],[-3.68,40.43]]);
  const privatePath=publicFacingRoute(route);
  assert.ok(privatePath.total<route.total-100);
