@@ -202,7 +202,9 @@ export class RescueMap{
    for(let y=0;y<this.h+80;y+=78){c.beginPath();c.moveTo(0,y);c.lineTo(this.w,y+30);c.stroke()}
    c.restore();
   }
-  this.drawStorybookBuildings(c);
+  // Do not fabricate repeated lookalike houses. This is a clearly labeled
+  // flat fallback map, never marketed as photogrammetry.
+
   const lineData=this.coordinates('vp-route'),prog=this.coordinates('vp-progress');
   const plot=(pts,color,width,blur=0)=>{
    if(pts.length<2)return;
