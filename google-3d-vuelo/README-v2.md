@@ -41,3 +41,14 @@ Referencias oficiales:
 - https://developers.google.com/maps/documentation/javascript/3d/marker-graphics
 - https://developers.google.com/maps/documentation/javascript/routes/overview
 - https://developers.google.com/maps/documentation/javascript/3d/best-practices
+
+## v3 · Anochecer cinematográfico con WebGL (19 noviembre 2026)
+
+- `night-cinema.mjs`: programa de fragment shader WebGL independiente con gradación progresiva 5,5 s, tonos azul profundo, resplandor cálido de horizonte, neblina, luces *bokeh* ficticias y estrellas lentas.
+- Botón: **☾ Anochecer → ☀ Amanecer**, sin cambiar la vista Google `SATELLITE` ni ocultar la fotogrametría. Se mantiene la sombra atmosférica muy tenue del proyecto.
+- El lienzo HTML es transparente, no interfiere con gestos y deja libre el área inferior de créditos de Google. Resolución GPU limitada a 1,25 × DPR, render ~20 FPS.
+- Si Safari no admite otro contexto WebGL (Maps ya usa GPU), se activa un tratamiento CSS azul suave y la app sigue funcionando.
+- **Limitación importante**: el shader no tiene acceso legítimo al material, profundidad o píxeles originales de Google. No puede transformar tejados, ventanas y farolas en iluminación nocturna física real ni simular sombras exactas de edificios. Los puntos de luz son cinematográficos, no posiciones verificadas de ventanas o luminarias. La alternativa oficial Google Maps 3D en modo oscuro es `ROADMAP`, no la fotogrametría `SATELLITE`.
+- Verificación técnica: pruebas con contexto WebGL simulado, modo anochecer y amanecer, resolución inicial en Safari, y comprobación de IDs DOM y sintaxis JS. **No es prueba visual real en Safari físico**.
+
+Documentación oficial: https://developers.google.com/maps/documentation/javascript/3d/customize-maps
