@@ -21,3 +21,10 @@
 .map-btn.is-selected{background:linear-gradient(135deg,#fae3ad,#c6e9dd);box-shadow:0 0 0 3px #f1d6a13b,0 4px 14px #0007}
 .map-btn:active{transform:scale(.93)}
 @media (prefers-reduced-motion:reduce){.map-magic-dust i,.mouse-pin:after{animation:none}.journey-milestones span{transition:none}}
+
+/* Public iPhone demo */
+.button-demo{margin-top:10px;width:100%;border:1px solid rgba(238,210,144,.72);border-radius:16px;background:linear-gradient(140deg,#1d5158,#15414c);box-shadow:0 7px 28px #0003;color:#fff4cf;font-weight:750;min-height:55px}
+.button-demo:active{transform:translateY(1px)}.button-demo:disabled{opacity:.55;cursor:wait}
+.demo-places{font-size:11px!important;margin:7px 0 1px!important;color:#bdd2cc!important;text-align:center;line-height:1.45}
+#demo-error{margin:8px 0 0}
+@media(max-width:430px){.screen--welcome{padding-bottom:max(18px,env(safe-area-inset-bottom))}.button-demo{font-size:14px}.demo-places{font-size:10px!important}}
