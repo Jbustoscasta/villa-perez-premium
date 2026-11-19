@@ -7,7 +7,7 @@
   <meta name="description" content="Un globo mágico sobrevolando calles auténticas. Prototipo de vuelo nocturno de Villa Pérez.">
   <title>Vuelo nocturno · Operación Diente Perdido</title>
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css">
-  <link rel="stylesheet" href="./styles.css?v=1.0.0">
+  <link rel="stylesheet" href="./styles.css?v=2.0.0">
 </head>
 <body>
   <div id="world">
@@ -48,7 +48,7 @@
     </div>
     <div class="topbar">
       <div class="wordmark"><span class="toothmark">✦</span><div><small>VILLA PÉREZ PRESENTA</small><strong>Vuelo nocturno</strong></div></div>
-      <div id="mode-pill" class="mode-pill">3D · MAPA REAL</div>
+      <div class="topbar-tools"><div id="mode-pill" class="mode-pill">3D · MAPA REAL</div></div>
     </div>
     <div id="setup" class="setup-panel glass" role="region" aria-label="Preparar un vuelo">
       <div class="setup-star" aria-hidden="true">✦</div>
@@ -63,12 +63,13 @@
       <button id="fly" class="primary-btn" disabled>Despegar hacia ese destino <span>↗</span></button>
       <button id="quick-demo" class="demo-btn">▶ Ver vuelo de Madrid sin poner dirección</button>
       <div class="setup-foot">La demo usa una clínica de prueba. La ruta real depende del servicio cartográfico. En viajes personalizados, ocultamos el último tramo del domicilio.</div>
-      <details class="provider-settings"><summary><span>✧</span> Mejorar realismo con satélite 3D</summary>
-        <p>Para una vista aérea fotográfica similar a HELLO se necesita un token público de <b>Mapbox</b>. Se usa solo en tu navegador para cargar <b>Standard Satellite · Night</b>.</p>
+      <details class="provider-settings" open><summary><span>✧</span> ACTIVAR FOTO AÉREA · MODO PREMIUM</summary>
+        <p>La escena fotorrealista utiliza <b>Mapbox Standard Satellite</b>: tejados reales, fachadas volumétricas y luz nocturna. Requiere una clave <b>pública y restringida a este dominio</b>; la demo no la conserva.</p>
         <label for="mapbox-key">Token público Mapbox (empieza por pk.)</label>
         <input type="text" id="mapbox-key" placeholder="pk.eyJ..." spellcheck="false" autocomplete="off">
         <button id="apply-provider" class="provider-btn">Activar satélite fotorrealista 3D</button>
         <small id="provider-info" class="provider-info">Sin token se utiliza una vista real 3D de edificios y calles, no imágenes satelitales.</small>
+        <div id="mapbox-settings-hint" class="mapbox-hint">Para ver las fotografías aéreas de Madrid, crea una cuenta Mapbox y copia un token público <code>pk.</code>. La foto original es diurna; las sombras, luces y bruma nocturna se simulan.</div>
       </details>
     </div>
     <div id="loading" class="loading glass hidden" role="status"><span class="loading-orb"></span><strong id="loading-title">Preparando el vuelo…</strong><small id="loading-subtitle">Buscando las calles del camino</small></div>
@@ -76,6 +77,7 @@
       <div class="flight-actions">
         <button id="back" aria-label="Volver a preparar otra ruta" title="Nueva ruta">←</button>
         <button id="view" aria-label="Cambiar a vista panorámica" title="Cambiar perspectiva">◈ <small id="view-label">SEGUIR</small></button>
+        <button id="night-toggle" aria-label="Alternar entre noche y crepúsculo" title="Cambiar luz">☾ NOCHE</button>
       </div>
       <div id="flight-banner" class="flight-banner glass"><span>✦</span><div><small>OPERACIÓN DIENTE PERDIDO</small><strong id="flight-caption">¡El globo está en camino!</strong></div></div>
       <div class="flight-bottom glass">
@@ -87,7 +89,8 @@
     </div>
     <div id="arrival" class="arrival hidden glass" role="status"><div class="arrival-constellation">✧ ✦ ✧</div><div class="arrival-house">⌂</div><h2>¡Estoy muy cerca!</h2><p>Los últimos metros son secretos. El globo ha seguido calles reales de tu ciudad.</p><button id="again" class="primary-btn">Volver a volar ✦</button></div>
     <div class="map-attribution-note" id="map-warning">Modo 3D: edificios cartográficos · no es fotografía aérea</div>
+    <div class="render-indicator" aria-hidden="true"><span class="render-light"></span><span>VUELO REAL · V2</span></div>
   </div>
-  <script type="module" src="./flight-app.mjs?v=1.0.0"></script>
+  <script type="module" src="./flight-app.mjs?v=2.0.0"></script>
 </body>
 </html>
