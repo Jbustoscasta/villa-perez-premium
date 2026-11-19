@@ -76,6 +76,7 @@
       <section id="screen-route" class="screen screen--route" aria-labelledby="route-title">
         <div class="map-stage">
           <div id="map" role="application" aria-label="Mapa interactivo con ruta real desde la clínica hasta casa"></div>
+          <div class="map-magic-dust" aria-hidden="true"><i>✦</i><i>✧</i><i>✦</i><i>✧</i><i>✦</i></div>
           <div id="map-fallback" class="map-fallback hidden" role="alert">No se ha podido cargar el mapa. Comprueba tu conexión a Internet.</div>
           <div class="map-shade" aria-hidden="true"></div>
           <div class="map-heading">
@@ -86,13 +87,15 @@
           <div id="route-message" class="floating-message" aria-live="polite">¡Mi mochila está lista! Voy a salir de la clínica.</div>
           <div class="map-buttons">
             <button type="button" id="fit-map" class="map-btn" title="Ver toda la ruta" aria-label="Ver toda la ruta">⤢</button>
-            <button type="button" id="follow-map" class="map-btn is-selected" title="Seguir al Ratón" aria-label="Seguir al Ratón">◎</button>
+            <button type="button" id="follow-map" class="map-btn is-selected" title="Seguir al Ratón" aria-label="Seguir al Ratón" aria-pressed="true">◎</button>
+            <button type="button" id="cinematic-map" class="map-btn" title="Activar vista cinematográfica" aria-label="Activar vista cinematográfica" aria-pressed="false">◈</button>
           </div>
         </div>
         <div class="route-sheet">
           <div class="sheet-handle" aria-hidden="true"></div>
           <div class="journey-head"><div><span class="eyebrow">MISIÓN ACTIVA</span><h2>De la clínica a tu casa</h2></div><span class="progress-number" id="percent">0%</span></div>
-          <div class="route-track" id="route-track"><div class="route-track-fill" id="track-fill"></div></div>
+          <div class="route-track" id="route-track" role="progressbar" aria-label="Progreso de la misión" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="route-track-fill" id="track-fill"></div></div>
+          <div class="journey-milestones" id="journey-milestones" aria-label="Etapas del viaje"><span class="active">✦ <small>Salida</small></span><span>✦ <small>En camino</small></span><span>✦ <small>Muy cerca</small></span><span>⌂ <small>Llegada</small></span></div>
           <div class="trip-facts"><span id="distance">— km</span><span>Ruta a pie · simulación mágica</span></div>
           <div class="travel-choices" id="travel-choices"><span class="choice-label">Duración del cuento</span><button type="button" data-duration="105" class="time-choice selected">Rápida · 1:45</button><button type="button" data-duration="240" class="time-choice">Con calma · 4:00</button></div>
           <div class="action-row"><button type="button" id="play-pause" class="button button-gold">Comenzar el viaje ▶</button><button type="button" id="skip" class="button button-quiet">Terminar misión</button></div>
@@ -109,7 +112,7 @@
         <div class="recap"><div><span>Origen</span><strong id="recap-clinic">Clínica del Doctor Abreu</strong></div><div><span>Camino recorrido</span><strong id="recap-distance">— km</strong></div></div>
         <button type="button" id="download-postcard" class="button button-gold button-large">Guardar mi postal mágica ↓</button>
         <button type="button" id="new-trip" class="button button-text">Preparar otra misión</button>
-        <small class="soft-note">La postal no contiene tu dirección, coordenadas ni mapa de calles.</small>
+        <small class="soft-note">La postal usa un recorrido decorativo: nunca se copia el trazado real de tu casa.</small>
       </section>
     </main>
     <footer class="site-footer"><span>Una experiencia de <b>Ilusiono</b></span><span id="site-mode">PROTOTIPO · SERVICIOS DE PRUEBA</span></footer>
