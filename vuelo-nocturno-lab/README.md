@@ -1,42 +1,41 @@
-# Villa Pérez — Vuelo nocturno 3D (prototipo)
+# Villa Pérez · Vuelo nocturno con fotografía aérea real
 
-Un test interactivo mobile-first de *En busca del diente perdido*. Diseñado para probar un vuelo desde una clínica (origen preconfigurable) a una ubicación que el padre indique.
+Webapp de pruebas **independiente** de Foto con Pérez. Ruta animada por las calles entre dos puntos públicos. El vuelo es una recreación; no es seguimiento de una persona ni fotografía nocturna tomada desde un avión.
 
-## Qué funciona
-- Mapa vectorial nocturno con OpenFreeMap y MapLibre GL JS, con extrusión de edificios 3D cuando el estilo y sus datos lo permiten.
-- Geocodificación de direcciones a través del servicio público de demostración Photon.
-- Cálculo de una **ruta vial** mediante OSRM, usado como base para una recreación **aérea** (no para navegación ni vuelo real); respaldo de trayectoria directa si OSRM falla.
-- Animación de cámara siguiendo la ruta, globo aerostático de prueba, ruta luminosa y narrativa infantil de cuatro capítulos.
-- Interfaz adaptable para Safari iPhone, pausa/repetición y velocidades de vuelo.
-- Demo sin claves API: origen `Puerta del Sol, Madrid`, destino `Plaza de España, Madrid`.
+## Acceso
 
-## Corrección de compatibilidad — 19/11/2026
-La primera versión apuntaba erróneamente a `dist/maplibre-gl.js` de MapLibre v6, archivo clásico que **ya no existe** en dicha versión. Se ha sustituido por `dist/maplibre-gl.mjs` mediante importación ES module, con dos CDNs y dos estilos cartográficos alternativos. Verificados en un ensayo de navegador con servicios simulados (flujo de vuelo y fallbacks); **no se ha verificado la descarga real de servicios externos desde Safari**.
+- https://jbustoscasta.github.io/villa-perez-premium/vuelo-nocturno-lab/?v=4
+- Código: `vuelo-nocturno-lab/index.html`
 
-## Cómo probar
-1. Publicar el contenido de la carpeta en un hosting HTTPS estático (por ejemplo, GitHub Pages) o abrir `index.html` en un navegador con conexión. Para pruebas locales con rutas relativas, ejecutar `python3 -m http.server 8000` y abrir `http://localhost:8000`.
-2. Pulsar **Comenzar el vuelo**.
-3. Para personalizar, cambiar el destino por una dirección **pública**; abrir «Cambiar origen» para poner la clínica de prueba.
-4. En Safari iPhone, mantener la pantalla en primer plano mientras se reproduce la animación.
+## Modos de mapa — 19 noviembre 2026
 
-## Dependencias externas
-- MapLibre GL JS 6.19.0 en formato ES module (`maplibre-gl.mjs`), con CDN principal jsDelivr y respaldo unpkg
-- OpenFreeMap https://openfreemap.org/ (estilo `dark`); respaldo CARTO Dark Matter si falla el mapa
-- Photon demo https://photon.komoot.io/
-- OSRM demo https://router.project-osrm.org/
-- Datos © OpenStreetMap contributors, OpenMapTiles, OpenFreeMap.
+1. **Fotografía aérea IGN PNOA (predeterminado, sin token):** ortofotografías oficiales de España (CC BY 4.0) en formato TMS, mostradas como capa ráster sobre el motor MapLibre. El fondo cartográfico vectorial sigue disponible; las fachadas de edificios, cuando se extruyen, son volúmenes gráficos, NO fotogrametría. Estilo nocturno simulado.
+2. **Mapa 3D vectorial gratuito:** desmarcar «Fotografía aérea real de España». Motor MapLibre + OpenFreeMap Dark (fallback CARTO), extrusión 3D disponible según cartografía.
+3. **Mapbox Standard Satellite:** expandir «Más realismo: fotografía aérea 3D», activar la casilla e introducir un token público de Mapbox con prefijo `pk.`. Se importa Mapbox GL JS v3, con estilo `mapbox://styles/mapbox/standard-satellite`, `lightPreset: night`, ocultación de etiquetas y cámara 3D. Las imágenes satelitales de base son diurnas, con iluminación nocturna recreada. **El token no se sube a GitHub ni se guarda en localStorage.** Restringir token al dominio desde la cuenta de Mapbox. Requiere cuenta y condiciones de facturación de Mapbox.
 
-**Muy importante:** estos endpoints públicos gratuitos son adecuados para prototipos y pruebas de carga reducida, **no** constituyen garantías de disponibilidad ni son un backend comercial listo para producción. Ver condiciones y límites de uso de cada proveedor.
+El TMS PNOA se consume mediante `scheme: 'tms'` (Y invertida) desde `https://tms-pnoa-ma.idee.es/1.0.0/pnoa-ma/{z}/{x}/{y}.jpeg`, con atribución obligatoria a **Ortofotografía PNOA © Instituto Geográfico Nacional (CC BY 4.0)**. Este servicio tiene cobertura para España. Si no responde, los gráficos vectoriales permanecen como respaldo.
 
-## Protección de menores / privacidad
-No introducir domicilios de niños en este prototipo. El destino que se escribe se transmite directamente al geocodificador Photon; las coordenadas de origen y destino se transmiten a OSRM. No se almacenan direcciones en el almacenamiento del navegador ni se añaden a la URL. Para producción, usar un backend intermediario con controles de acceso, acuerdos de tratamiento apropiados, minimización de datos, retención definida y consentimiento/información legal correspondientes.
+## Funciones actuales
 
-## Límites visuales
-Este prototipo **NO** usa imágenes fotográficas nocturnas reales ni Google Photorealistic 3D Tiles. Usa datos de mapas vectoriales con edificios 3D donde haya alturas disponibles. El globo es un SVG provisional y **no contiene ni reinterpreta el Ratón Pérez oficial**. El personaje oficial se incorporará solo mediante el archivo maestro/rig autorizado.
+- Cálculo de origen y destino mediante Photon; demo predeterminada Puerta del Sol → Plaza de España (Madrid).
+- Ruta vial OSRM, interpretada como trayectoria aérea para una historia visual. Si falla OSRM, se muestra una trayectoria recta de respaldo, no una ruta vial confirmada.
+- Globo SVG provisional, sin redibujar el Ratón Pérez oficial.
+- Cámara suavizada con orientación dinámica, perspectiva inclinada, zoom variable, recorrido luminoso y capítulos de la aventura.
+- Pausa, velocidad y repetición.
+- Safari iPhone: diseño adaptable, motor MapLibre cargado como **módulo ES** (corrección al error anterior), CDN alternativo.
 
-## Siguiente fase (después de validar el test)
-- Cámara aérea suave con interpolación de curvas de trayectoria y mejores encuadres a la altura del barrio.
-- Prueba A/B con cartografía satelital/3D fotogramétrica en plataformas habilitadas en España.
-- Fachada Villa Pérez y globo definitivo como assets artísticos aprobados.
-- Servicio propio de geocodificación y rutas, mejor privacidad y fiabilidad.
-- Pruebas reales de rendimiento y compatibilidad en Safari iPhone (no se han ejecutado desde este entorno).
+## Limitaciones y pendientes
+
+- **No es aún una ciudad 3D fotogramétrica nocturna.** Las ortofotos representan el suelo visto desde arriba; los volúmenes de edificios se basan en datos vectoriales OSM cuando estén disponibles. El modo de Mapbox añade mejor aspecto 3D, pero tampoco convierte fotos diurnas en fotos nocturnas captadas de noche.
+- No se ha podido validar visualmente este nuevo modo con la red real del IGN en Safari físico desde este entorno; el código JavaScript sí se ha comprobado sintácticamente. El servicio puede ralentizarse o fallar, en cuyo caso usar modo gratuito vectorial.
+- El motor Photon y OSRM se usan como servicios públicos de prueba, sin SLA ni garantías para una explotación comercial. Las direcciones escritas se envían a esos servicios externos. **No introducir domicilios de niños** en el prototipo; utilizar destinos públicos.
+- Para uso comercial: backend propio/intermediario, privacidad y protección de datos, acuerdos y límites con proveedores, controles de costes y test de prestaciones móviles.
+- El globo y la interfaz son provisionales; Ratón Pérez oficial solo como asset maestro intacto o rig aprobado.
+
+## Test manual
+
+1. Abrir enlace HTTPS con Safari actualizado y conexión. Introducir solo direcciones de lugares públicos.
+2. Mantener marcada «Fotografía aérea real de España», pulsar «Comenzar el vuelo» y comprobar si se reconocen edificios/tejados reales.
+3. Si fallan fotografías IGN, desmarcar y repetir con modo cartográfico (los mapas no se detienen por la ausencia de foto).
+4. Opcionalmente comparar con Mapbox a partir de un token público `pk.`.
+5. Evaluar fluidez, giros, legibilidad y detalle de barrios antes de la siguiente fase.
