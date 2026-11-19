@@ -1,3 +1,4 @@
+import {enableRescue} from './rescue.mjs?v=1.0.0';
 /**
  * Villa Pérez · Vuelo de cine — prototype v1.
  * Real street geometry: © OpenStreetMap contributors, through OpenFreeMap.
@@ -35,6 +36,7 @@ const bearing=(a,b)=>{
 const deltaBearing=(a,b)=>((b-a+540)%360)-180;
 const ctx={
  map:null,ready:false,starting:false,mapRetry:0,loadError:'',selected:'plaza',custom:false,
+ rescue:false,MarkerClass:null,rescueDelay:null,initialMap:null,
  clinic:null,clinicAddress:'',originLabel:'Origen de prueba · Puerta de Alcalá',
  origin:[START.lng,START.lat],destination:null,destinationLabel:'',
  route:[],prefix:[],cumulative:[],total:0,routeType:'panorámica',
@@ -85,7 +87,7 @@ function addPin(coords,label,kind='clinic'){
  s.append(icon);
  const t=document.createElement('div');t.className='city-pin-label';t.textContent=safeText(label);
  wrap.append(s,t);
- const marker=new maplibregl.Marker({element:wrap,anchor:'bottom',offset:[0,-6]});
+ const marker=new ctx.MarkerClass({element:wrap,anchor:'bottom',offset:[0,-6]});
  marker.setLngLat(coords).addTo(ctx.map);return marker;
 }
 function resetPins(){
@@ -101,7 +103,7 @@ function balloonAsset(){
   ctx.mouseAssetError=true;
   console.warn('Official Ratón PNG unavailable; no substitute generated');
  });
- const m=new maplibregl.Marker({element:el,anchor:'bottom',offset:[0,11],rotationAlignment:'viewport'});
+ const m=new ctx.MarkerClass({element:el,anchor:'bottom',offset:[0,11],rotationAlignment:'viewport'});
  m.setLngLat(ctx.origin).addTo(ctx.map);
  ctx.balloon=m;
  el.style.display='none';
@@ -243,74 +245,82 @@ function scheduleWindows(){
   }catch(e){console.warn('Window light effect unavailable',e)}
  },420);
 }
+function activateRescue(reason=''){
+ if(ctx.rescue&&ctx.ready)return;
+ console.warn('Map backup activated:',reason);
+ clearTimeout(ctx.rescueDelay);
+ const old=ctx.initialMap;
+ ctx.rescue=true;ctx.ready=true;
+ try{old?.remove?.()}catch(e){console.warn('Could not close stalled MapLibre map',e)}
+ // Remove any markers created on a different engine before switching.
+ try{ctx.balloon?.remove()}catch(e){}
+ try{ctx.originPin?.remove()}catch(e){}
+ try{ctx.homePin?.remove()}catch(e){}
+ ctx.balloon=null;ctx.originPin=null;ctx.homePin=null;
+ try{
+  const backup=enableRescue($('map'),ctx.origin,ctx.day);
+  ctx.map=backup.map;ctx.MarkerClass=backup.Marker;
+  mapLayerSetup();resetPins();
+  $('start').disabled=false;
+  $('setupError').hidden=true;
+  status('MAPA COMPATIBLE · DESPEGUE DISPONIBLE');
+  toast('Mapa compatible activado. Puedes comenzar el vuelo; las calles reales se cargarán si hay conexión.',4700);
+ }catch(e){
+  console.error('Emergency map renderer unavailable:',e);
+  ctx.ready=false;
+  fail('No se ha podido cargar el mapa simplificado: '+(e?.message||String(e)));
+ }
+}
 function loadMap(){
+ // Always keep the Start button interactive, even while optional maps load.
  $('start').disabled=false;
- status('CARGANDO CIUDAD NOCTURNA');
+ status('PREPARANDO VUELO · PUEDES DESPEGAR');
  if(!window.maplibregl){
-  if(ctx.mapRetry++<12){
-   status('RECONECTANDO MOTOR DE MAPAS');
-   setTimeout(loadMap,700);
-   return;
-  }
-  ctx.loadError='No se ha descargado el motor de mapas. Revisa tu conexión.';
-  fail(ctx.loadError);return;
+  // A blocked CDN must never block the full app or its main button.
+  activateRescue('MapLibre external JS not loaded');return;
  }
- if(!maplibregl.supported()){
-  ctx.loadError='Safari no permite iniciar el mapa WebGL en este dispositivo.';
-  fail(ctx.loadError);return;
- }
+ try{
+  if(!window.maplibregl.supported()){activateRescue('WebGL unsupported');return}
+ }catch(e){activateRescue('MapLibre support check failed');return}
  let map;
  try{
-  map=new maplibregl.Map({
+  map=new window.maplibregl.Map({
    container:'map',style:STYLE.dark,center:[START.lng,START.lat],
    zoom:14.5,pitch:61,bearing:-28,antialias:true,
    attributionControl:true,cooperativeGestures:false,
    preserveDrawingBuffer:false,maxPitch:73
   });
- }catch(e){
-  ctx.loadError='No se pudo inicializar el mapa: '+(e.message||'error gráfico');
-  fail(ctx.loadError);return;
- }
- ctx.map=map;
+ }catch(e){activateRescue('Cannot construct MapLibre map: '+String(e));return}
+ ctx.initialMap=map;ctx.map=map;ctx.MarkerClass=window.maplibregl.Marker;
  function ready(){
-  if(ctx.ready)return;
+  if(ctx.rescue||ctx.ready)return;
+  clearTimeout(ctx.rescueDelay);
   ctx.ready=true;ctx.loadError='';
-  status('NOCHE DE CINE · CALLES REALES');
   $('setupError').hidden=true;$('start').disabled=false;
-  try{mapLayerSetup();resetPins()}catch(e){console.warn('Optional map layers unavailable:',e)}
+  status('NOCHE DE CINE · CALLES REALES');
+  try{mapLayerSetup();resetPins()}catch(e){console.warn('Optional cinema layers unavailable:',e)}
  }
  map.on('load',ready);
  map.on('style.load',()=>{
+  if(ctx.rescue)return;
   if(!ctx.ready)ready();
   ctx.effectsReady=false;
-  try{mapLayerSetup()}catch(e){console.warn('Night visual layers unavailable:',e)}
+  try{mapLayerSetup()}catch(e){console.warn('Map style layers skipped:',e)}
  });
- map.on('idle',()=>{if(!ctx.ready&&map.isStyleLoaded())ready()});
- map.on('moveend',scheduleWindows);
+ map.on('idle',()=>{if(!ctx.rescue&&!ctx.ready&&map.isStyleLoaded())ready()});
+ map.on('moveend',()=>{if(!ctx.rescue)scheduleWindows()});
  map.on('error',e=>{
-  console.warn('MapLibre map or tile error:',e.error);
-  if(!ctx.ready){ctx.loadError='El proveedor de mapas no ha terminado de cargar.';status('CARTOGRAFÍA NO DISPONIBLE')}
+  console.warn('MapLibre map loading problem:',e?.error||e);
+  if(!ctx.ready)status('PROVEEDOR DE MAPAS LENTO · PUEDES DESPEGAR');
  });
- setTimeout(()=>{
-  if(ctx.ready||!ctx.map)return;
-  status('REINTENTANDO CARTOGRAFÍA');
-  try{ctx.map.setStyle('https://tiles.openfreemap.org/styles/liberty')}
-  catch(e){console.warn('Fallback map style unavailable:',e)}
- },6000);
- setTimeout(()=>{
-  if(!ctx.ready){
-   ctx.loadError='El mapa no ha cargado. Comprueba Internet y vuelve a abrir la página.';
-   fail(ctx.loadError);
-  }
- },12000);
+ ctx.rescueDelay=setTimeout(()=>{
+  if(!ctx.ready&&!ctx.rescue)activateRescue('Vector style load timed out');
+ },5000);
 }
-async function waitForMap(maxWait=5300){
+async function waitForMap(){
  if(ctx.ready&&ctx.map)return;
- if(!ctx.map)throw new Error(ctx.loadError||'No se ha cargado el motor del mapa.');
- const start=Date.now();
- while(!ctx.ready&&Date.now()-start<maxWait)
-  await new Promise(resolve=>setTimeout(resolve,180));
- if(!ctx.ready)throw new Error(ctx.loadError||'El mapa todavía no está disponible; revisa la conexión y reintenta.');
+ activateRescue('User started before map was ready');
+ if(!ctx.ready)throw new Error('No se ha podido activar el motor de mapas, ni siquiera en modo compatible.');
 }
 async function requestJson(url,timeout=9500){
  const ctl=new AbortController(),tid=setTimeout(()=>ctl.abort(),timeout);
@@ -383,7 +393,7 @@ async function computeRoute(){
   ctx.origin.join(',')+';'+ctx.destination.join(',')+
   '?geometries=geojson&overview=full&steps=false';
  try{
-  const data=await requestJson(u,2800);
+  const data=await requestJson(u,2600);
   const coords=data.routes?.[0]?.geometry?.coordinates;
   if(!Array.isArray(coords)||coords.length<2)throw new Error('Empty route');
   ctx.route=coords.filter(c=>c.length===2&&c.every(Number.isFinite));
@@ -525,10 +535,11 @@ function startFlight(){
 async function start(){
  if(ctx.phase!=='idle'||ctx.starting)return;
  ctx.starting=true;ctx.token++;
+ status('PREPARANDO DESPEGUE');
  const btn=$('start');btn.disabled=true;btn.textContent='Preparando el vuelo…';
  $('setupError').hidden=true;
  try{
-  await waitForMap(5300);
+  await waitForMap();
   btn.textContent='Localizando origen y destino…';
   await getPositions();
   btn.textContent='Dibujando las calles…';
@@ -540,7 +551,7 @@ async function start(){
   $('fromLabel').textContent=safeText(ctx.originLabel).toUpperCase();
   $('routeType').textContent=ctx.routeType==='callejero real'
    ?'CALLES REALES · OSM + OSRM':'RUTA APROXIMADA · NO NAVEGACIÓN';
-  status(ctx.day?'RECORRIDO REAL · DÍA':'NOCHE DE CINE · CALLES REALES');
+  status(ctx.rescue?'MODO COMPATIBLE · RUTA ANIMADA':(ctx.day?'RECORRIDO REAL · DÍA':'NOCHE DE CINE · CALLES REALES'));
   ctx.phase='preview';ctx.playing=true;
   progress(0);setOverview(true);
  }catch(e){
@@ -583,6 +594,7 @@ function setStyle(day){
  status(day?'CALLES REALES · DÍA':'NOCHE DE CINE · CALLES REALES');
  const map=ctx.map;if(!map)return;
  map.setStyle(day?STYLE.day:STYLE.dark);
+ if(ctx.rescue)mapLayerSetup();
  toast(day?'Vista de día con las mismas calles reales.':'Ciudad nocturna de cine: iluminación de calles y edificios recreada.');
 }
 function toggleMagic(){
@@ -604,4 +616,6 @@ $('magic').addEventListener('click',toggleMagic);
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden&&ctx.playing&&!ctx.paused&&!ctx.overview)pause();
 });
+// Robust, immediate interaction: the user can launch before map assets arrive.
+$('start').disabled=false;
 loadClinic();select('plaza');loadMap();
