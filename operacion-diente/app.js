@@ -221,7 +221,7 @@ async function ensureMap(){
     try{ml=await import('https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs');}
     catch(e){ml=await import('https://cdn.jsdelivr.net/npm/maplibre-gl@6.16.0/dist/maplibre-gl.mjs');}
     state.ml=ml;
-    const map=new ml.Map({container:'map',style:CFG.services.mapStyle,center:state.origin.coordinate,zoom:12,pitch:26,attributionControl:false,interactive:true});
+    const map=new ml.Map({container:'map',style:CFG.services.mapStyle,center:state.origin.coordinate,zoom:12,pitch:48,attributionControl:false,interactive:true,maxPitch:65,antialias:true});
     state.map=map;
     map.addControl(new ml.AttributionControl({compact:true,customAttribution:'Rutas: OSRM · Direcciones: Photon'}),'bottom-left');
     map.on('error',e=>{console.warn('Error de mapa:',e?.error?.message||e);});
@@ -229,19 +229,30 @@ async function ensureMap(){
       const timer=setTimeout(()=>reject(new Error('El mapa no responde.')),20000);
       map.once('load',()=>{clearTimeout(timer);resolve();});
     });
-    const full=line(state.path.points);
+    // 3D buildings only when the live tile style includes a compatible vector building layer.
+    // Keep every map provider's required attribution visible.
+    const building=(map.getStyle()?.layers||[]).find(l=>l.type==='fill'&&/building/i.test(l.id)&&l['source-layer']&&map.getSource(l.source));
+    if(building){
+      try{map.addLayer({id:'villa-city-3d',type:'fill-extrusion',source:building.source,'source-layer':building['source-layer'],minzoom:14,
+        paint:{'fill-extrusion-color':'#365761','fill-extrusion-opacity':.53,
+        'fill-extrusion-height':['coalesce',['to-number',['get','render_height']],['to-number',['get','height']],12],
+        'fill-extrusion-base':0}});}
+      catch(err){console.warn('Edificios 3D no disponibles para este estilo:',err);}
+    }
+    const full=line(state.mapPath.points);
     map.addSource('journey-route',{type:'geojson',data:full});
-    map.addSource('journey-completed',{type:'geojson',data:line(state.path.points.slice(0,2))});
-    map.addSource('journey-sparks',{type:'geojson',data:trailParticles(state.path,0)});
+    map.addSource('journey-completed',{type:'geojson',data:line(state.mapPath.points.slice(0,2))});
+    map.addSource('journey-sparks',{type:'geojson',data:trailParticles(state.mapPath,0)});
     map.addLayer({id:'route-shadow',type:'line',source:'journey-route',paint:{'line-color':'#182c36','line-width':11,'line-opacity':.85},layout:{'line-cap':'round','line-join':'round'}});
     map.addLayer({id:'route-pending',type:'line',source:'journey-route',paint:{'line-color':'#a9a5a2','line-width':4,'line-opacity':.7,'line-dasharray':[1.2,1.4]},layout:{'line-cap':'round','line-join':'round'}});
-    map.addLayer({id:'route-glow',type:'line',source:'journey-completed',paint:{'line-color':'#fbd37c','line-width':13,'line-opacity':.45,'line-blur':7},layout:{'line-cap':'round','line-join':'round'}});
-    map.addLayer({id:'route-gold',type:'line',source:'journey-completed',paint:{'line-color':'#ffe3a1','line-width':5},layout:{'line-cap':'round','line-join':'round'}});
+    map.addLayer({id:'route-glow',type:'line',source:'journey-completed',paint:{'line-color':'#fbd37c','line-width':21,'line-opacity':.46,'line-blur':12},layout:{'line-cap':'round','line-join':'round'}});
+    map.addLayer({id:'route-halo',type:'line',source:'journey-completed',paint:{'line-color':'#f5ca75','line-width':9,'line-opacity':.57,'line-blur':3},layout:{'line-cap':'round','line-join':'round'}});
+    map.addLayer({id:'route-gold',type:'line',source:'journey-completed',paint:{'line-color':'#fff0ba','line-width':4.5},layout:{'line-cap':'round','line-join':'round'}});
     map.addLayer({id:'route-sparkle-aura',type:'circle',source:'journey-sparks',paint:{'circle-radius':['get','size'],'circle-color':'#ffdf91','circle-opacity':['get','alpha'],'circle-blur':.68}});
     map.addLayer({id:'route-sparkle-core',type:'circle',source:'journey-sparks',paint:{'circle-radius':2,'circle-color':'#fff9d2','circle-opacity':['get','alpha']}});
-    state.originMarker=new ml.Marker({element:pin('✦ Villa Pérez')}).setLngLat(state.path.points[0]).addTo(map);
-    state.homeMarker=new ml.Marker({element:pin('⌂ Tu casa',true)}).setLngLat(state.path.points.at(-1)).addTo(map);
-    state.mouseMarker=new ml.Marker({element:mouseNode(),anchor:'bottom'}).setLngLat(state.path.points[0]).addTo(map);
+    state.originMarker=new ml.Marker({element:pin('✦ Villa Pérez')}).setLngLat(state.mapPath.points[0]).addTo(map);
+    state.homeMarker=new ml.Marker({element:pin(state.isDemo?'⌂ Fin de prueba':'✧ Cerca de casa',true)}).setLngLat(state.mapPath.points.at(-1)).addTo(map);
+    state.mouseMarker=new ml.Marker({element:mouseNode(),anchor:'bottom'}).setLngLat(state.mapPath.points[0]).addTo(map);
     fitMap();
     paintProgress(0,true);
   } catch(e){
@@ -252,9 +263,9 @@ async function ensureMap(){
   }
 }
 function fitMap(){
-  if(!state.map||!state.ml||!state.path)return;
-  const bounds=new state.ml.LngLatBounds();for(const p of state.path.points)bounds.extend(p);
-  state.map.fitBounds(bounds,{padding:{top:175,bottom:100,left:42,right:42},maxZoom:16,duration:650});
+  if(!state.map||!state.ml||!state.mapPath)return;
+  const bounds=new state.ml.LngLatBounds();for(const p of state.mapPath.points)bounds.extend(p);
+  state.map.fitBounds(bounds,{padding:{top:160,bottom:95,left:38,right:38},maxZoom:15.8,duration:state.reducedMotion?0:900});
 }
 function journeyStage(f){
   if(f>=1)return {index:5,message:'¡He llegado! Ahora puedes terminar la misión.',subtitle:'Tu viaje ya está completo.'};
