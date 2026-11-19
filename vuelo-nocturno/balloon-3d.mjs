@@ -15,7 +15,7 @@ export async function installBalloon3D(map,mapboxgl,{imageUrl='../perez.png'}={}
   let pose=balloonFlightPose({coordinates:map.getCenter().toArray()});
   let disposed=false,loaded=false;
   const layer={
-    id:'vp-balloon-three-v2',type:'custom',renderingMode:'3d',
+    id:'vp-balloon-three-v2',type:'custom',renderingMode:'3d',slot:'top',
     onAdd(_map,gl){
       this.camera=new THREE.Camera();
       this.scene=new THREE.Scene();
@@ -76,13 +76,14 @@ export async function installBalloon3D(map,mapboxgl,{imageUrl='../perez.png'}={}
       // Official Ratón Pérez PNG — original pixels, displayed on a flat plane.
       const texture=new THREE.TextureLoader().load(imageUrl,()=>_map.triggerRepaint(),undefined,()=>console.warn('Ratón PNG no disponible'));
       texture.colorSpace=THREE.SRGBColorSpace;
-      const mouse=new THREE.Mesh(new THREE.PlaneGeometry(3.7,5),new THREE.MeshBasicMaterial({map:texture,transparent:true,side:THREE.DoubleSide,depthWrite:false}));
-      mouse.position.set(0,6.05,2.65);
+      const mouse=new THREE.Mesh(new THREE.PlaneGeometry(2.7,3.85),new THREE.MeshBasicMaterial({map:texture,transparent:true,side:THREE.DoubleSide,depthWrite:false}));
+      mouse.position.set(0,6.8,2.7);
       this.group.add(mouse);
       this.mouse=mouse;
       // No vector shapes for the mouse: the original master is preserved exactly.
       this.renderer=new THREE.WebGLRenderer({canvas:_map.getCanvas(),context:gl,antialias:true,alpha:true});
       this.renderer.autoClear=false;
+      this.renderer.outputColorSpace=THREE.SRGBColorSpace;
       this.gl=gl;
       loaded=true;
     },
