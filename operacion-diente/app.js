@@ -413,6 +413,7 @@ function finishMission(){
 function reset(){
   clearTimeout(state.introTimer);clearTimeout(state.landmarkTimer);
   state.director?.reset();
+  state.morningData=null;
   stopAnimation();state.map?.remove();state.map=null;state.mouseMarker=null;state.originMarker=null;state.homeMarker=null;state.path=null;state.mapPath=null;state.route=null;state.landmark=null;state.landmarkShown=false;state.arrivalShown=false;state.isDemo=false;
   $('cinematic-intro').classList.add('hidden');$('landmark-panel').classList.add('hidden');$('final-curtain').classList.add('hidden');
   state.progress=0;state.scenicUntil=0;state.lastStage=-1;state.lastPaint=0;state.lastFx=0;state.lastCamera=0;const fx=$('route-fx');fx?.getContext('2d')?.clearRect(0,0,fx.width,fx.height);state.destination={label:'',coordinate:null};
@@ -423,7 +424,7 @@ function reset(){
   $('magic-compass').setAttribute('aria-label','Vista ciudad. Activar vista Ratón');$('compass-label').textContent='CIUDAD';
   for(const node of $('street-magic').children)node.classList.remove('visible');
   state.cinematic=true;
-  showScreen('welcome');
+  showScreen('welcome');refreshMorningGift();
 }
 function postcardMarkup(){
   const m=state.morningData;
@@ -503,8 +504,47 @@ async function toggleSound(){
     control.classList.toggle('is-selected',state.soundOn);
   }
   $('sound-toggle').setAttribute('aria-label',state.soundOn?'Silenciar narración y efectos':'Activar narración y efectos de demostración');
-  $('welcome-sound').textContent=state.soundOn?'♪ Narración activada · toca para silenciar':'♫ Activar voz y sonidos mágicos';
+  $('welcome-sound').textContent=state.soundOn?'♪ Voz de prueba activada · silenciar':'♫ Activar narración y sonidos';
   if(state.soundOn)state.director?.say(state.screen==='welcome'?'intro':'depart',true);
+}
+/** Optional local souvenir only: no home address, coordinates, or route polyline are persisted. */
+function readSavedMorning(){
+  try{const value=localStorage.getItem(MEMENTO_KEY);return value?safeMemento(JSON.parse(value)):null;}
+  catch(e){return null;}
+}
+function refreshMorningGift(){
+  const m=readSavedMorning();
+  const available=Boolean(m&&Date.now()>=m.readyAt);
+  $('open-morning-gift').classList.toggle('hidden',!available);
+  return available?m:null;
+}
+function currentMorningData(){
+  if(!state.route)return null;
+  return makeMemento({
+    clinic:CFG.clinic.name,
+    distanceMeters:state.route.serviceMeters,
+    stars:state.director?.earned.size||0
+  });
+}
+function openMorning(m){
+  if(!m)return;
+  state.morningData=m;
+  $('morning-clinic').textContent=m.clinic;
+  $('morning-distance').textContent=formatDistance(m.distanceMeters);
+  $('morning-stars').textContent='✦ '.repeat(m.stars)+'✧ '.repeat(3-m.stars);
+  showScreen('morning');
+  state.director?.say('morning',true);
+}
+function saveMorning(){
+  const m=currentMorningData();
+  if(!m)return;
+  try{
+    localStorage.setItem(MEMENTO_KEY,JSON.stringify(m));
+    $('save-morning-status').textContent='Sorpresa guardada en este navegador. Se podrá abrir mañana después de las 6:00. No hemos guardado la dirección de casa.';
+  }catch(e){
+    $('save-morning-status').textContent='Este navegador no permite guardar el recuerdo para mañana. Puedes verlo ahora con el botón de demostración.';
+  }
+  refreshMorningGift();
 }
 function setup(){
   updateConfig();
@@ -539,6 +579,13 @@ function setup(){
   $('back-welcome').addEventListener('click',()=>showScreen('welcome'));
   $('restart').addEventListener('click',reset);
   $('new-trip').addEventListener('click',reset);
+  $('morning-new-trip').addEventListener('click',()=>{reset();refreshMorningGift();});
+  $('save-morning').addEventListener('click',saveMorning);
+  $('preview-morning').addEventListener('click',()=>openMorning(currentMorningData()));
+  $('open-morning-gift').addEventListener('click',()=>{
+    const m=refreshMorningGift();if(m)openMorning(m);
+  });
+  refreshMorningGift();
   $('download-postcard').addEventListener('click',downloadPostcard);
   $('share-postcard').addEventListener('click',sharePostcard);
   setupAutocomplete('origin-address','origin-suggestions','origin');
@@ -564,21 +611,23 @@ function setup(){
     $('follow-map').classList.toggle('is-selected',state.follow);$('follow-map').setAttribute('aria-pressed',String(state.follow));
     if(state.follow&&state.map&&state.mapPath)state.map.easeTo({center:pointAt(state.mapPath,state.progress).coordinate,zoom:16,pitch:state.cinematic?58:34,duration:550});
   });
-  $('cinematic-map').addEventListener('click',()=>{
-    state.cinematic=!state.cinematic;$('cinematic-map').classList.toggle('is-selected',state.cinematic);
-    $('cinematic-map').setAttribute('aria-pressed',String(state.cinematic));
-    if(state.map&&state.mapPath)state.map.easeTo({pitch:state.cinematic?58:26,bearing:state.cinematic?routeBearing(state.mapPath,state.progress):0,duration:850});
-  });
-  $('raton-view').addEventListener('click',()=>{
+  $('magic-compass').addEventListener('click',()=>{
     state.ratView=!state.ratView;
-    $('raton-view').classList.toggle('is-selected',state.ratView);
-    $('raton-view').setAttribute('aria-pressed',String(state.ratView));
-    $('raton-view').setAttribute('aria-label',state.ratView?'Desactivar vista Ratón':'Activar vista Ratón');
+    const btn=$('magic-compass');
+    btn.classList.toggle('is-selected',state.ratView);
+    btn.setAttribute('aria-pressed',String(state.ratView));
+    btn.setAttribute('aria-label',state.ratView?'Vista Ratón. Activar vista ciudad':'Vista ciudad. Activar vista Ratón');
+    $('compass-label').textContent=state.ratView?'RATÓN':'CIUDAD';
     if(state.ratView){state.follow=true;$('follow-map').classList.add('is-selected');$('follow-map').setAttribute('aria-pressed','true');}
     if(state.map&&state.mapPath){
-      state.map.easeTo({center:pointAt(state.mapPath,state.progress).coordinate,
-        zoom:state.ratView?17.2:15.9,pitch:state.ratView?64:state.cinematic?56:25,
-        bearing:(state.ratView||state.cinematic)?routeBearing(state.mapPath,state.progress):0,duration:900,essential:false});
+      state.map.easeTo({
+        center:pointAt(state.mapPath,state.progress).coordinate,
+        zoom:state.ratView?17.35:15.9,
+        pitch:state.ratView?64:54,
+        bearing:routeBearing(state.mapPath,state.progress),
+        offset:state.ratView?[0,65]:[0,0],
+        duration:1100,essential:false
+      });
     }
   });
   $('play-pause').addEventListener('click',playPause);
