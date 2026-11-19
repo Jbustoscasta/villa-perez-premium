@@ -40,9 +40,9 @@ const $=id=>document.getElementById(id);
 const clamp=(x,min,max)=>Math.max(min,Math.min(max,x));
 
 export class MagicAdventure {
-  constructor({getMap,getPath,onPause,onResume,onSound,getAudioUrls}){
+  constructor({getMap,getPath,onPause,onResume,onSound,onReward,getAudioUrls}){
     this.getMap=getMap;this.getPath=getPath;this.onPause=onPause;this.onResume=onResume;
-    this.onSound=onSound;this.getAudioUrls=getAudioUrls;
+    this.onSound=onSound;this.onReward=onReward;this.getAudioUrls=getAudioUrls;
     this.done=new Set();this.earned=new Set();this.active=null;this.sound=false;
     this.voiceIds=new Set();this.spoken=new Set();this.timeouts=[];this.markers=[];
     this.hops=0;this.gathered=new Set();this.voiceAudio=null;this.lastUpdate=0;this.completing=false;this.ambience=null;
@@ -269,6 +269,8 @@ export class MagicAdventure {
     if(!this.active||this.completing)return;
     this.completing=true;
     this.earned.add(this.active.key);
+    $('magic-game').classList.add('quest-success');
+    this.onReward?.(this.active.key);
     $('quest-result').textContent='¡Lo has conseguido! ✦';
     this.playSound('success');
     this.say(this.active.key+'Done');
@@ -287,7 +289,7 @@ export class MagicAdventure {
   }
   removeMarkers(){for(const m of this.markers)m.button.remove();this.markers=[];}
   hideChallenge(){
-    $('magic-game').classList.add('hidden');
+    $('magic-game').classList.add('hidden');$('magic-game').classList.remove('quest-success');
     $('quest-targets').replaceChildren();
   }
   updateHud(){
