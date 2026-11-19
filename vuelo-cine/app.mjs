@@ -1,5 +1,5 @@
-import {enableRescue} from './rescue.mjs?v=1.0.0';
-import {createCinemaCity} from './cinema-city.mjs?v=2.0.0';
+import {enableRescue} from './rescue.mjs?v=2.0.0';
+import {createCinemaCity} from './cinema-city.mjs?v=2.0.1';
 /**
  * Villa Pérez · Vuelo de cine — prototype v1.
  * Real street geometry: © OpenStreetMap contributors, through OpenFreeMap.
@@ -310,7 +310,8 @@ function activateRescue(reason=''){
   mapLayerSetup();resetPins();
   $('start').disabled=false;
   $('setupError').hidden=true;
-  status('MAPA COMPATIBLE · DESPEGUE DISPONIBLE');
+  status('CIUDAD DE CUENTO 2,5D · DESPEGUE DISPONIBLE');
+  if($('cityStatus'))$('cityStatus').textContent='Casas de cuento 2,5D · modo compatible';
   toast('Mapa compatible activado. Puedes comenzar el vuelo; las calles reales se cargarán si hay conexión.',4700);
  }catch(e){
   console.error('Emergency map renderer unavailable:',e);
@@ -598,8 +599,9 @@ async function start(){
   $('setup').classList.add('leaving');$('flightInterface').hidden=false;
   $('arrival').hidden=true;
   $('fromLabel').textContent=safeText(ctx.originLabel).toUpperCase();
-  $('routeType').textContent=ctx.routeType==='callejero real'
-   ?'CALLES REALES · OSM + OSRM':'RUTA APROXIMADA · NO NAVEGACIÓN';
+  $('routeType').textContent=ctx.rescue
+   ?(ctx.routeType==='callejero real'?'CALLES REALES · CIUDAD DE CUENTO 2,5D':'RECORRIDO APROXIMADO · CIUDAD DE CUENTO 2,5D')
+   :(ctx.routeType==='callejero real'?'CALLES REALES · ARQUITECTURA 3D':'RUTA APROXIMADA · ARQUITECTURA 3D');
   status(ctx.rescue?'MODO COMPATIBLE · RUTA ANIMADA':(ctx.day?'RECORRIDO REAL · DÍA':'NOCHE DE CINE · CALLES REALES'));
   ctx.phase='preview';ctx.playing=true;
   progress(0);setOverview(true);
