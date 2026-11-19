@@ -34,7 +34,7 @@ const bearing=(a,b)=>{
 };
 const deltaBearing=(a,b)=>((b-a+540)%360)-180;
 const ctx={
- map:null,ready:false,starting:false,loadError:'',selected:'plaza',custom:false,
+ map:null,ready:false,starting:false,mapRetry:0,loadError:'',selected:'plaza',custom:false,
  clinic:null,clinicAddress:'',originLabel:'Origen de prueba · Puerta de Alcalá',
  origin:[START.lng,START.lat],destination:null,destinationLabel:'',
  route:[],prefix:[],cumulative:[],total:0,routeType:'panorámica',
@@ -247,6 +247,11 @@ function loadMap(){
  $('start').disabled=false;
  status('CARGANDO CIUDAD NOCTURNA');
  if(!window.maplibregl){
+  if(ctx.mapRetry++<12){
+   status('RECONECTANDO MOTOR DE MAPAS');
+   setTimeout(loadMap,700);
+   return;
+  }
   ctx.loadError='No se ha descargado el motor de mapas. Revisa tu conexión.';
   fail(ctx.loadError);return;
  }
