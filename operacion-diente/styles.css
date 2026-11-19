@@ -101,3 +101,8 @@
 .route-track-fill{background:linear-gradient(90deg,#dfab4b,#ffe6a3,#fffbdf)}
 @media(max-width:400px){.map-stage{height:60dvh;min-height:325px}.map-signature{bottom:13px;font-size:8px;max-width:195px}.map-signature small{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.route-fx{display:none}}
+
+/* Attribution always remains readable: move our decorative badge away from map licensing. */
+.map-signature{left:auto;right:12px;bottom:12px}
+.maplibregl-ctrl-bottom-left{z-index:9!important;max-width:48%}
+.maplibregl-ctrl-bottom-left .maplibregl-ctrl-attrib{margin:0 0 4px 5px}
