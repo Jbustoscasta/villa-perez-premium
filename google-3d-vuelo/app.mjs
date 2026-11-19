@@ -335,6 +335,14 @@ function enterOverview({intro=false}={}){
  $('travelLabel').textContent=state.originLabel.toUpperCase()+' → '+(state.activeDestination?.label||'DESTINO').toUpperCase();
  status('MAPA COMPLETO · ORIGEN Y DESTINO');
  overviewCamera();
+ // Space seven little 3D magic stars across the route for the panoramic photo.
+ // During flight they become the moving tail of Ratón Pérez.
+ if(state.native?.stars?.length&&state.effectsOn){
+  state.native.stars.forEach((star,i)=>{
+   const point=routePosition((i+1)/(state.native.stars.length+1));
+   star.position={lat:point.lat,lng:point.lng,altitude:55};
+  });
+ }
  if(intro){
   state.phase='preview';
   state.overviewTimer=setTimeout(()=>{
