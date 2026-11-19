@@ -1,4 +1,4 @@
-# Operación Diente Perdido — módulo Villa Pérez v0.5 · MAPA PREMIUM (calles legibles y luz dinámica)
+# Operación Diente Perdido — módulo Villa Pérez v0.6 · AVENTURA INTERACTIVA (mapa premium + minijuegos + voz)
 
 ## Demo pública para iPhone — 19 noviembre 2026
 
@@ -11,6 +11,24 @@ El botón «Probar recorrido de Madrid» selecciona dos lugares públicos (Puert
 **Límites de la demo:** la dirección real de Clínica del Doctor Abreu NO está configurada; los servicios comunitarios pueden limitar peticiones. La prueba en Safari físico y la accesibilidad de GitHub Pages deben comprobarse externamente. No es un servicio de producción.
 
 Módulo web independiente, **sin tocar el flujo de Foto con Pérez**. Diseñado para alojarse en `villa-perez-premium/operacion-diente/` y reutilizar `../perez.png` (máster oficial intacto) y `../villa-hero.webp` (fachada oficial existente). No se dibuja ni se sustituye el personaje.
+
+## NOVEDAD v0.6 — Experiencia infantil interactiva
+
+- **Juego 1, «Enciende el camino» (~17 %):** tres estrellas pulsables situadas como capa interactiva sobre puntos de la **ruta cartográfica real y privada recortada**. Se ilumina cada una al tocarla.
+- **Juego 2, «¡Una estrella traviesa!» (~43 %):** una estrella cambia entre tres posiciones del trazado real; tres pulsaciones permiten capturarla.
+- **Juego 3, «La llave de la noche» (~71 %):** barra de arrastre táctil para abrir el portal; alternativa accesible «Abrir con un toque» y soporte de teclado.
+- Los juegos **pausan la reproducción** de forma exacta, y reanudan la misma ruta y velocidad al completarse. Todos son optativos y se pueden saltar sin castigo.
+- **Voz guiada (demostración):** activa manualmente desde bienvenida o botón de sonido en el mapa. Narración web local en español usando `SpeechSynthesis` y pequeños sonidos `WebAudio` sintetizados; voz del sistema, **no la voz oficial del Ratón Pérez**. El objeto `APP_CONFIG.narrationAudio` permite incorporar archivos aprobados del personaje para las diferentes frases y sustituir la narración de demostración.
+- **Ambiente nocturno opcional** a volumen muy bajo, con limpieza y silencio cuando se pausa o la pestaña pasa a segundo plano.
+- **Vista Ratón:** botón ◉ con zoom y perspectiva de cámara a nivel de calles; sigue la ruta de MapLibre. No cambia la ilustración maestra `perez.png`.
+- **Punto de interés real:** si se detecta un monumento público conocido cercano al camino, la cámara se acerca a sus coordenadas durante un breve intervalo, con comentario narrativo. Si no hay monumento verificable, se muestra una sorpresa genérica, sin inventar lugares.
+- **Colección de estrellas:** 0–3 insignias mostradas durante la ruta, al terminar y en la postal. Se mantienen únicamente en memoria de esa pestaña; no hay perfil infantil.
+- **Postal PNG vertical 1080×1350:** guardar o compartir mediante `navigator.share` cuando el sistema lo permita, y descarga de respaldo. Emplea trazado genérico y distancia redondeada al km, sin calles, coordenadas, domicilio ni dirección de llegada.
+- **Privacidad:** el mapa infantil continúa ocultando unos 160 m antes del domicilio. El niño nunca necesita introducir datos personales. Los proveedores de mapas de demostración son externos: no introducir direcciones de menores en producción antes de completar la evaluación de protección de datos.
+- **Street View:** no integrado por ahora. Añadir panorámicas de terceros exige comprobar licencia, cobertura, atribución y compatibilidad legal de una web infantil; esta versión ofrece acercamientos 3D a lugares públicos reales sobre el mapa.
+- **Pruebas:** 22 pruebas automáticas de lógica, incluidas pausa/reanudación de los 3 juegos, posición real de estrellas, privacidad, mapa y efectos. Safari físico e integración con servicios cartográficos siguen pendientes de verificación visual.
+
+**Demo directa para iPhone:** https://jbustoscasta.github.io/villa-perez-premium/operacion-diente/?demo=1&v=0.6.0
 
 ## Mejoras visibles de cartografía y efectos — v0.5
 
