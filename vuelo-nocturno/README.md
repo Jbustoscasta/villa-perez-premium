@@ -5,7 +5,7 @@ La webapp sigue siendo **independiente de Foto con Pérez**. No se ha modificado
 
 ## Novedades reales implementadas en v2
 
-1. **Mapbox Standard Satellite** ofrece fotos aéreas reales con iluminación virtual `lightPreset: night` y opción de crepúsculo mediante un botón en la pantalla del vuelo. Necesita un token **público** `pk.`, restringido al origen HTTPS; se introduce en la interfaz y NO se almacena, publica ni adjunta a URLs. Sin token continúa el mapa vectorial 3D (no fotorrealista).
+1. **Mapbox Standard Satellite** ofrece fotos aéreas reales con iluminación virtual `lightPreset: night` y opción de crepúsculo mediante un botón en la pantalla del vuelo. Necesita un token **público** `pk.`, restringido al origen HTTPS; se introduce en la interfaz y NO se almacena, publica ni adjunta a URLs. Sin token continúa el mapa vectorial 3D (no fotorrealista), **pero el nuevo globo 3D también se intenta cargar sobre MapLibre**; si el dispositivo no soporta la capa Three.js, vuelve al SVG anterior.
 2. **Globo 3D procedimental** en `balloon-3d.mjs` mediante Three.js en una capa WebGL custom de Mapbox: doce paños de envoltura, costuras de latón, cesta real con cuerdas y luces cálidas. El personaje `../perez.png` aparece como una capa texturizada con los píxeles originales, sin reinterpretar su aspecto. Si falla Three.js, queda el SVG original como alternativa.
 3. **Georreferenciación 3D real:** el globo utiliza `MercatorCoordinate.fromLngLat` con altitud variable de 85–120 m sobre la ruta de verdad. La dirección de la cesta sigue el rumbo; bamboleo y balanceo sutiles. Cámara dron cercana y panorámica con actualizaciones más frecuentes.
 4. **Fotografía tratada de noche:** color grading CSS para tonos azul petróleo, reducción de exposición y bruma, y luces Mapbox sobre los edificios donde estén disponibles. **No son fotografías captadas de noche** y no podemos garantizar que cada ventana esté iluminada físicamente; el fotorrealismo depende de la cobertura satélite/3D de Mapbox.
@@ -17,7 +17,7 @@ La webapp sigue siendo **independiente de Foto con Pérez**. No se ha modificado
 ## Compatibilidad
 
 - Primera opción: iPhone Safari actualizado con WebGL 2 y token Mapbox válido
-- Modo reserva: MapLibre + OpenFreeMap sin token
+- Modo sin token: MapLibre + OpenFreeMap con globo 3D de Three.js cuando WebGL2 es compatible; reserva adicional SVG
 - Tests: `node --test vuelo-nocturno/tests/*.test.mjs` y `node --check vuelo-nocturno/flight-app.mjs`.
 
 ---
