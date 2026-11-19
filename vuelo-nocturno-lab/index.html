@@ -23,11 +23,25 @@
     @media(max-width:600px){.chrome{padding-left:18px;padding-right:18px}.brand{font-size:10px}.header-right{font-size:9px;max-width:110px;text-align:right}.intro{place-items:center;align-items:center;padding:calc(78px + env(safe-area-inset-top,0px)) 13px calc(16px + var(--safe-bottom))}.panel{padding:27px 20px 21px;border-radius:21px}.headline{font-size:39px}.lead{font-size:13px}.textbox input{font-size:16px;padding:14px 0}.chapter{top:calc(90px + env(safe-area-inset-top,0px));left:20px;padding-right:35px;max-width:300px}.chapter-title{font-size:29px}.chapter-sub{font-size:12px}.cinema-bottom{padding-left:18px;padding-right:18px;padding-bottom:calc(33px + var(--safe-bottom))}.flight-controls{gap:7px}.control{font-size:11px;padding:10px 12px}.flight-credits{font-size:9px}.balloon-marker{width:83px;height:110px}}
     @media(max-height:730px){.intro{align-items:start}.panel{margin:auto}.panel .headline{font-size:36px}.panel .lead{margin-bottom:16px}.panel .primary{margin-top:12px}.chapter{top:calc(84px + env(safe-area-inset-top,0px))}.chapter-sub{max-width:220px}}
     @media(prefers-reduced-motion:reduce){.balloon-marker{animation:none}*,*:before,*:after{scroll-behavior:auto!important;transition-duration:.001ms!important}}
+
+    .realism-opt{margin-top:14px;border:1px solid rgba(245,203,122,.26);border-radius:13px;background:rgba(237,193,115,.045);padding:13px 15px}
+    .realism-opt summary{list-style:none;cursor:pointer;font-size:13px;font-weight:750;color:#ffe3a2;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .realism-opt summary::-webkit-details-marker{display:none}.realism-opt summary:after{content:"＋";font-size:17px;opacity:.9}.realism-opt[open] summary:after{content:"−"}
+    .realism-opt p{font-size:11px;color:#becddd;line-height:1.55;margin:9px 0 0}
+    .photo-switch{display:flex;align-items:flex-start;gap:11px;padding-top:14px;color:#fff0d2;font-size:13px;line-height:1.4;cursor:pointer}
+    .photo-switch input{accent-color:#eab963;width:19px;height:19px;flex:none;margin:0}
+    .photo-token{margin-top:12px}.photo-token.hidden{display:none}.photo-token input{width:100%;border-radius:10px;border:1px solid rgba(255,220,167,.3);color:#fff3dd;background:#050e20;padding:12px;font-size:14px;outline:none}.photo-token input:focus{border-color:#eac179}
+    .reality-chip{position:fixed;right:17px;top:calc(89px + env(safe-area-inset-top,0px));z-index:2;border:1px solid rgba(255,226,160,.28);background:rgba(4,13,29,.74);color:#fee1a8;padding:7px 10px;border-radius:999px;font-size:9px;font-weight:800;letter-spacing:.08em;pointer-events:none}
+    body.satellite-active .sky-glow{background:linear-gradient(180deg,rgba(3,14,32,.16),rgba(6,19,37,.07) 40%,rgba(2,9,19,.30))}
+    body.satellite-active .stars{opacity:.045}body.satellite-active .vignette{box-shadow:inset 0 0 90px 18px rgba(0,6,16,.25)}
+    body.satellite-active #map canvas{filter:saturate(.83) brightness(.78) contrast(1.12)}
+    body.satellite-active .balloon-marker{filter:drop-shadow(0 0 20px rgba(255,204,99,.6)) drop-shadow(0 18px 17px rgba(0,0,0,.65))}
+    @media(max-width:600px){.reality-chip{top:calc(77px + env(safe-area-inset-top,0px));right:13px}}
   </style>
 </head>
 <body>
   <div id="map" aria-label="Mapa tridimensional de la ruta" role="img"></div>
-  <div class="sky-glow" aria-hidden="true"></div><div class="stars" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div>
+  <div class="sky-glow" aria-hidden="true"></div><div class="reality-chip" id="reality-chip">3D · CARTOGRAFÍA REAL</div><div class="stars" aria-hidden="true"></div><div class="vignette" aria-hidden="true"></div>
   <header class="chrome"><div class="brand"><span class="brand-icon">VP</span><span>VILLA PÉREZ<small>El vuelo nocturno</small></span></div><span class="header-right">Prototipo interactivo · 01</span></header>
 
   <section class="intro" id="intro" aria-labelledby="intro-title">
@@ -41,6 +55,16 @@
           <p class="hint" id="destination-hint">En esta prueba usamos un destino público de Madrid.</p>
         </label>
         <details class="test-config"><summary>Cambiar origen (opción de prueba)</summary><label class="field" for="origin"><div class="field-title">Salida desde la clínica</div><div class="textbox"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#edce8a" stroke-width="1.7"><path d="M4 21V6l8-4 8 4v15M4 9h16M9 14h6M12 9v12"/></svg><input id="origin" value="Puerta del Sol, Madrid" autocomplete="off" maxlength="150" required></div><p class="hint">En producción esta dirección vendrá configurada por cada clínica.</p></label></details>
+        <details class="realism-opt" id="realism-opt">
+          <summary>✦ Más realismo: fotografía aérea 3D</summary>
+          <label class="photo-switch" for="satellite-enabled"><input id="satellite-enabled" type="checkbox"><span>Usar imágenes reales de tejados y edificios con iluminación de noche simulada</span></label>
+          <div class="photo-token hidden" id="photo-token">
+            <label class="field-title" for="mapbox-token">Token público Mapbox</label>
+            <input id="mapbox-token" type="password" autocomplete="off" spellcheck="false" placeholder="pk.eyJ... (no uses tokens secretos)">
+            <p>Requiere un token público <b>pk.</b> de Mapbox. No se guarda en el móvil ni en GitHub; para esta prueba se utiliza solo mientras esté abierta la página. Restringe el token al dominio de prueba en tu cuenta.</p>
+          </div>
+          <p>Sin token, el modo cartográfico nocturno seguirá funcionando gratis. Con Mapbox se activan fotografía satélite y volúmenes 3D; no es una grabación nocturna real.</p>
+        </details>
         <p class="error" id="error" role="alert"></p>
         <button class="primary" id="start" type="submit">✦ &nbsp; COMENZAR EL VUELO</button>
       </form>
@@ -104,8 +128,24 @@
     const $ = id => document.getElementById(id);
     const state = {map:null, origin:null, destination:null, coords:[], cumulative:[], total:0,
       duration:35000, progress:0, elapsed:0, lastTick:null, raf:null, playing:false, speed:1,
-      marker:null, anchor:null, mapReady:false, finished:false, preferredMode:'road', lastRender:0};
+      marker:null, anchor:null, mapReady:false, finished:false, preferredMode:'road', lastRender:0, mapEngine:null, mapMode:'vector', cameraBearing:null};
 
+    // Mapbox is loaded only when the parent explicitly enables photographic mode.
+    // No Mapbox secret or browser-storage persistence is used.
+    let mapboxPromise=null, photoEngine=null;
+    function loadMapboxEngine(){
+      if(photoEngine)return Promise.resolve(photoEngine);
+      if(mapboxPromise)return mapboxPromise;
+      mapboxPromise=new Promise((resolve,reject)=>{
+        if(window.mapboxgl){photoEngine=window.mapboxgl;return resolve(photoEngine)}
+        const css=document.createElement('link');css.rel='stylesheet';css.href='https://api.mapbox.com/mapbox-gl-js/v3.35.0/mapbox-gl.css';document.head.append(css);
+        const script=document.createElement('script');script.src='https://api.mapbox.com/mapbox-gl-js/v3.35.0/mapbox-gl.js';script.async=true;
+        const timeout=setTimeout(()=>reject(Error('La librería de satélite no responde. Prueba el modo gratuito.')),14000);
+        script.onload=()=>{clearTimeout(timeout);if(!window.mapboxgl)return reject(Error('Mapbox no se ha inicializado.'));photoEngine=window.mapboxgl;resolve(photoEngine)};
+        script.onerror=()=>{clearTimeout(timeout);reject(Error('No se pudo cargar la librería Mapbox. Prueba el modo gratuito.'))};document.head.append(script);
+      }).catch(err=>{mapboxPromise=null;throw err});
+      return mapboxPromise;
+    }
     const balloonSVG = `<div class="balloon-marker" aria-label="Globo aerostático en vuelo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 200" role="img"><defs>
       <radialGradient id="canopy" cx="35%" cy="21%" r="83%"><stop stop-color="#fff4c8"/><stop offset=".3" stop-color="#eed18c"/><stop offset=".65" stop-color="#bb704f"/><stop offset="1" stop-color="#5c3146"/></radialGradient>
       <linearGradient id="basket" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d8a56f"/><stop offset="1" stop-color="#583445"/></linearGradient>
@@ -146,7 +186,7 @@
     function pointAt(t){const target=Math.max(0,Math.min(1,t))*state.total;let lo=0,hi=state.cumulative.length-1;while(lo<hi){const mid=Math.floor((lo+hi)/2);if(state.cumulative[mid]<target)lo=mid+1;else hi=mid}const i=Math.max(1,lo),start=state.cumulative[i-1],end=state.cumulative[i],f=(target-start)/Math.max(1,end-start);return [lerp(state.coords[i-1][0],state.coords[i][0],f),lerp(state.coords[i-1][1],state.coords[i][1],f)]}
     function makeFeature(coords){return {type:'Feature',properties:{},geometry:{type:'LineString',coordinates:coords}}}
     function installGeoLayers(){const map=state.map;if(!map||!map.isStyleLoaded())return;
-      const st=map.getStyle();const roadSource=st.layers.find(l=>l['source-layer']==='building')?.source || Object.entries(st.sources).find(([,v])=>v.type==='vector')?.[0];
+      const st=map.getStyle();const roadSource=state.mapMode==='satellite'?null:(st.layers||[]).find(l=>l['source-layer']==='building')?.source || (state.mapMode==='satellite'?null:Object.entries(st.sources||{}).find(([,v])=>v.type==='vector')?.[0]);
       if(roadSource && !map.getLayer('magic-buildings')){const firstLabel=st.layers.find(l=>l.type==='symbol')?.id;
         try{map.addLayer({id:'magic-buildings',source:roadSource,'source-layer':'building',type:'fill-extrusion',minzoom:13,paint:{'fill-extrusion-color':['interpolate',['linear'],['zoom'],12,'#0b1728',16,'#33475a'],'fill-extrusion-height':['coalesce',['to-number',['get','render_height']],['to-number',['get','height']],11],'fill-extrusion-base':['coalesce',['to-number',['get','render_min_height']],0],'fill-extrusion-opacity':.9,'fill-extrusion-vertical-gradient':true}},firstLabel)}catch(e){console.warn('3D no compatible con esta capa:',e)}
       }
@@ -156,39 +196,68 @@
       map.addLayer({id:'magic-route-base',type:'line',source:'magic-full',paint:{'line-color':'#ad8863','line-width':2,'line-opacity':.65,'line-dasharray':[2,2]}});
       map.addLayer({id:'magic-route-done-glow',type:'line',source:'magic-done',paint:{'line-color':'#ffe4a5','line-width':13,'line-blur':7,'line-opacity':.85}});
       map.addLayer({id:'magic-route-done',type:'line',source:'magic-done',paint:{'line-color':'#ffecbc','line-width':3.5,'line-opacity':.98}});
-      const element=document.createElement('div');element.innerHTML=balloonSVG;state.marker=new maplibregl.Marker({element,anchor:'bottom'}).setLngLat(state.coords[0]).addTo(map);
+      const element=document.createElement('div');element.innerHTML=balloonSVG;state.marker=new state.mapEngine.Marker({element,anchor:'bottom'}).setLngLat(state.coords[0]).addTo(map);
     }
     function clearGeoLayers(){if(!state.map)return;for(const id of ['magic-route-done','magic-route-done-glow','magic-route-base','magic-route-glow'])if(state.map.getLayer(id))state.map.removeLayer(id);
       for(const id of ['magic-full','magic-done'])if(state.map.getSource(id))state.map.removeSource(id);if(state.marker){state.marker.remove();state.marker=null}}
-    async function ensureMap(){
-      if(state.map && state.mapReady)return state.map;
+    async function waitForMap(map,provider){
+      let timeout,lastProblem='';
+      try{
+        await Promise.race([
+          new Promise((resolve,reject)=>{
+            if(map.isStyleLoaded())return resolve();
+            map.once('load',resolve);
+            map.on('error',event=>{
+              lastProblem=String(event?.error?.message||'error de red');
+              // A single missing tile is not necessarily a fatal style load failure.
+              if(/401|403|not authorized|invalid token|access token/i.test(lastProblem))reject(Error('El token de Mapbox no está autorizado para esta página (401/403).'));
+            });
+          }),
+          new Promise((_,reject)=>timeout=setTimeout(()=>reject(Error('No se pudo cargar '+provider+'. '+lastProblem)),18000))
+        ]);
+      }finally{clearTimeout(timeout)}
+    }
+    async function ensureMap(mode='vector',token=''){
+      if(state.map && state.mapReady && state.mapMode===mode)return state.map;
+      if(state.map){try{state.marker?.remove();state.map.remove()}catch(_){}state.marker=null;state.map=null;state.mapReady=false}
+      if(mode==='satellite'){
+        const gl=await loadMapboxEngine();
+        // The token is public and intentionally supplied at runtime, never committed.
+        gl.accessToken=token;
+        const map=new gl.Map({
+          container:'map',accessToken:token,style:'mapbox://styles/mapbox/standard-satellite',
+          config:{basemap:{lightPreset:'night',showPlaceLabels:false,showPointOfInterestLabels:false,showRoadLabels:false,showTransitLabels:false,showRoadsAndTransit:false}},
+          center:DEFAULT_ORIGIN.coord,zoom:16.1,pitch:76,bearing:-28,
+          antialias:true,attributionControl:true,interactive:false,fadeDuration:0,maxPitch:85
+        });
+        try{await waitForMap(map,'Mapbox Satellite')}
+        catch(err){try{map.remove()}catch(_){}throw err}
+        state.map=map;state.mapReady=true;state.mapProvider='Mapbox Satellite 3D';state.mapMode='satellite';state.mapEngine=gl;
+        document.body.classList.add('satellite-active');$('reality-chip').textContent='FOTOGRAFÍA AÉREA · 3D';return map;
+      }
       await loadMapEngine();
       for(const styleURL of [DARK_STYLE,CARTO_STYLE]){
-        let map=null,timer;
+        let map=null;
         try{
-          map=new maplibregl.Map({container:'map',style:styleURL,center:DEFAULT_ORIGIN.coord,zoom:14.7,pitch:64,bearing:-28,antialias:true,attributionControl:true,interactive:false,fadeDuration:0,maxPitch:75});
-          await Promise.race([
-            new Promise((resolve,reject)=>{
-              if(map.isStyleLoaded())return resolve();
-              map.once('load',resolve);
-              map.once('error',event=>reject(new Error('Proveedor no disponible: '+String(event?.error?.message||'error de cartografía'))));
-            }),
-            new Promise((_,reject)=>timer=setTimeout(()=>reject(new Error('El servidor de cartografía no ha respondido')),12000))
-          ]);
-          state.map=map;state.mapReady=true;state.mapProvider=styleURL===DARK_STYLE?'OpenFreeMap':'CARTO';
-          return map;
-        }catch(err){console.warn('Proveedor de cartografía alternativo:',styleURL,err);
-          try{map?.remove()}catch(_){}
-          state.map=null;state.mapReady=false;
-        }finally{clearTimeout(timer)}
+          map=new maplibregl.Map({container:'map',style:styleURL,center:DEFAULT_ORIGIN.coord,zoom:14.7,pitch:70,bearing:-28,antialias:true,attributionControl:true,interactive:false,fadeDuration:0,maxPitch:80});
+          await waitForMap(map,'cartografía vectorial');
+          state.map=map;state.mapReady=true;state.mapProvider=styleURL===DARK_STYLE?'OpenFreeMap':'CARTO';state.mapMode='vector';state.mapEngine=maplibregl;
+          document.body.classList.remove('satellite-active');$('reality-chip').textContent='3D · CARTOGRAFÍA REAL';return map;
+        }catch(err){console.warn('Proveedor vectorial alternativo:',err);try{map?.remove()}catch(_){}}
       }
-      throw Error('El motor 3D se ha descargado, pero los dos proveedores de cartografía no responden. Inténtalo de nuevo desde Safari.');
+      throw Error('Los dos proveedores cartográficos no responden. Inténtalo de nuevo desde Safari.');
     }
     function chapterFor(p){if(p<.15)return ['Capítulo I · El despegue','La magia despega','Los tejados de la ciudad aparecen bajo el globo.'];if(p<.48)return ['Capítulo II · Sobre la ciudad','Luces bajo las estrellas','Cada calle nos acerca un poquito más al destino.'];if(p<.8)return ['Capítulo III · El camino','Un viaje entre tejados','¿Reconoces estas calles desde el cielo?'];return ['Capítulo IV · Ya casi estamos','¡Mira, estamos llegando!','El globo se prepara para su última parada.']}
     function render(progress){if(!state.map||!state.coords.length)return;
-      const p=Math.max(0,Math.min(1,progress)),point=pointAt(p),ahead=pointAt(Math.min(1,p+Math.max(.015,50/Math.max(1,state.total)))),heading=bearing(point,ahead),zoom= p<.08 ? lerp(14.2,16,.08? smoothstep(p/.08):1) : p>.92 ?lerp(16,17,smoothstep((p-.92)/.08)):16;
-      // En un plano WebMercator la cámara mira al globo, ligeramente por delante de su posición.
-      state.map.jumpTo({center:point,zoom,pitch:67,bearing:heading});
+      const p=Math.max(0,Math.min(1,progress)),point=pointAt(p),ahead=pointAt(Math.min(1,p+Math.max(.01,75/Math.max(1,state.total)))),heading=bearing(point,ahead);
+      const photo=state.mapMode==='satellite';
+      const targetZoom=photo ? (p<.09?lerp(15.8,17.15,smoothstep(p/.09)):p>.90?lerp(17.15,17.8,smoothstep((p-.90)/.10)):17.15+.22*Math.sin(p*Math.PI*4)) : (p<.08?lerp(14.5,16.35,smoothstep(p/.08)):p>.9?lerp(16.35,17.15,smoothstep((p-.9)/.1)):16.35);
+      if(state.cameraBearing===null)state.cameraBearing=heading;
+      let delta=((heading-state.cameraBearing+540)%360)-180;
+      state.cameraBearing=(state.cameraBearing+delta*.16+360)%360;
+      // Cinematic tracking: the globo remains behind a slightly leading point, and turns are smoothed.
+      const lookAhead=pointAt(Math.min(1,p+(photo?32:18)/Math.max(1,state.total)));
+      state.map.jumpTo({center:lookAhead,zoom:targetZoom,pitch:photo?77:72,bearing:state.cameraBearing});
       state.marker?.setLngLat(point);
       const stride=Math.max(1,Math.floor(state.coords.length/700));const target=p*state.total;let idx=state.cumulative.findIndex(d=>d>=target);if(idx===-1)idx=state.coords.length-1;const drawn=state.coords.slice(0,Math.max(1,idx)).filter((_,i)=>i%stride===0);drawn.push(point);state.map.getSource('magic-done')?.setData(makeFeature(drawn));
       $('progress-bar').style.width=`${Math.round(p*1000)/10}%`;$('progress').setAttribute('aria-valuenow',String(Math.round(p*100)));$('flight-value').textContent=`${Math.round(p*100)}% · ${Math.round(state.total*(1-p))} m restantes`;
@@ -199,7 +268,7 @@
       if(state.progress>=1){finishFlight();return}state.raf=requestAnimationFrame(tick)
     }
     function setPlaying(on){state.playing=on;state.lastTick=null;cancelAnimationFrame(state.raf);$('pause-label').textContent=on?'Pausar':'Reanudar';$('flight-status').textContent=on?'EN VUELO':'VUELO EN PAUSA';if(on)state.raf=requestAnimationFrame(tick)}
-    function restart(){state.finished=false;$('finish').classList.remove('visible');state.elapsed=0;state.progress=0;render(0);setPlaying(true)}
+    function restart(){state.cameraBearing=null;state.finished=false;$('finish').classList.remove('visible');state.elapsed=0;state.progress=0;render(0);setPlaying(true)}
     function finishFlight(){setPlaying(false);state.finished=true;$('flight-status').textContent='MISIÓN COMPLETADA';setTimeout(()=>{if(state.finished)$('finish').classList.add('visible')},700)}
     function edit(){setPlaying(false);state.finished=false;$('finish').classList.remove('visible');$('cinematic').classList.remove('visible');$('intro').classList.remove('closed');clearGeoLayers();}
     async function startFlight(ev){ev.preventDefault();if(state.playing)return;clearError();setBusy(true);
@@ -207,13 +276,19 @@
         const [a,b]=await Promise.all([locate(orig,DEFAULT_ORIGIN),locate(dest,DEFAULT_DESTINATION)]);
         if(distance(a,b)<80)throw Error('El destino debe estar al menos a 80 metros de la salida.');
         state.origin=a;state.destination=b;
-        const [coords]=await Promise.all([computeRoadRoute(a,b),ensureMap()]);
+        const photo=$('satellite-enabled').checked;const token=$('mapbox-token').value.trim();
+        if(photo && !/^pk\.[A-Za-z0-9._-]{15,}$/.test(token))throw Error('Para la vista fotográfica debes introducir tu token público de Mapbox (pk.). O desactiva esa opción para volar gratis.');
+        const [coords]=await Promise.all([computeRoadRoute(a,b),ensureMap(photo?'satellite':'vector',token)]);
         if(!coords.length)throw Error('No se ha podido preparar el recorrido.');
         clearGeoLayers();buildDistances(coords);installGeoLayers();state.map.resize();state.speed=1;$('speed').textContent='Velocidad ×1';
         $('credits').textContent=`© OpenStreetMap contributors · ${state.mapProvider||'OpenFreeMap'} · ${state.preferredMode==='road'?'Ruta aproximada por vías OSRM':'Trayectoria aérea directa (respaldo)'} · Recreación artística, no vuelo real.`;
         $('intro').classList.add('closed');$('cinematic').classList.add('visible');restart();
       }catch(err){console.error(err);showError(err.message||'No se ha podido iniciar el vuelo. Comprueba la conexión.')}finally{setBusy(false)}
     }
+    $('satellite-enabled').addEventListener('change',ev=>{
+      $('photo-token').classList.toggle('hidden',!ev.target.checked);
+      if(ev.target.checked)$('realism-opt').open=true;
+    });
     $('route-form').addEventListener('submit',startFlight);
     $('pause').addEventListener('click',()=>{if(state.finished){restart();return}setPlaying(!state.playing)});
     $('restart').addEventListener('click',restart);
