@@ -1,16 +1,18 @@
-import {START,DEMO_END,DEMO_APPROX,pathFromPoints,along,heading,samplePath,shortenForHome,easing,colorNight,sanitizePhoton,displayDistance} from './flight-core.mjs';
+import {START,DEMO_END,DEMO_APPROX,pathFromPoints,along,heading,samplePath,shortenForHome,easing,colorNight,sanitizePhoton,displayDistance} from './flight-core.mjs?v=2.0.0';
+import {installBalloon3D} from './balloon-3d.mjs?v=2.0.0';
 
 const $=id=>document.getElementById(id);
-const state={map:null,lib:null,provider:'free',token:'',mapReady:false,mapPromise:null,route:null,path:null,childPath:null,isDemo:false,approximate:false,flyTo:null,selection:null,progress:0,playing:false,raf:0,lastCamera:0,lastPaint:0,lastMapPos:0,follow:true,view:'globe',durationMs:95000,startTime:0,searchAbort:null,searchSerial:0,searchTimer:0,marker:null,warning:null};
+const state={map:null,lib:null,provider:'free',token:'',mapReady:false,mapPromise:null,balloon3D:null,balloonStatus:'2d',nightPreset:'night',route:null,path:null,childPath:null,isDemo:false,approximate:false,flyTo:null,selection:null,progress:0,playing:false,raf:0,lastCamera:0,lastPaint:0,lastMapPos:0,follow:true,view:'globe',durationMs:95000,startTime:0,searchAbort:null,searchSerial:0,searchTimer:0,marker:null,warning:null};
 const hide=id=>$(id).classList.add('hidden'),show=id=>$(id).classList.remove('hidden');
 function notify(text){$('input-error').textContent=text;show('input-error');}
 function clearNotify(){hide('input-error');}
 function loading(on,title='Preparando el vuelo…',subtitle='Cargando la ciudad real'){ $('loading-title').textContent=title;$('loading-subtitle').textContent=subtitle;$('loading').classList.toggle('hidden',!on); }
 function setProviderText(){
  const satellite=state.provider==='mapbox';
- $('mode-pill').textContent=satellite?'SATÉLITE 3D · NOCHE':'3D · MAPA REAL';
- $('map-warning').textContent=satellite?'Fotografía aérea diurna + iluminación nocturna simulada · Mapbox':'Edificios reales OSM extruidos · no es fotografía aérea';
- $('provider-info').textContent=satellite?'Satélite 3D activado. El token público no se guarda en el navegador.':'Sin token se utiliza una vista real 3D de edificios y calles, no imágenes satelitales.';
+ $('mode-pill').textContent=satellite?'FOTO AÉREA · NOCHE':'3D · MAPA REAL';
+ document.body.classList.toggle('satellite-active',satellite);
+ $('map-warning').textContent=satellite?'Fotografía aérea real captada de día + noche simulada · Mapbox':'Vista cartográfica vectorial 3D de prueba · sin fotografía aérea';
+ $('provider-info').textContent=satellite?'Satélite real activo. El token público no se guarda.':'Sin token se utiliza vista 3D vectorial; para fotografía aérea introduce un token Mapbox.';
 }
 async function getMapLibre(){try{return await import('https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs');}
 catch(e){return await import('https://cdn.jsdelivr.net/npm/maplibre-gl@6.16.0/dist/maplibre-gl.mjs');}}
@@ -53,7 +55,11 @@ function themeFreeMap(map){
  }
 }
 async function createMap(){
- if(state.map){state.map.remove();state.map=null;state.mapReady=false;}
+ if(state.map){
+  try{state.balloon3D?.remove()}catch(e){console.warn('Retirada globo 3D',e)}
+  state.balloon3D=null;state.balloonStatus='2d';
+  state.map.remove();state.map=null;state.mapReady=false;
+ }
  const isMb=state.provider==='mapbox';
  let lib;
  try{lib=isMb?await getMapbox():await getMapLibre()}catch(e){throw new Error('No se puede cargar el visor 3D. Revisa la conexión. '+e.message)}
@@ -61,7 +67,10 @@ async function createMap(){
  if(isMb)lib.accessToken=state.token;
  const options={container:'map',center:START.coordinates,zoom:16.2,pitch:68,bearing:-13,antialias:true,attributionControl:true,maxPitch:80,interactive:true,
   style:isMb?'mapbox://styles/mapbox/standard-satellite':'https://tiles.openfreemap.org/styles/liberty'};
- if(isMb){options.config={basemap:{lightPreset:'night',showPointOfInterestLabels:false,showTransitLabels:false,showRoadLabels:false}};options.projection='mercator';}
+ if(isMb){
+   options.config={basemap:{lightPreset:state.nightPreset,showPlaceLabels:false,showPointOfInterestLabels:false,showTransitLabels:false,showRoadLabels:false,showRoadsAndTransit:false}};
+   options.projection='mercator';
+ }
  let map;
  try{map=new lib.Map(options)}catch(e){throw new Error('No se puede iniciar el mapa: '+e.message)}
  state.map=map;
@@ -72,10 +81,20 @@ async function createMap(){
  });
  state.mapReady=true;
  if(!isMb)themeFreeMap(map);
- else{try{map.setConfigProperty('basemap','lightPreset','night')}catch(e){console.warn('Luz nocturna no disponible',e)}}
+ else{
+   try{map.setConfigProperty('basemap','lightPreset',state.nightPreset)}catch(e){console.warn('Iluminación nocturna no disponible',e)}
+   try{map.setFog({color:'#244354','high-color':'#102a45','space-color':'#06172c','horizon-blend':.17,'star-intensity':.22})}catch(e){console.warn('Bruma no disponible',e)}
+   try{
+     state.balloon3D=await installBalloon3D(map,lib,{imageUrl:'../perez.png'});
+     state.balloonStatus='3d';
+     state.balloon3D.setActive(state.playing);
+     if(state.childPath)state.balloon3D.setPose({coordinates:along(state.childPath,state.progress),bearing:heading(state.childPath,state.progress),altitude:95,progress:state.progress});
+   }catch(e){state.balloon3D=null;state.balloonStatus='2d';console.warn('Globo 3D no disponible. Se mantiene globo SVG:',e)}
+ }
  map.on('move',()=>{renderBalloon();if(!state.playing)drawTrail(performance.now())});
  map.on('resize',()=>{renderBalloon();drawTrail(performance.now())});
  setProviderText();
+ $('mode-pill').textContent=isMb?(state.balloon3D?'SATÉLITE · GLOBO 3D':'SATÉLITE · GLOBO 2D'):'3D · MAPA REAL';
  if(state.childPath)installRoute();
  return map;
 }
