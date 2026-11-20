@@ -913,3 +913,32 @@ html.night-active .route-group .cta.gold{
  box-shadow:0 7px 23px rgba(217,165,89,.20);
 }
 /* Plan A+: nocturnal lighting comes from geographic 3D markers, not fixed 2D 'window dots'. */
+
+
+/* Villa Pérez v8 — night/day separation.
+   Google's photorealistic imagery stays intact. The atmospheric Canvas2D
+   covers only the viewport above the legal attribution strip. */
+html:not(.night-active):not(.night-css-fallback) .cinema-grade{
+ opacity:0!important;
+ background:transparent!important;
+}
+html:not(.night-active) .night-cinema{opacity:0!important}
+html.night-active .night-cinema{
+ opacity:1!important;
+ filter:none!important;
+ pointer-events:none;
+}
+html.night-active .cinema-grade{
+ opacity:1!important;
+ background:
+  radial-gradient(ellipse 68% 48% at 70% 17%,rgba(53,104,176,.08),transparent 93%),
+  linear-gradient(180deg,rgba(2,9,27,.16),rgba(3,12,33,.065) 44%,rgba(2,8,27,.055));
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 72%,transparent 97%);
+ mask-image:linear-gradient(to bottom,#000 0%,#000 72%,transparent 97%);
+}
+html.night-css-fallback .cinema-grade{
+ opacity:1!important;
+ background:
+  radial-gradient(ellipse 74% 48% at 65% 23%,rgba(52,91,159,.12),transparent),
+  linear-gradient(180deg,rgba(2,10,29,.79),rgba(5,15,37,.72) 54%,rgba(3,12,31,.67) 90%)!important;
+}
