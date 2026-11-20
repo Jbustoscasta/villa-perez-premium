@@ -7,6 +7,18 @@ export function installLook360({state,$,now,norm,shortest,routeProgress,routePoi
   pitch:0,dragYaw:0,dragTilt:0,anchor:0,heading:0,tilt:77,lastDraw:0,
   pointer:null,x:0,y:0,savedFov:null,faulted:false,permissionTimer:0};
  const pad=$('povDrag');
+ // The approved photoreal PNG is served by Ilusiono's media library.
+ // Should a CDN/hotlink error occur, retain the old SVG as a fail-safe.
+ const povImage=$('povBasketPhoto');
+ if(povImage){
+  let usedFallback=false;
+  povImage.addEventListener('error',()=>{
+   if(usedFallback)return;
+   usedFallback=true;
+   povImage.src='./assets/vista-cesta-360.svg';
+   console.warn('El primer plano fotográfico del globo no está disponible: mostrando cesta vectorial de respaldo.');
+  });
+ }
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
  function repaint(position=routePoint(),progress=routeProgress(),force=false){
   if(!l.active||!state.map||!position)return;
