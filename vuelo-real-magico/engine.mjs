@@ -218,7 +218,13 @@ function sample(cs,num){
 }
 function shortenHome(cs,meters=180){
  const c=cs.slice(),d=[0];for(let i=1;i<c.length;i++)d.push(d.at(-1)+distance(c[i-1],c[i]));
- if(d.at(-1)<=meters+120)return c;
+ if(d.at(-1)<=meters+120){
+  // Short flights must not show the exact entrance either.
+  const total=d.at(-1),keep=Math.max(0.01,total-meters);
+  let i=0;while(i<d.length-2&&d[i+1]<keep)i++;
+  const t=clamp((keep-d[i])/Math.max(.001,d[i+1]-d[i]),0,1);
+  return [...c.slice(0,i+1),lerpCoord(c[i],c[i+1],t)];
+ }
  let j=c.length-1;while(j>1&&d.at(-1)-d[j-1]<meters)j--;
  const pos=d.at(-1)-meters,den=Math.max(.001,d[j]-d[j-1]);
  return [...c.slice(0,j),lerpCoord(c[j-1],c[j],clamp((pos-d[j-1])/den,0,1))];
