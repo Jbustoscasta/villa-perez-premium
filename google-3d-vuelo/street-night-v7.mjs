@@ -40,11 +40,11 @@ function lateralOffset(position,side,metres){
  return {lat:position.lat+north/111320,
   lng:position.lng+east/(111320*Math.max(.2,Math.cos(position.lat*R)))};
 }
-export function buildStreetNightPoints(path,{maxRoad=26,maxSparkles=7}={}){
+export function buildStreetNightPoints(path,{maxRoad=22,maxSparkles=6}={}){
  const prepared=preparePath(path);
  if(prepared.total<65)return {lamps:[],sparks:[],distance:prepared.total};
  // evenly spaced along the real street route, not based on screen coordinates
- const n=Math.min(maxRoad,Math.max(5,Math.floor(prepared.total/92)));
+ const n=Math.min(maxRoad,Math.max(5,Math.floor(prepared.total/105)));
  const lamps=[],sparks=[];
  for(let i=0;i<n;i++){
   const along=(i+.5)/(n+1)*prepared.total,position=pathAt(prepared,along);
@@ -67,7 +67,7 @@ export function buildStreetNightPoints(path,{maxRoad=26,maxSparkles=7}={}){
 function svgLamp(i){
  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
  svg.setAttribute('xmlns',ns);svg.setAttribute('viewBox','0 0 40 40');
- svg.setAttribute('width','40');svg.setAttribute('height','40');
+ svg.setAttribute('width','28');svg.setAttribute('height','28');
  const defs=document.createElementNS(ns,'defs'),g=document.createElementNS(ns,'radialGradient');
  g.setAttribute('id','halo');g.setAttribute('cx','.5');g.setAttribute('cy','.5');g.setAttribute('r','.5');
  for(const [at,color,opacity] of [
@@ -86,7 +86,7 @@ function svgLamp(i){
 }
 function svgSpark(i){
  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
- svg.setAttribute('xmlns',ns);svg.setAttribute('width','32');svg.setAttribute('height','32');
+ svg.setAttribute('xmlns',ns);svg.setAttribute('width','25');svg.setAttribute('height','25');
  svg.setAttribute('viewBox','0 0 32 32');
  const halo=document.createElementNS(ns,'circle');halo.setAttribute('cx','16');halo.setAttribute('cy','16');
  halo.setAttribute('r','12');halo.setAttribute('fill','#f5c67a');halo.setAttribute('opacity','.15');
