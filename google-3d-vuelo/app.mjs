@@ -317,7 +317,7 @@ function makePolyline(points,destination){
  });
  // Floating magical lights are tied to the real geographic route, not
  // a fixed screen overlay or imaginary buildings.
- if(state.Marker3DElement&&state.effectsOn){
+ if(state.Marker3DElement){
   const count=Math.min(12,Math.max(5,Math.floor(points.length/10)));
   for(let i=0;i<count;i++){
    const index=Math.min(points.length-1,Math.round((i+.5)/count*(points.length-1)));
@@ -339,7 +339,7 @@ function makePolyline(points,destination){
     spark.setAttribute('fill',i%3===0?'#fff2d5':'#ffd58b');
     spark.setAttribute('opacity','.93');svg.append(circle,spark);
     const template=document.createElement('template');template.content.append(svg);
-    fly.append(template);state.map.append(fly);state.fireflies.push(fly);
+    fly.append(template);if(state.effectsOn)state.map.append(fly);state.fireflies.push(fly);
    }catch(e){console.warn('A route firefly could not be rendered',e);break}
   }
  }
