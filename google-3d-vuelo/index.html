@@ -6,14 +6,16 @@
 <meta name="theme-color" content="#091927">
 <meta name="description" content="Sobrevuela las calles reales de tu barrio con el Ratón Pérez en un globo mágico.">
 <title>Villa Pérez · Vuelo fotorrealista 3D</title>
-<link rel="stylesheet" href="./styles.css?v=6.0.0">
-<script type="module" src="./app.mjs?v=6.0.0"></script>
+<link rel="stylesheet" href="./styles.css?v=6.1.0">
+<script type="module" src="./app.mjs?v=6.1.0"></script>
 </head>
 <body>
 <div class="app">
  <div class="map-host" id="mapHost" aria-label="Google Maps 3D fotorrealista de Madrid">
   <div class="unloaded-map" id="beforeMap" aria-hidden="true"><div class="unloaded-orbit"></div><div class="unloaded-star">✦</div><div class="unloaded-text">EL CIELO DE MADRID NOS ESPERA</div></div>
  </div>
+ <div class="cinema-grade" aria-hidden="true"></div>
+ <canvas id="nightCanvas" class="night-cinema" aria-hidden="true" hidden></canvas>
  <div class="atlas-frame" id="atlasFrame" hidden aria-label="Mapa secreto ilustrado del Ratón Pérez">
   <div class="atlas-light" aria-hidden="true"></div>
   <div class="atlas-title"><span>✦ LA RUTA SECRETA ✦</span><strong>El mapa del Ratón Pérez</strong></div>
@@ -29,8 +31,8 @@
  </header>
  <section class="setup" id="setup" aria-label="Configuración de Google Maps y ruta">
   <span class="eyebrow">EL VUELO MÁGICO · MADRID 3D FOTORREALISTA</span>
-  <h1>Tu barrio real, <em>lleno de magia.</em></h1>
-  <p class="lead">Sobrevuela tejados, árboles y edificios reconstruidos de fotografías reales. Nada de bloques 3D inventados. La magia acompaña al globo sin tapar la ciudad.</p>
+  <h1>Tu barrio real, <em>una noche mágica.</em></h1>
+  <p class="lead">Una navegación nocturna cinematográfica sobre calles, fachadas y tejados fotorrealistas. Las luces y los destellos del Ratón Pérez te acompañan en el vuelo.</p>
   <div class="key-group" id="keyGroup">
    <div class="section-head"><span class="round">01</span><div><b>Activar ciudad fotorrealista</b><small>Google Maps 3D requiere una clave web de prueba o producción</small></div></div>
    <label for="apiKey">Google Maps Demo Key o API key web</label>
@@ -58,7 +60,7 @@
    <p class="form-error" id="error" role="alert" hidden></p>
    <button class="cta gold" id="launch" type="button" disabled>✦ Comenzar vuelo mágico</button>
   </div>
-  <p class="setup-tail">Plan A · Fotogrametría auténtica, no extrusiones OSM. Las zonas sin cobertura Google 3D pueden ofrecer menor detalle. El mapa no tiene una noche fotográfica real: la magia se añade sin cambiar las imágenes originales.</p>
+  <p class="setup-tail">Plan A nocturno · Fotogrametría auténtica, no extrusiones OSM. Google 3D proporciona fotografías diurnas: la noche, las luciérnagas y los destellos son una ambientación artística, no fotografías nocturnas de la ciudad. La cobertura varía según la zona.</p>
  </section>
  <div id="balloon" class="balloon" aria-label="Globo aerostático fotográfico de Villa Pérez con Ratón Pérez oficial" role="img" hidden>
   <div class="balloon-flare" aria-hidden="true"></div>
@@ -82,7 +84,7 @@
  </div>
  <div class="flight-overlay" id="flightUI" hidden>
   <div class="chapter"><span class="eyebrow" id="chapterEyebrow">EL VUELO DEL RATÓN PÉREZ</span><h2 id="chapterTitle">Sobre Madrid</h2><p id="chapterDescription" hidden></p></div>
-  <div class="overview-tools"><button id="overviewToggle" type="button" aria-pressed="false">🗺 Ver recorrido completo</button><button id="povToggle" type="button" aria-pressed="false" hidden>🔭 Mira desde el globo · 360°</button><span id="originBadge">Origen de prueba · Puerta de Alcalá</span></div>
+  <div class="overview-tools"><button id="nightToggle" type="button" aria-pressed="true">☀ Ver de día</button><button id="overviewToggle" type="button" aria-pressed="false">🗺 Ver recorrido completo</button><button id="povToggle" type="button" aria-pressed="false" hidden>🔭 Mira desde el globo · 360°</button><span id="originBadge">Origen de prueba · Puerta de Alcalá</span></div>
   <div class="flight-bar">
    <div class="bar-top"><span id="travelLabel">PUERTA DE ALCALÁ → PLAZA MAYOR</span><span id="progressLabel">0%</span></div>
    <div class="flight-labels"><span id="routeMode">PREPARANDO EL CAMINO DE ESTRELLAS</span></div>
