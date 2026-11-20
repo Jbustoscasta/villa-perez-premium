@@ -65,3 +65,37 @@ test('Very long routes cap enchanted ornaments to reduce iPhone load',()=>{
  const items=planEnchantedRoofs(long);
  assert.ok(items.length<=12);
 });
+
+
+test('Special rooftop landmarks use true GLB meshes and fall back to SVG if Google rejects a model',()=>{
+ const previous=globalThis.document;
+ globalThis.document={
+  createElementNS:(ns,tag)=>({tag,innerHTML:'',setAttribute(){}}),
+  createElement:tag=>({tag,content:{append(svg){this.svg=svg}}})
+ };
+ class Marker{
+  constructor(options){this.options=options;this.isConnected=false;this.events={}}
+  append(el){this.child=el}
+  addEventListener(name,fn){this.events[name]=fn}
+  remove(){this.isConnected=false}
+ }
+ class Model extends Marker{}
+ const map={append(x){x.isConnected=true}};
+ try{
+  const scene=new EnchantedRoofScene(map,Marker,Model);
+  scene.populate(route);
+  const models=scene.markers.filter(x=>x instanceof Model);
+  assert.ok(models.length>=2,'some enchanted buildings must be native 3D');
+  for(const model of models){
+   assert.equal(model.options.altitudeMode,'RELATIVE_TO_MESH');
+   assert.ok(/\.glb$/.test(model.options.src));
+   assert.ok(model.options.scale>0);
+  }
+  const current=models[0];
+  current.events['gmp-error']();
+  assert.ok(!scene.markers.includes(current),'broken model must be removed');
+  assert.ok(scene.markers.some(x=>x instanceof Marker && !(x instanceof Model) && x.isConnected),
+   'the illustrated roof appears as the fallback');
+  scene.destroy();
+ }finally{globalThis.document=previous}
+});
