@@ -2,6 +2,7 @@ import {calculateStreetRoute,interpolate as geoLerp} from './flight-native.mjs?v
 import {installLook360} from './look360.mjs?v=5.4.0';
 import {CinemaNight} from './night-cinema-v8.mjs?v=8.0.0';
 import {StreetNightScene} from './street-night-v7.mjs?v=8.0.0';
+import {EnchantedRoofScene} from './enchanted-roofs-v9.mjs?v=9.0.0';
 /*
  * Villa Pérez Google 3D experiment.
  * Google Maps JavaScript API 3D, photorealistic daytime only.
@@ -50,7 +51,7 @@ const state={
  destinationMarker:null,routeGlow:null,routeLine:null,overview:false,overviewTimer:0,
  overviewWasPlaying:false,originStored:false,
  terrainSamples:[],turnLastTs:0,takeoffMs:0,takeoffDurationMs:2600,overviewSnapshot:null,takeoffBearing:0,
- routeSpark:null,routeSparkTip:null,magicLastAt:0,magicDraws:0,day:false,fireflies:[],streetNight:null
+ routeSpark:null,routeSparkTip:null,magicLastAt:0,magicDraws:0,day:false,fireflies:[],streetNight:null,enchantedRoofs:null
 };
 const R=Earth=>Earth*Math.PI/180;
 function distance(a,b){
@@ -94,6 +95,8 @@ function setActiveChoice(choice){
  if(state.loaded&&!state.playing&&!state.busy&&!state.overview){
   try{state.streetNight?.populate(routes[choice].points)}
   catch(e){console.warn('Night preview lamps unavailable',e)}
+  try{state.enchantedRoofs?.populate(routes[choice].points)}
+  catch(e){console.warn('Magical roof preview unavailable',e)}
  }
 }
 document.querySelectorAll('[data-route]').forEach(b=>b.addEventListener('click',()=>setActiveChoice(b.dataset.route)));
@@ -146,6 +149,9 @@ async function connectGoogle(){
    state.map=map;
    state.streetNight=new StreetNightScene(map,Marker3DElement);
    state.streetNight.setNight(!state.day);
+   state.enchantedRoofs=new EnchantedRoofScene(map,Marker3DElement);
+   state.enchantedRoofs.setNight(!state.day);
+   state.enchantedRoofs.setMagic(state.effectsOn);
    // Keep SATELLITE photogrammetry as the single cinematic visual mode.
    map.mode='SATELLITE';
    map.style.cssText='width:100%;height:100%;display:block;';
@@ -175,6 +181,8 @@ async function connectGoogle(){
     previewInstalled=true;
     try{state.streetNight?.populate(routes[state.route].points)}
     catch(e){console.warn('Preview street lights unavailable',e)}
+    try{state.enchantedRoofs?.populate(routes[state.route].points)}
+    catch(e){console.warn('Preview magical roofs unavailable',e)}
    };
    map.addEventListener('gmp-steadystate',installPreview,{once:true});
    setTimeout(installPreview,3400);
@@ -290,6 +298,7 @@ function createOriginMarker(){
 }
 function clearRouteMap(){
  state.streetNight?.clear();
+ state.enchantedRoofs?.clear();
  removeElement(state.routeGlow);removeElement(state.routeLine);
  removeElement(state.routeSpark);removeElement(state.routeSparkTip);
  for(const fly of state.fireflies)removeElement(fly);
@@ -338,6 +347,8 @@ function makePolyline(points,destination){
  // These are not fabricated or recolored windows on the Google meshes.
  try{state.streetNight?.populate(points)}
  catch(e){console.warn('Optional 3D street lights unavailable',e)}
+ try{state.enchantedRoofs?.populate(points)}
+ catch(e){console.warn('Optional enchanted rooftops unavailable',e)}
  createOriginMarker();
  if(state.Marker3DElement){
   try{
@@ -844,6 +855,7 @@ $('nightToggle').addEventListener('click',()=>{
  document.documentElement.classList.toggle('night-active',!state.day);
  cinema.setNight(!state.day);
  state.streetNight?.setNight(!state.day);
+ state.enchantedRoofs?.setNight(!state.day);
  $('nightToggle').textContent=state.day?'☾ Ver de noche':'☀ Ver de día';
  $('nightToggle').setAttribute('aria-pressed',String(!state.day));
  info(state.day?'Fotogrametría de día.':'Vuelo nocturno recreado sobre la ciudad 3D real.');
@@ -853,6 +865,7 @@ $('fxToggle').addEventListener('click',()=>{
  $('dustLayer').classList.toggle('fx-off',!state.effectsOn);
  $('balloon').classList.toggle('fx-off',!state.effectsOn);
  state.streetNight?.setMagic(state.effectsOn);
+ state.enchantedRoofs?.setMagic(state.effectsOn);
  for(const marker of state.fireflies){
   try{if(state.effectsOn&&!marker.isConnected)state.map?.append(marker);
    if(!state.effectsOn&&marker.isConnected)marker.remove()}catch(e){}
