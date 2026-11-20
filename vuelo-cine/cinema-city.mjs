@@ -19,9 +19,9 @@ const fShader=['precision mediump float;','varying vec4 v_color;','uniform float
 const roofColors=[[.12,.28,.31,1],[.47,.17,.21,1],[.42,.26,.19,1],[.25,.28,.43,1],[.48,.32,.25,1]];
 const wallColors=[[.30,.34,.41,1],[.43,.35,.32,1],[.29,.39,.39,1],[.38,.32,.39,1]];
 const lit=[.98,.74,.35,1],bright=[1,.90,.63,1],windowDark=[.08,.15,.22,1];
-function getBuildings(map,src,focus){
+function getBuildings(map,src,focus,buildingLayer='building'){
  if(!src||!map.querySourceFeatures)return[];
- let features=[];try{features=map.querySourceFeatures(src,{sourceLayer:'building'})||[]}catch(e){}
+ let features=[];try{features=map.querySourceFeatures(src,{sourceLayer:buildingLayer})||[]}catch(e){}
  const found=[],seen=new Set();
  for(const f of features){
   if(found.length>=120)break;
@@ -49,13 +49,13 @@ function projectionMatrix(P,o,scale){
  }
  return A;
 }
-function buildGeometry(map,focus,route,source,day){
+function buildGeometry(map,focus,route,source,day,buildingLayer='building'){
  const center=mCoord(...focus),scale=center.scale,vertices=[];
  const loc=(p,h=0)=>{const z=mCoord(...p);return[(z.x-center.x)/scale,(center.y-z.y)/scale,h]};
  const tri=(a,b,c,color)=>{for(const v of [a,b,c])vertices.push(...v,...color)};
  const quad=(a,b,c,d,color)=>{tri(a,b,c,color);tri(a,c,d,color)};
  const shade=(color,f)=>[color[0]*f,color[1]*f,color[2]*f,1];
- const mapped=getBuildings(map,source,focus);
+ const mapped=getBuildings(map,source,focus,buildingLayer);
  for(const b of mapped){
   const points=b.ring.map(p=>loc(p)),p=loc(b.center);
   const roofColor=roofColors[Math.floor(b.seed*roofColors.length)%roofColors.length];
@@ -96,7 +96,7 @@ function buildGeometry(map,focus,route,source,day){
  }
  return {data:new Float32Array(vertices),origin:center,real:mapped.length,fantasy:0};
 }
-export function createCinemaCity(map,{getRoute=()=>[],getSource=()=>null,onStats=()=>{}}={}){
+export function createCinemaCity(map,{getRoute=()=>[],getSource=()=>null,getSourceLayer=()=> 'building',onStats=()=>{}}={}){
  const obj={
   id:'vp-cinema-city',type:'custom',renderingMode:'3d',
   active:true,day:false,ready:false,frame:null,map,gl:null,buffer:null,program:null,count:0,focus:null,origin:null,
@@ -130,7 +130,7 @@ export function createCinemaCity(map,{getRoute=()=>[],getSource=()=>null,onStats
   setDay(day){this.day=!!day;this.ready=false;this.map?.triggerRepaint?.()},
   setActive(active){this.active=!!active;this.map?.triggerRepaint?.()},
   rebuild(){
-   const geometry=buildGeometry(this.map,this.focus,getRoute(),getSource(),this.day);
+   const geometry=buildGeometry(this.map,this.focus,getRoute(),getSource(),this.day,getSourceLayer());
    this.origin=geometry.origin;
    this.count=geometry.data.length/7;
    this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffer);
