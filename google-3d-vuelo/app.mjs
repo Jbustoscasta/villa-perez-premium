@@ -149,7 +149,7 @@ async function connectGoogle(){
    state.map=map;
    state.streetNight=new StreetNightScene(map,Marker3DElement);
    state.streetNight.setNight(!state.day);
-   state.enchantedRoofs=new EnchantedRoofScene(map,Marker3DElement);
+   state.enchantedRoofs=new EnchantedRoofScene(map,Marker3DElement,Model3DElement);
    state.enchantedRoofs.setNight(!state.day);
    state.enchantedRoofs.setMagic(state.effectsOn);
    // Keep SATELLITE photogrammetry as the single cinematic visual mode.
