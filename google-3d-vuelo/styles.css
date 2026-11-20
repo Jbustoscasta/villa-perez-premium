@@ -655,8 +655,8 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
 .app.pov-active {
   --pov-console-height: clamp(116px, 17dvh, 146px);
   --pov-credit-clearance: 44px;
-  --pov-credit-radius-x: clamp(170px, 48vw, 205px);
-  --pov-credit-radius-y: 74px;
+  --pov-credit-radius-x: clamp(154px, 40vw, 168px);
+  --pov-credit-radius-y: 43px;
 }
 /* The map is now a true separate region ending ABOVE the basket console.
    Google draws its original logo at the base of this reduced map viewport. */
@@ -682,19 +682,19 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
   max-width: none;
   object-fit: fill;
   object-position: center top;
-  /* v5.8: instead of a conspicuous rectangular cut-out, feather the
+  /* v5.9: instead of an oversized transparent wedge, feather the
      small lower-left area around Google's native, clickable attribution.
      A fully transparent core leaves the logo and info button unobscured. */
   clip-path: none;
   -webkit-mask-image: radial-gradient(
-    ellipse var(--pov-credit-radius-x) var(--pov-credit-radius-y) at 0 100%,
-    transparent 0%, transparent 67%,
-    rgba(0,0,0,.06) 74%, rgba(0,0,0,.5) 86%, #000 100%
+    ellipse var(--pov-credit-radius-x) var(--pov-credit-radius-y) at 76px calc(100% - 18px),
+    transparent 0%, transparent 60%,
+    rgba(0,0,0,.04) 69%, rgba(0,0,0,.54) 86%, #000 100%
   );
   mask-image: radial-gradient(
-    ellipse var(--pov-credit-radius-x) var(--pov-credit-radius-y) at 0 100%,
-    transparent 0%, transparent 67%,
-    rgba(0,0,0,.06) 74%, rgba(0,0,0,.5) 86%, #000 100%
+    ellipse var(--pov-credit-radius-x) var(--pov-credit-radius-y) at 76px calc(100% - 18px),
+    transparent 0%, transparent 60%,
+    rgba(0,0,0,.04) 69%, rgba(0,0,0,.54) 86%, #000 100%
   );
   filter:drop-shadow(0 5px 7px rgba(19,25,29,.15));
   transform:translateX(-50%);
@@ -836,7 +836,7 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
   .app.pov-active .pov-actions button{min-height:38px;font-size:11px;padding:8px 2px}
 }
 @media(max-height:500px) and (orientation:landscape){
-  .app.pov-active{--pov-console-height:58px;--pov-credit-clearance:40px;--pov-credit-radius-x:150px;--pov-credit-radius-y:58px}
+  .app.pov-active{--pov-console-height:58px;--pov-credit-clearance:40px;--pov-credit-radius-x:154px;--pov-credit-radius-y:43px}
   .app.pov-active .pov-controls{padding:14px 10px 4px}
   .app.pov-active .pov-caption{display:none}
   .app.pov-active .pov-actions{max-width:430px}
@@ -846,7 +846,7 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
   .app.pov-active .pov-scene .pov-basket{animation:none!important;transform:translateX(-50%)}
 }
 
-/* v5.8 responsive attribution clearance: on wide screens, the centred image
+/* v5.9 responsive attribution clearance: on wide screens, the centred image
    does not overlap the far-left provider credit. */
 @media(min-width:760px){
  .app.pov-active .pov-scene .pov-basket{clip-path:none}
