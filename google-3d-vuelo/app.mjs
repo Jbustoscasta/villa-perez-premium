@@ -49,7 +49,7 @@ const state={
  destinationMarker:null,routeGlow:null,routeLine:null,overview:false,overviewTimer:0,
  overviewWasPlaying:false,originStored:false,
  terrainSamples:[],turnLastTs:0,takeoffMs:0,takeoffDurationMs:2600,overviewSnapshot:null,takeoffBearing:0,
- routeSpark:null,routeSparkTip:null,magicLastAt:0,magicDraws:0,day:false
+ routeSpark:null,routeSparkTip:null,magicLastAt:0,magicDraws:0,day:false,fireflies:[]
 };
 const R=Earth=>Earth*Math.PI/180;
 function distance(a,b){
@@ -273,6 +273,8 @@ function createOriginMarker(){
 function clearRouteMap(){
  removeElement(state.routeGlow);removeElement(state.routeLine);
  removeElement(state.routeSpark);removeElement(state.routeSparkTip);
+ for(const fly of state.fireflies)removeElement(fly);
+ state.fireflies=[];
  removeElement(state.destinationMarker);state.routeGlow=null;
  state.routeLine=null;state.routeSpark=null;state.routeSparkTip=null;
  state.magicLastAt=0;state.destinationMarker=null;
@@ -313,6 +315,34 @@ function makePolyline(points,destination){
   path:[origin,origin],strokeColor:'#FFFCEC',strokeWidth:4,
   outerColor:'#B7F6EE',outerWidth:.95
  });
+ // Floating magical lights are tied to the real geographic route, not
+ // a fixed screen overlay or imaginary buildings.
+ if(state.Marker3DElement&&state.effectsOn){
+  const count=Math.min(12,Math.max(5,Math.floor(points.length/10)));
+  for(let i=0;i<count;i++){
+   const index=Math.min(points.length-1,Math.round((i+.5)/count*(points.length-1)));
+   const coord=points[index];
+   if(!coord||!Number.isFinite(coord.lat)||!Number.isFinite(coord.lng))continue;
+   try{
+    const fly=new state.Marker3DElement({
+     position:{lat:coord.lat,lng:coord.lng,altitude:25+(i%5)*5},
+     altitudeMode:'RELATIVE_TO_GROUND',drawsWhenOccluded:false,sizePreserved:true
+    });
+    const ns='http://www.w3.org/2000/svg';
+    const svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 32 32');
+    svg.setAttribute('width','32');svg.setAttribute('height','32');
+    const circle=document.createElementNS(ns,'circle');
+    circle.setAttribute('cx','16');circle.setAttribute('cy','16');
+    circle.setAttribute('r','13');circle.setAttribute('fill','#ffc76e');circle.setAttribute('opacity','.19');
+    const spark=document.createElementNS(ns,'path');
+    spark.setAttribute('d','M16 3L18.5 13.5L29 16L18.5 18.5L16 29L13.5 18.5L3 16L13.5 13.5Z');
+    spark.setAttribute('fill',i%3===0?'#fff2d5':'#ffd58b');
+    spark.setAttribute('opacity','.93');svg.append(circle,spark);
+    const template=document.createElement('template');template.content.append(svg);
+    fly.append(template);state.map.append(fly);state.fireflies.push(fly);
+   }catch(e){console.warn('A route firefly could not be rendered',e);break}
+  }
+ }
  createOriginMarker();
  if(state.Marker3DElement){
   try{
@@ -826,6 +856,10 @@ $('fxToggle').addEventListener('click',()=>{
  state.effectsOn=!state.effectsOn;
  $('dustLayer').classList.toggle('fx-off',!state.effectsOn);
  $('balloon').classList.toggle('fx-off',!state.effectsOn);
+ for(const marker of state.fireflies){
+  try{if(state.effectsOn&&!marker.isConnected)state.map?.append(marker);
+   if(!state.effectsOn&&marker.isConnected)marker.remove()}catch(e){}
+ }
  updateMagicTrail(state.phase==='orbit'?1:state.progressMs/Math.max(1,state.routeDurationMs),getNow(),true);
  $('fxToggle').textContent=state.effectsOn?'✨ Magia ON':'✨ Magia OFF';
 });
