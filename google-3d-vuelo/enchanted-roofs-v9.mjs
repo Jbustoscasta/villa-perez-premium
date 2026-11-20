@@ -36,7 +36,7 @@ export function planEnchantedRoofs(points,{max=12}={}){
  if(p.length<2)return [];
  let total=0;for(let i=1;i<p.length;i++)total+=distance(p[i-1],p[i]);
  if(total<105)return [];
- const count=Math.min(max,Math.max(5,Math.floor(total/215)));
+ const count=Math.min(max,Math.max(5,Math.floor(total/105)));
  const types=['dormer','door','lantern','chimney','observatory','tower'];
  const planned=[];
  for(let i=0;i<count;i++){
@@ -49,7 +49,7 @@ export function planEnchantedRoofs(points,{max=12}={}){
   const east=pos.right[0]*lateral*side,north=pos.right[1]*lateral*side;
   const lat=pos.lat+north/111320;
   const lng=pos.lng+east/(111320*Math.max(.2,Math.cos(lat*DEG)));
-  const special=i===2||i===Math.floor(count*.7)||i===count-2;
+  const special=i%8===2||i%8===6;
   planned.push({
    lat,lng,altitude:special?3.3:1.8,
    type:special?['observatory','tower','door'][planned.filter(q=>q.special).length%3]:types[i%types.length],
@@ -130,33 +130,54 @@ function roofSVG(type,index,special){
 export class EnchantedRoofScene{
  constructor(map,Marker3DElement){
   this.map=map;this.Marker3DElement=Marker3DElement;
-  this.markers=[];this.night=true;this.magic=true;this.lastCount=0;
+  this.markers=[];this.candidates=[];this.byIndex=new Map();
+  this.windowStart=-1;this.night=true;this.magic=true;this.lastCount=0;
  }
  clear(){
-  for(const m of this.markers)try{m.remove()}catch(e){}
-  this.markers=[];this.lastCount=0;
+  for(const m of this.byIndex.values())try{m.remove()}catch(e){}
+  this.markers=[];this.candidates=[];this.byIndex.clear();
+  this.windowStart=-1;this.lastCount=0;
+ }
+ create(p){
+  const marker=new this.Marker3DElement({
+   position:{lat:p.lat,lng:p.lng,altitude:p.altitude},
+   altitudeMode:'RELATIVE_TO_MESH',drawsWhenOccluded:false,
+   sizePreserved:Boolean(p.special),zIndex:p.special?12:8
+  });
+  const template=document.createElement('template');
+  template.content.append(roofSVG(p.type,p.index,p.special));
+  marker.append(template);return marker;
  }
  populate(points){
   this.clear();
   if(!this.map||!this.Marker3DElement)return 0;
-  const positions=planEnchantedRoofs(points);
-  for(const p of positions){
-   try{
-    const marker=new this.Marker3DElement({
-     position:{lat:p.lat,lng:p.lng,altitude:p.altitude},
-     altitudeMode:'RELATIVE_TO_MESH',
-     drawsWhenOccluded:false,
-     sizePreserved:Boolean(p.special),
-     zIndex:p.special?12:8
-    });
-    const template=document.createElement('template');
-    template.content.append(roofSVG(p.type,p.index,p.special));
-    marker.append(template);
-    this.markers.push(marker);
-   }catch(e){console.warn('Enchanted rooftop skipped:',e)}
+  // Long routes may pass dozens of enchanted rooftops, but only 12
+  // near the balloon exist in the 3D scene at once (iPhone memory budget).
+  this.candidates=planEnchantedRoofs(points,{max:100});
+  this.setProgress(0);
+  return this.candidates.length;
+ }
+ setProgress(value){
+  if(!this.candidates.length)return;
+  const progress=clamp(Number.isFinite(value)?value:0,0,1);
+  const maxStart=Math.max(0,this.candidates.length-12);
+  // Move the visible corridor in groups of three rooftops, not per frame.
+  const center=progress*(this.candidates.length-1);
+  const start=clamp(Math.floor((center-4)/3)*3,0,maxStart);
+  if(start===this.windowStart)return;
+  this.windowStart=start;
+  const updated=new Map();
+  for(let i=start;i<Math.min(this.candidates.length,start+12);i++){
+   let marker=this.byIndex.get(i);
+   if(!marker)try{marker=this.create(this.candidates[i])}
+   catch(e){console.warn('One enchanted roof could not be rendered',e);continue}
+   updated.set(i,marker);
   }
-  this.lastCount=this.markers.length;
-  this.sync();return this.lastCount;
+  for(const [index,m] of this.byIndex){
+   if(!updated.has(index))try{m.remove()}catch(e){}
+  }
+  this.byIndex=updated;this.markers=[...updated.values()];
+  this.lastCount=this.markers.length;this.sync();
  }
  sync(){
   const show=this.magic&&this.night;
