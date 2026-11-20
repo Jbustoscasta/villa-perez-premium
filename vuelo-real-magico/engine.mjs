@@ -32,7 +32,7 @@ const deltaAngle=(a,b)=>((b-a+540)%360)-180;
 const empty=()=>({type:'FeatureCollection',features:[]});
 const point=p=>({type:'Feature',properties:{},geometry:{type:'Point',coordinates:p}});
 const geoLine=coords=>({type:'FeatureCollection',features:[{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:coords}}]});
-let chosen='plaza',map=null,city=null,styleLoaded=false,styleVersion=0,rooftops=[],windowTimer=0,toastTimer=0,ready=false;
+let chosen='plaza',map=null,city=null,styleLoaded=false,styleVersion=0,rooftops=[],windowTimer=0,toastTimer=0,ready=false,cityTilesRefresh=0,cityRefreshAt=0;
 let day=false,magic=true,playing=false,paused=false,overview=false,pov=false,phase='idle',mode='Ruta por calles',frame=0,lastFrame=0,elapsed=0,duration=68000,orbitTime=0,progress=0,currentHeading=280;
 let origin=[...ORIGIN],originName='Puerta de Alcalá · demo',destination=[...DEST.plaza.coords],destinationName=DEST.plaza.name,route=[],lengths=[],routeLength=0,privacyClipped=false;
 const message=(s,ms=3400)=>{clearTimeout(toastTimer);$('message').textContent=s;$('message').hidden=false;toastTimer=setTimeout(()=>$('message').hidden=true,ms)};
@@ -62,9 +62,10 @@ function cityHeight(){
   ['case',['>', ['var','h'],2],['var','h'],['>', ['var','levels'],0],['*',3.2,['var','levels']],16]];
 }
 function addMapFeatures(){
- if(!map||!map.isStyleLoaded())return;
+ if(!map||!map.getStyle()?.sources)return;
  const vec=currentVectorSource(),s=map.getStyle(),firstSymbol=s.layers?.find(l=>l.type==='symbol')?.id;
  const dark=!day,ver=++styleVersion;
+ cityTilesRefresh=0;cityRefreshAt=0;
  // Real PNOA aerials always remain the ground. Darkness is artistic color grading.
  if(!map.getSource('magic-pnoa'))map.addSource('magic-pnoa',{type:'raster',tiles:[PNOA],tileSize:256,scheme:'tms',maxzoom:19,
  attribution:'PNOA © Instituto Geográfico Nacional · CC BY 4.0 scne.es'});
@@ -176,7 +177,11 @@ async function initMap(){
    preserveDrawingBuffer:false,renderWorldCopies:false});
   map.on('style.load',()=>{styleLoaded=true;try{addMapFeatures()}catch(e){console.warn('3D layer installation',e)}});
   map.on('moveend',scheduleWindows);
-  map.on('sourcedata',e=>{if(e.isSourceLoaded&&city&&!city.ready){map.triggerRepaint?.()}});
+  map.on('sourcedata',e=>{
+   if(!e.isSourceLoaded||!city||e.sourceId!==currentVectorSource()||cityTilesRefresh>=9)return;
+   const now=Date.now();if(now-cityRefreshAt<1800)return;
+   cityRefreshAt=now;cityTilesRefresh++;city.ready=false;map.triggerRepaint?.();
+  });
   map.on('error',e=>{console.warn('MapLibre resource error',e?.error||e);});
   map.on('load',()=>{ready=true;try{addMapFeatures()}catch(e){}});
   window.addEventListener('resize',()=>map?.resize(),{passive:true});
@@ -245,7 +250,7 @@ async function calculateRoute(){
   message('El servicio de rutas está limitado: se mostrará una conexión panorámica aproximada.',6000);
  }
  privacyClipped=!!$('destination').value.trim();
- if(privacyClipped&&route.length>2)route=shortenHome(route,180);
+ if(privacyClipped){route=shortenHome(route,180);destination=[...route.at(-1)]}
  buildDistances();
 }
 function drawMini(t=0){
@@ -319,7 +324,8 @@ function startTimer(){
  showProgress(0);render();frame=requestAnimationFrame(tick);
 }
 async function startFlight(){
- if(playing||!map)return;
+ if(playing)return;
+ if(!map||!ready){message('El mapa 3D aún está cargando. Comprueba Internet si no aparece.');return}
  $('error').hidden=true;$('launch').disabled=true;
  try{
   $('launch').textContent='Localizando las calles…';
