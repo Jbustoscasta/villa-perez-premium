@@ -39,7 +39,13 @@ test('Magic decorations are depth-tested by Google mesh and light in mobile',()=
  try{
   const scene=new EnchantedRoofScene(map,Marker);
   const n=scene.populate(route);
-  assert.ok(n>=5&&n<=12);
+  assert.ok(n>=5&&n<=100,'all candidates may span the full route');
+  assert.ok(scene.markers.length<=12,'at most 12 mesh markers can be alive at once');
+  const firstPositions=scene.markers.map(m=>m.options.position.lng);
+  scene.setProgress(1);
+  assert.ok(scene.markers.length<=12,'sliding window stays bounded');
+  assert.notDeepEqual(scene.markers.map(m=>m.options.position.lng),firstPositions,
+   'the enchanted corridor follows the balloon on longer routes');
   assert.ok(scene.markers.every(m=>m.options.altitudeMode==='RELATIVE_TO_MESH'));
   assert.ok(scene.markers.every(m=>m.options.drawsWhenOccluded===false));
   assert.ok(scene.markers.every(m=>m.elements[0]?.content?.svg?.innerHTML.length>500));
