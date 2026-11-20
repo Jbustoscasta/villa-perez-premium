@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844" preserveAspectRatio="none">
+<title>Vista subjetiva desde el interior de la cesta del globo del Ratón Pérez</title>
+<defs>
+ <linearGradient id="cord" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#3f2b1e"/><stop offset=".3" stop-color="#d6ac70"/><stop offset=".58" stop-color="#f6dbab"/><stop offset="1" stop-color="#533927"/></linearGradient>
+ <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f7d9a1"/><stop offset=".24" stop-color="#aa7849"/><stop offset=".53" stop-color="#795033"/><stop offset=".87" stop-color="#36271f"/><stop offset="1" stop-color="#241f1c"/></linearGradient>
+ <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e7bc76" stop-opacity=".47"/><stop offset=".7" stop-color="#a36d4d" stop-opacity=".12"/><stop offset="1" stop-color="#795034" stop-opacity="0"/></linearGradient>
+ <linearGradient id="woven" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c69a61"/><stop offset=".43" stop-color="#84502f"/><stop offset="1" stop-color="#4c3427"/></linearGradient>
+ <pattern id="weave" width="23" height="18" patternUnits="userSpaceOnUse"><path d="M0 2 Q11 9 23 2 M0 11 Q11 18 23 11" fill="none" stroke="#e2b47b" stroke-width="2.7" opacity=".55"/><path d="M5 0V18 M17 0V18" stroke="#33241b" stroke-width="2" opacity=".42"/></pattern>
+ <radialGradient id="glow"><stop stop-color="#ffcf80" stop-opacity=".53"/><stop offset="1" stop-color="#f7cb84" stop-opacity="0"/></radialGradient>
+ <filter id="shade"><feGaussianBlur stdDeviation="3"/></filter>
+</defs>
+<!-- A very subtle visible underside of the envelope, never hiding the 3D street scene -->
+<path d="M-25 -46 Q195 -121 415 -46 L415 23 Q340 7 277 20 Q195 34 117 20 Q48 7 -25 23Z" fill="url(#panel)"/>
+<path d="M-23 19 Q195 50 413 19" fill="none" stroke="#d6b47f" stroke-opacity=".24" stroke-width="3"/>
+<!-- Rope rigging, partly cropped at both sides -->
+<path d="M14 2 Q29 292 63 710" stroke="#1b1a18" stroke-opacity=".32" stroke-width="12" fill="none" filter="url(#shade)"/>
+<path d="M376 2 Q361 292 327 710" stroke="#1b1a18" stroke-opacity=".32" stroke-width="12" fill="none" filter="url(#shade)"/>
+<path d="M17 -8 Q34 278 69 750" stroke="url(#cord)" stroke-width="5" fill="none"/>
+<path d="M373 -8 Q356 278 321 750" stroke="url(#cord)" stroke-width="5" fill="none"/>
+<path d="M3 95 Q49 345 107 739" fill="none" stroke="#ce9c61" stroke-width="2.8" opacity=".42"/>
+<path d="M387 95 Q341 345 283 739" fill="none" stroke="#ce9c61" stroke-width="2.8" opacity=".42"/>
+<!-- Lower basket structural struts -->
+<path d="M54 694 L48 833 M336 694 L342 833" stroke="#30251f" stroke-width="13" stroke-linecap="round"/>
+<path d="M54 694 L48 833 M336 694 L342 833" stroke="url(#cord)" stroke-width="6" stroke-linecap="round"/>
+<path d="M53 734L91 775 M337 734L299 775" stroke="#92633e" stroke-width="8" stroke-linecap="round"/>
+<!-- Basket interior and woven lower portion -->
+<path d="M-12 782 Q195 756 402 782L402 862H-12Z" fill="url(#woven)"/>
+<path d="M-12 782 Q195 756 402 782L402 862H-12Z" fill="url(#weave)" opacity=".88"/>
+<path d="M-12 784 Q195 750 402 784" fill="none" stroke="#271e19" stroke-width="26" opacity=".45" filter="url(#shade)"/>
+<!-- Round wooden edge and wicker lip -->
+<path d="M-16 770 Q195 726 406 770" fill="none" stroke="#281f1a" stroke-width="33" stroke-linecap="round"/>
+<path d="M-16 768 Q195 722 406 768" fill="none" stroke="url(#rim)" stroke-width="27" stroke-linecap="round"/>
+<path d="M-16 759 Q195 716 406 759" fill="none" stroke="#ffe3ae" stroke-width="3" stroke-opacity=".48"/>
+<path d="M-16 779 Q195 740 406 779" fill="none" stroke="#6b4028" stroke-width="4" stroke-opacity=".6"/>
+<!-- Brass attachments at the left/right rope anchors -->
+<g fill="#d7af71" stroke="#513b2b" stroke-width="3">
+ <path d="M50 722q-13-17 0-30l17 0q14 13 0 30Z"/>
+ <path d="M323 722q-13-17 0-30l17 0q14 13 0 30Z"/>
+</g>
+<g fill="#fae0a8" opacity=".78"><circle cx="58" cy="707" r="3.5"/><circle cx="331" cy="707" r="3.5"/></g>
+<!-- Gentle burner warmth at the very top, almost invisible -->
+<ellipse cx="195" cy="16" rx="78" ry="75" fill="url(#glow)" opacity=".26"/>
+</svg>
