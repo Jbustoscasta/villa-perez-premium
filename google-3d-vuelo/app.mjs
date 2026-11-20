@@ -662,6 +662,8 @@ function renderRoute(t){
  if(explorer.isActive())explorer.repaint(cameraPoint(p),p);
  else setCamera(cameraPoint(p),state.filteredHeading-9,p);
  updateMagicTrail(p,now);
+ // Recycle roof decorations every few hundred metres, not every animation frame.
+ state.enchantedRoofs?.setProgress(p);
  $('balloon').hidden=state.overview||explorer.isActive();
  $('balloon').style.opacity='1';
  progress(p*.82,1);
@@ -676,6 +678,7 @@ function renderOrbit(t){
  if(explorer.isActive())explorer.repaint(waypoint,1);
  else setCamera(waypoint,state.orbitStartHeading+ease*205,1);
  updateMagicTrail(.982+(Math.sin(p*Math.PI*4)+1)*.007,getNow());
+ state.enchantedRoofs?.setProgress(1);
  $('balloon').hidden=state.overview||explorer.isActive();
  const view=Math.min(3,Math.floor(p*4));
  if(view!==state.orbitView){
