@@ -18,11 +18,11 @@ const MAP_STYLE={night:'https://tiles.openfreemap.org/styles/dark',day:'https://
 /* In-browser fallback: real PNOA raster and OSM vector buildings,
    no synthetic architecture, even if the provider's style JSON fails. */
 function local3DStyle(isDay=false){
- return {version:8,name:'Villa Pérez · 3D real',
+ return {version:8,name:'Villa Pérez · 3D real (VersaTiles)',
   sources:{
-   openmaptiles:{type:'vector',url:'https://tiles.openfreemap.org/planet'},
+   openmaptiles:{type:'vector',url:'https://tiles.versatiles.org/tiles/osm/tiles.json'},
    'magic-pnoa':{type:'raster',tiles:[PNOA],tileSize:256,scheme:'tms',maxzoom:19,
-    attribution:'PNOA © Instituto Geográfico Nacional · CC BY 4.0 scne.es'}
+    attribution:'PNOA © Instituto Geográfico Nacional · CC BY 4.0 scne.es · © OpenStreetMap contributors'}
   },
   layers:[
    {id:'vp-base',type:'background',paint:{'background-color':isDay?'#7d939b':'#08192d'}},
@@ -68,6 +68,8 @@ function currentVectorSource(){
  const s=map.getStyle().sources||{};
  return Object.keys(s).find(k=>s[k].type==='vector')||null;
 }
+function buildingSourceLayer(){return styleFallback?'buildings':'building'}
+function streetsSourceLayer(){return styleFallback?'streets':'transportation'}
 function safeLayer(config,before){
  if(map.getLayer(config.id))return true;
  try{map.addLayer(config,before);return true}catch(e){console.warn('Optional map layer skipped',config.id,e);return false}
@@ -92,7 +94,7 @@ function addMapFeatures(){
   'raster-brightness-max':dark?.49:1,'raster-contrast':dark?.14:.03,'raster-saturation':dark?-.69:-.03
  }},firstSymbol);
  if(vec){
-  safeLayer({id:'magic-real-buildings',type:'fill-extrusion',source:vec,'source-layer':'building',minzoom:12,
+  safeLayer({id:'magic-real-buildings',type:'fill-extrusion',source:vec,'source-layer':buildingSourceLayer(),minzoom:12,
    paint:{
     'fill-extrusion-color':dark?['interpolate',['linear'],cityHeight(),2,'#26344a',16,'#334766',35,'#3c4e68',60,'#42516d']:
      ['interpolate',['linear'],cityHeight(),2,'#aaa99f',16,'#b6b0a6',35,'#a5a5a2',60,'#a3a9ac'],
@@ -105,11 +107,11 @@ function addMapFeatures(){
   if(dark){
    const roads=['motorway','trunk','primary','secondary','tertiary','residential','street','service'];
    const filter=['match',['get','class'],roads,true,false];
-   safeLayer({id:'magic-street-halo',type:'line',source:vec,'source-layer':'transportation',filter,
+   safeLayer({id:'magic-street-halo',type:'line',source:vec,'source-layer':streetsSourceLayer(),filter,
     layout:{'line-join':'round','line-cap':'round'},
     paint:{'line-color':'#eca866','line-width':['interpolate',['linear'],['zoom'],12,.2,16,3.0,18,6],
      'line-opacity':.40,'line-blur':4}},firstSymbol);
-   safeLayer({id:'magic-street-light',type:'line',source:vec,'source-layer':'transportation',filter,
+   safeLayer({id:'magic-street-light',type:'line',source:vec,'source-layer':streetsSourceLayer(),filter,
     layout:{'line-join':'round','line-cap':'round'},
     paint:{'line-color':'#f5c17d','line-width':['interpolate',['linear'],['zoom'],12,.1,16,.7,18,1.25],
      'line-opacity':.55,'line-blur':.4}},firstSymbol);
@@ -119,7 +121,7 @@ function addMapFeatures(){
   if(dark)cityLampTimer=setTimeout(()=>{
    if(!map||day||map.getLayer('vp-cinema-city')||!map.getLayer('magic-real-buildings'))return;
    try{
-    const lamps=createCinemaCity(map,{getSource:()=>currentVectorSource(),getRoute:()=>route,
+    const lamps=createCinemaCity(map,{getSource:()=>currentVectorSource(),getSourceLayer:()=>buildingSourceLayer(),getRoute:()=>route,
      onStats:info=>{if(info.real>0&&phase==='idle')status('CIUDAD REAL · FACHADAS 3D')}});
     lamps.day=false;lamps.active=magic;
     map.addLayer(lamps,map.getStyle()?.layers?.find(l=>l.type==='symbol')?.id);
@@ -170,7 +172,7 @@ function scheduleWindows(){
   if(!map||!map.getStyle()?.sources||map.getZoom()<14.3){rooftops=[];setPoints('magic-roofs',[]);return}
   const vec=currentVectorSource();if(!vec)return;
   try{
-   const features=map.querySourceFeatures(vec,{sourceLayer:'building'});
+   const features=map.querySourceFeatures(vec,{sourceLayer:buildingSourceLayer()});
    const roofs=[],seen=new Set(),bounds=map.getBounds();
    for(const f of features){
     if(roofs.length>=42)break;
@@ -213,7 +215,7 @@ function check3DData(){
   if(!map||!ready||day)return;
   const vector=currentVectorSource();
   let count=0;
-  try{count=vector?(map.querySourceFeatures(vector,{sourceLayer:'building'})||[]).length:0}catch(e){}
+  try{count=vector?(map.querySourceFeatures(vector,{sourceLayer:buildingSourceLayer()})||[]).length:0}catch(e){}
   if(count===0){
    status('PROVEEDOR 3D SIN EDIFICIOS');
    message('La cartografía responde, pero faltan las geometrías de edificios. Este modo no las sustituye por edificios inventados.',7600);
@@ -227,7 +229,7 @@ function armStyleWatchdog(){
   if(!styleFallback){
    styleFallback=true;
    status('RECUPERANDO MAPA 3D');
-   message('El estilo remoto no respondió; probando directamente fotografía PNOA y geometría OSM.',4600);
+   message('El proveedor original no respondió; probando fotografía PNOA y edificios reales con VersaTiles.',4600);
    try{map?.setStyle(local3DStyle(day));armStyleWatchdog()}
    catch(e){showMapError('No se pudo recuperar el mapa: '+String(e?.message||e))}
   }else{
@@ -250,7 +252,7 @@ async function initMap(){
  try{
   map=new window.maplibregl.Map({
    container:'map',style:MAP_STYLE.night,center:ORIGIN,zoom:17.0,pitch:74,bearing:-24,
-   maxPitch:85,antialias:true,attributionControl:true,cooperativeGestures:false,
+   maxPitch:85,antialias:false,attributionControl:true,cooperativeGestures:false,
    preserveDrawingBuffer:false,renderWorldCopies:false
   });
   const onStyleReady=()=>{
