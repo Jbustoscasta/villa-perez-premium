@@ -1,5 +1,5 @@
 import {createArchitecture3D} from './architecture-v2.mjs?v=2.0.0';
-import {createMagicAtmosphere} from '../vuelo-cine/magic-atmosphere.mjs?v=4.0.0';
+import {createMagicAtmosphere} from './magic-atmosphere-v2.mjs?v=2.0.0';
 
 /* Villa Pérez · Vuelo real mágico v1
  * Real aerial tiles PNOA/IGN and REAL OSM building footprints.
