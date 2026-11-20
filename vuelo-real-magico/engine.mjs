@@ -1,4 +1,4 @@
-import {createCinemaCity} from '../vuelo-cine/cinema-city.mjs?v=4.0.0';
+import {createCinemaCity} from '../vuelo-cine/cinema-city.mjs?v=4.1.0';
 import {createMagicAtmosphere} from '../vuelo-cine/magic-atmosphere.mjs?v=4.0.0';
 
 /* Villa Pérez · Vuelo real mágico v1
@@ -217,8 +217,18 @@ function check3DData(){
   let count=0;
   try{count=vector?(map.querySourceFeatures(vector,{sourceLayer:buildingSourceLayer()})||[]).length:0}catch(e){}
   if(count===0){
-   status('PROVEEDOR 3D SIN EDIFICIOS');
-   message('La cartografía responde, pero faltan las geometrías de edificios. Este modo no las sustituye por edificios inventados.',7600);
+   if(!styleFallback){
+    ready=false;styleFallback=true;
+    status('RECUPERANDO EDIFICIOS 3D');
+    message('El primer proveedor no ha entregado edificios. Probando geometría 3D alternativa.',5200);
+    try{map.setStyle(local3DStyle(day));armStyleWatchdog()}
+    catch(e){showMapError('No se pudo recuperar la geometría de edificios: '+String(e?.message||e))}
+   }else{
+    status('NO SE RECIBEN EDIFICIOS 3D');
+    $('error').textContent='La fotografía puede estar disponible, pero no han llegado los datos 3D. No se sustituirán por edificios planos. Prueba de nuevo con Safari y conexión estable.';
+    $('error').hidden=false;
+    message('El proveedor alternativo tampoco ha entregado edificios 3D. Comprueba Internet y vuelve a intentarlo.',9000);
+   }
   }
  },9200);
 }
