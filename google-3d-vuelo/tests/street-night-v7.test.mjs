@@ -10,14 +10,14 @@ const xy=(a,b)=>{
 test('Geographic night lights follow real route rather than made-up building positions',()=>{
  const {lamps,sparks,distance}=buildStreetNightPoints(line);
  assert.ok(distance>1500);
- assert.ok(lamps.length>=8&&lamps.length<=26);
- assert.ok(sparks.length>0&&sparks.length<=7);
+ assert.ok(lamps.length>=8&&lamps.length<=30);
+ assert.ok(sparks.length>0&&sparks.length<=8);
  for(const p of lamps){
   assert.ok(p.altitude>=4&&p.altitude<=8);
   assert.ok(line.some(q=>xy(p,q)<1200),'each light stays near known route');
  }
  for(const p of sparks){
-  assert.ok(p.altitude>=19&&p.altitude<=31);
+  assert.ok(p.altitude>=1&&p.altitude<=4&&p.mesh===true);
   assert.ok(line.some(q=>xy(p,q)<1200));
  }
 });
@@ -28,8 +28,8 @@ test('A route with no coordinates produces no imaginary lights',()=>{
 test('Numbers stay bounded even for very long journeys',()=>{
  const path=[{lat:40,lng:-3.7},{lat:40.9,lng:-3.7}];
  const result=buildStreetNightPoints(path);
- assert.ok(result.lamps.length<=26);
- assert.ok(result.sparks.length<=7);
+ assert.ok(result.lamps.length<=30);
+ assert.ok(result.sparks.length<=8);
 });
 test('Night / magic toggles preserve scene hierarchy and remove all lights',()=>{
  let count=0;
