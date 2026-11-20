@@ -1,5 +1,6 @@
 import {calculateStreetRoute,interpolate as geoLerp} from './flight-native.mjs?v=3.1.2';
 import {installLook360} from './look360.mjs?v=5.4.0';
+import {CinemaNight} from './night-cinema.mjs?v=6.1.0';
 /*
  * Villa Pérez Google 3D experiment.
  * Google Maps JavaScript API 3D, photorealistic daytime only.
@@ -8,6 +9,9 @@ import {installLook360} from './look360.mjs?v=5.4.0';
  * API key is held in sessionStorage of this tab; never committed, logged, or put in URL.
  */
 const $=id=>document.getElementById(id);
+// The photoreal source is real Google 3D. Night is a cinematic reconstruction.
+document.documentElement.classList.add('night-active','night-css-fallback');
+const cinema=new CinemaNight($('nightCanvas'));
 const START={lat:40.42016,lng:-3.68845};
 const routes={
  plaza:{
@@ -45,7 +49,7 @@ const state={
  destinationMarker:null,routeGlow:null,routeLine:null,overview:false,overviewTimer:0,
  overviewWasPlaying:false,originStored:false,
  terrainSamples:[],turnLastTs:0,takeoffMs:0,takeoffDurationMs:2600,overviewSnapshot:null,takeoffBearing:0,
- routeSpark:null,routeSparkTip:null,magicLastAt:0,magicDraws:0
+ routeSpark:null,routeSparkTip:null,magicLastAt:0,magicDraws:0,day:false
 };
 const R=Earth=>Earth*Math.PI/180;
 function distance(a,b){
@@ -145,6 +149,7 @@ async function connectGoogle(){
    });
    $('mapHost').appendChild(map);
    $('beforeMap').hidden=true;
+   cinema.setNight(!state.day);
    let rendered3d=false;
    map.addEventListener('gmp-steadychange',event=>{
      if(event.isSteady){rendered3d=true;status('GOOGLE 3D · ESCENA CARGADA');}
@@ -551,6 +556,7 @@ function progress(n,total){
  const pct=Math.round(clamp01(n/Math.max(1,total))*100);
  $('progressLabel').textContent=pct+'%';
  $('progressFill').style.width=pct+'%';
+ cinema.setProgress(clamp01(n/Math.max(1,total)));
 }
 function scene(n,total){
  const names=state.custom
@@ -808,6 +814,14 @@ $('overviewToggle').addEventListener('click',toggleOverview);
 $('pause').addEventListener('click',pause);
 $('restart').addEventListener('click',restart);
 $('again').addEventListener('click',restart);
+$('nightToggle').addEventListener('click',()=>{
+ state.day=!state.day;
+ document.documentElement.classList.toggle('night-active',!state.day);
+ cinema.setNight(!state.day);
+ $('nightToggle').textContent=state.day?'☾ Ver de noche':'☀ Ver de día';
+ $('nightToggle').setAttribute('aria-pressed',String(!state.day));
+ info(state.day?'Fotogrametría de día.':'Vuelo nocturno recreado sobre la ciudad 3D real.');
+});
 $('fxToggle').addEventListener('click',()=>{
  state.effectsOn=!state.effectsOn;
  $('dustLayer').classList.toggle('fx-off',!state.effectsOn);
@@ -819,6 +833,7 @@ $('fxToggle').addEventListener('click',()=>{
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden&&state.playing&&!state.paused)pause();
 });
+window.addEventListener('pagehide',()=>cinema.stop());
 for(let i=0;i<27;i++){
  const el=document.createElement('i');
  el.style.left=(i*37%100)+'%';el.style.top=(i*53%100)+'%';
