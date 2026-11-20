@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#091927">
 <meta name="description" content="Sobrevuela las calles reales de tu barrio con el Ratón Pérez en un globo mágico.">
 <title>Villa Pérez · Vuelo mágico sobre tu barrio</title>
-<link rel="stylesheet" href="./styles.css?v=5.4.0">
-<script type="module" src="./app.mjs?v=5.4.0"></script>
+<link rel="stylesheet" href="./styles.css?v=5.5.0">
+<script type="module" src="./app.mjs?v=5.5.0"></script>
 </head>
 <body>
 <div class="app">
@@ -70,14 +70,14 @@
  </div>
  <div class="pov-scene" id="povScene" hidden aria-label="Vista desde el interior del globo">
   <div class="pov-drag" id="povDrag" aria-label="Desliza el dedo para mirar alrededor si no usas el giroscopio"></div>
-  <img id="povBasketPhoto" class="pov-basket" src="https://ilusiono.com/wp-content/uploads/2026/11/villa-perez-vista-globo-pov-transparente.png" alt="" aria-hidden="true" draggable="false" decoding="async" fetchpriority="high">
+  <img id="povBasketPhoto" class="pov-basket" src="https://ilusiono.com/wp-content/uploads/2026/11/villa-perez-pov-cesta-globo-transparente-2026.png" alt="" aria-hidden="true" draggable="false" decoding="async" fetchpriority="high">
  </div>
  <div class="pov-controls" id="povControls" hidden>
-  <div class="pov-caption"><strong>🔭 Mira desde el globo</strong><span id="povHint" role="status">Gira tu móvil o desliza el dedo para explorar.</span></div>
+  <div class="pov-caption"><strong>🔭 Mira desde el globo</strong><span id="povHint" role="status">Gira el móvil o arrastra para explorar.</span></div>
   <div class="pov-actions">
    <button id="povPause" type="button">⏸ Pausar</button>
    <button id="povRecenter" type="button">◎ Recentrar</button>
-   <button id="povExit" type="button">✕ Salir de la cesta</button>
+   <button id="povExit" type="button" aria-label="Salir de la cesta" title="Salir de la cesta">✕ Salir</button>
   </div>
  </div>
  <div class="flight-overlay" id="flightUI" hidden>
