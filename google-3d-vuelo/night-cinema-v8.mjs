@@ -31,7 +31,10 @@ export class CinemaNight{
   const density=Math.min(window.devicePixelRatio||1,1.25);
   const w=Math.max(1,Math.round(rect.width*density));
   const h=Math.max(1,Math.round(rect.height*density));
-  if(c.width!==w||c.height!==h){c.width=w;c.height=h}
+  if(c.width!==w||c.height!==h){
+   c.width=w;c.height=h;
+   if(this.level>.003)this.draw(performance.now());
+  }
  }
  draw(now=performance.now()){
   const ctx=this.ctx;if(!ctx)return;
