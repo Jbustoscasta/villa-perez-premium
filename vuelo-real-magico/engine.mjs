@@ -1,9 +1,9 @@
-import {createCinemaCity} from '../vuelo-cine/cinema-city.mjs?v=4.1.0';
+import {createArchitecture3D} from './architecture-v2.mjs?v=2.0.0';
 import {createMagicAtmosphere} from '../vuelo-cine/magic-atmosphere.mjs?v=4.0.0';
 
 /* Villa Pérez · Vuelo real mágico v1
  * Real aerial tiles PNOA/IGN and REAL OSM building footprints.
- * No houses, streets, fake roof geometry or Google tiles are invented.
+ * No houses or streets are invented. Architectural detailing is an artistic interpretation.
  * Public OSRM / Photon endpoints are for demonstration, not commercial SLA.
  */
 const $=id=>document.getElementById(id);
@@ -59,7 +59,7 @@ const status=s=>$('status').textContent=s;
 const fx=createMagicAtmosphere({
  canvas:$('magicCanvas'),
  getBalloon:()=>$('balloon'),
- getRoofs:()=>rooftops,
+ getRoofs:()=>[], // rooftop stars are now placed at roof altitude in WebGL
  getMap:()=>map,
  getFlying:()=>playing&&!paused&&!overview&&!pov&&['route','orbit'].includes(phase)
 });
@@ -90,51 +90,68 @@ function addMapFeatures(){
  if(!map.getSource('magic-pnoa'))map.addSource('magic-pnoa',{type:'raster',tiles:[PNOA],tileSize:256,scheme:'tms',maxzoom:19,
  attribution:'PNOA © Instituto Geográfico Nacional · CC BY 4.0 scne.es'});
  safeLayer({id:'magic-pnoa-photo',type:'raster',source:'magic-pnoa',paint:{
-  'raster-opacity':dark?.96:.98,'raster-brightness-min':dark?.028:0,
-  'raster-brightness-max':dark?.49:1,'raster-contrast':dark?.14:.03,'raster-saturation':dark?-.69:-.03
+  'raster-opacity':dark?.96:.98,'raster-brightness-min':dark?.046:0,
+  'raster-brightness-max':dark?.58:1,'raster-contrast':dark?.14:.03,'raster-saturation':dark?-.57:-.03
  }},firstSymbol);
  if(vec){
   safeLayer({id:'magic-real-buildings',type:'fill-extrusion',source:vec,'source-layer':buildingSourceLayer(),minzoom:12,
    paint:{
-    'fill-extrusion-color':dark?['interpolate',['linear'],cityHeight(),2,'#26344a',16,'#334766',35,'#3c4e68',60,'#42516d']:
+    'fill-extrusion-color':dark?['interpolate',['linear'],cityHeight(),2,'#374761',16,'#52647d',35,'#4c607b',60,'#465d77']:
      ['interpolate',['linear'],cityHeight(),2,'#aaa99f',16,'#b6b0a6',35,'#a5a5a2',60,'#a3a9ac'],
     'fill-extrusion-height':cityHeight(),
     'fill-extrusion-base':['max',0,['to-number',['get','render_min_height'],0]],
     'fill-extrusion-opacity':dark?.98:.94,
     'fill-extrusion-vertical-gradient':true
    }},firstSymbol);
-  // Golden road light follows the actual OSM transportation geometry.
+   // Real footprint cap: a slate / copper / terracotta accent, 40 cm thick.
+   safeLayer({id:'magic-real-roof-caps',type:'fill-extrusion',source:vec,
+    'source-layer':buildingSourceLayer(),minzoom:14,
+    paint:{
+     'fill-extrusion-color':dark?
+      ['match',['to-string',['coalesce',['get','roof:colour'],['get','roof:color'],'']],
+       'red','#77525d','terracotta','#855d57','green','#466e69','blue','#4c6683','#63718a']:
+      '#beb9af',
+     'fill-extrusion-base':['max',0,['-',cityHeight(),.40]],
+     'fill-extrusion-height':['+',cityHeight(),.20],
+     'fill-extrusion-opacity':dark?.83:.58,
+     'fill-extrusion-vertical-gradient':false
+    }},firstSymbol);
+   // Golden road light follows the actual OSM transportation geometry.
   if(dark){
    const roads=['motorway','trunk','primary','secondary','tertiary','residential','street','service'];
    const filter=['match',['get','class'],roads,true,false];
    safeLayer({id:'magic-street-halo',type:'line',source:vec,'source-layer':streetsSourceLayer(),filter,
     layout:{'line-join':'round','line-cap':'round'},
-    paint:{'line-color':'#eca866','line-width':['interpolate',['linear'],['zoom'],12,.2,16,3.0,18,6],
-     'line-opacity':.40,'line-blur':4}},firstSymbol);
+    paint:{'line-color':'#e0a05d','line-width':['interpolate',['linear'],['zoom'],12,.2,16,3.0,18,6],
+     'line-opacity':.32,'line-blur':5}},firstSymbol);
    safeLayer({id:'magic-street-light',type:'line',source:vec,'source-layer':streetsSourceLayer(),filter,
     layout:{'line-join':'round','line-cap':'round'},
-    paint:{'line-color':'#f5c17d','line-width':['interpolate',['linear'],['zoom'],12,.1,16,.7,18,1.25],
-     'line-opacity':.55,'line-blur':.4}},firstSymbol);
+    paint:{'line-color':'#f7c98a','line-width':['interpolate',['linear'],['zoom'],12,.1,16,.7,18,1.25],
+     'line-opacity':.66,'line-blur':.35}},firstSymbol);
   }
-  // Delay optional shader until the photographic base and real extrusion render.
-  clearTimeout(cityLampTimer);
-  if(dark)cityLampTimer=setTimeout(()=>{
-   if(!map||day||map.getLayer('vp-cinema-city')||!map.getLayer('magic-real-buildings'))return;
-   try{
-    const lamps=createCinemaCity(map,{getSource:()=>currentVectorSource(),getSourceLayer:()=>buildingSourceLayer(),getRoute:()=>route,
-     onStats:info=>{if(info.real>0&&phase==='idle')status('CIUDAD REAL · FACHADAS 3D')}});
-    lamps.day=false;lamps.active=magic;
-    map.addLayer(lamps,map.getStyle()?.layers?.find(l=>l.type==='symbol')?.id);
-    city=lamps;
-   }catch(e){console.warn('Optional lamps unavailable; native 3D preserved',e);city=null}
-  },1300);
+   // Decorative geometry anchored strictly to actual OSM building footprints.
+   // Delayed so MapLibre can paint the real aerial base first on iPhone.
+   clearTimeout(cityLampTimer);
+   if(dark)cityLampTimer=setTimeout(()=>{
+    if(!map||day||map.getLayer('vp-architecture-v2')||!map.getLayer('magic-real-buildings'))return;
+    try{
+     const architecture=createArchitecture3D(map,{
+      getSource:()=>currentVectorSource(),
+      getSourceLayer:()=>buildingSourceLayer(),
+      onStats:info=>{
+       if(info.real>0&&phase==='idle')status('CIUDAD REAL · ARQUITECTURA MÁGICA 3D');
+      }
+     });
+     architecture.active=magic;
+     map.addLayer(architecture,map.getStyle()?.layers?.find(l=>l.type==='symbol')?.id);
+     city=architecture;
+    }catch(e){console.warn('Optional architecture unavailable; the real 3D buildings remain',e);city=null}
+   },1150);
  }
  for(const name of ['magic-route','magic-done','magic-sparks','magic-roofs']){
   if(!map.getSource(name))map.addSource(name,{type:'geojson',data:empty()});
  }
- if(dark)safeLayer({id:'magic-roof-lamps',type:'circle',source:'magic-roofs',
-  paint:{'circle-color':'#ffe0a3','circle-radius':['interpolate',['linear'],['zoom'],14,1.1,18,3.2],
-  'circle-opacity':.65,'circle-blur':.56}},firstSymbol);
+  // Rooftop lanterns are now positioned in 3D at real building heights.
  safeLayer({id:'magic-route-glow',type:'line',source:'magic-route',
   layout:{'line-cap':'round','line-join':'round'},
   paint:{'line-color':'#a570e6','line-width':9,'line-blur':5,'line-opacity':.72}},firstSymbol);
@@ -150,8 +167,17 @@ function addMapFeatures(){
   paint:{'circle-color':'#fff8cc','circle-radius':1.6,'circle-blur':.2,'circle-opacity':.92}},firstSymbol);
  try{map.setLight?.({anchor:'viewport',color:dark?'#afc5ed':'#fff3dd',intensity:dark?.7:.85,position:[1.3,195,45]})}catch(e){}
  try{if(dark)map.setSky?.({'sky-color':'#091930','horizon-color':'#233951','fog-color':'#1c2c47','sky-horizon-blend':.5,'horizon-fog-blend':.2,'fog-ground-blend':.12})}catch(e){}
- if(ver===styleVersion){updateLayers();scheduleWindows()}
+ // Avoid rendering intrusive street labels on top of cinematic rooftops.
+  // Map attributions remain untouched.
+  for(const layer of map.getStyle()?.layers||[]){
+   if(layer.type!=='symbol')continue;
+   if(/road.*label|road.*name|street.*label|street.*name|poi.*label/i.test(layer.id)){
+    try{map.setLayoutProperty(layer.id,'visibility',dark?'none':'visible')}catch(e){}
+   }
+  }
+  if(ver===styleVersion){updateLayers();scheduleWindows()}
  fx.setActive(dark&&magic);
+  city?.setMagic?.(magic);
  status(dark?'EDIFICIOS 3D · CAPAS ACTIVAS':'FOTOGRAFÍA REAL · DÍA');
 }
 function setSource(id,data){
@@ -399,10 +425,10 @@ function render(){
  if(!map||route.length<2||overview)return;
  if(phase==='route'){
   const here=coordAt(progress),a=coordAt(Math.max(0,progress-.003)),b=coordAt(Math.min(1,progress+.004));
-  const h=heading(a,b);currentHeading=(currentHeading+deltaAngle(currentHeading,h)*.15+360)%360;
+  const h=heading(a,b);currentHeading=(currentHeading+deltaAngle(currentHeading,h)*.095+360)%360;
   const ahead=coordAt(Math.min(1,progress+.006));
   const center=lerpCoord(here,ahead,.18);
-  if(!pov)map.jumpTo({center,zoom:innerWidth<650?17.25:17.55,pitch:76,bearing:currentHeading-16});
+  if(!pov)map.jumpTo({center,zoom:innerWidth<650?17.43:17.58,pitch:75,bearing:currentHeading-14});
   else updatePOVCamera(here);
   city?.setFocus?.(center);setSource('magic-done',geoLine(prefix(progress)));
   $('phase').textContent=mode==='Ruta real por calles'?'Seguimos las calles reales desde el cielo':'Ruta panorámica aproximada';
@@ -509,8 +535,8 @@ function toggleDay(){
 }
 function toggleMagic(){
  magic=!magic;$('magic').classList.toggle('selected',magic);$('magic').textContent=magic?'✦ Magia':'✧ Sin magia';
- fx.setActive(magic&&!day);city?.setActive?.(magic&&!day);
- const ids=['magic-roof-lamps','magic-street-halo','magic-street-light'];
+ fx.setActive(magic&&!day);city?.setActive?.(magic&&!day);city?.setMagic?.(magic);
+ const ids=['magic-street-halo','magic-street-light'];
  for(const id of ids)if(map?.getLayer(id))map.setLayoutProperty(id,'visibility',magic?'visible':'none');
  if(magic){updateLayers();scheduleWindows()}
  else{rooftops=[];setPoints('magic-roofs',[]);setPoints('magic-sparks',[])}
