@@ -122,7 +122,7 @@ function roofSVG(type,index,special){
     +window+'<path d="M18 102 H82" stroke="'+gold+'" stroke-width="4"/>'
     +glint(72,27,12);
  }
- const background='<ellipse cx="50" cy="106" rx="29" ry="7" fill="#ffca7e" opacity=".18"/>';
+ const background='<circle cx="50" cy="66" r="'+(special?49:40)+'" fill="'+shine+'" opacity="'+(special?'.86':'.57')+'"/><ellipse cx="50" cy="106" rx="29" ry="7" fill="#ffca7e" opacity=".18"/>';
  // SVG defs and art are static, the viewBox includes the complete silhouette.
  svg.innerHTML=defs+background+draw;
  return svg;
@@ -146,7 +146,7 @@ export class EnchantedRoofScene{
      position:{lat:p.lat,lng:p.lng,altitude:p.altitude},
      altitudeMode:'RELATIVE_TO_MESH',
      drawsWhenOccluded:false,
-     sizePreserved:false,
+     sizePreserved:Boolean(p.special),
      zIndex:p.special?12:8
     });
     const template=document.createElement('template');
