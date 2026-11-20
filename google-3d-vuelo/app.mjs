@@ -1,4 +1,5 @@
 import {calculateStreetRoute,interpolate as geoLerp} from './flight-native.mjs?v=3.1.2';
+import {installLook360} from './look360.mjs?v=5.3.0';
 /*
  * Villa Pérez Google 3D experiment.
  * Google Maps JavaScript API 3D, photorealistic daytime only.
@@ -392,6 +393,7 @@ function closeOverview(){
 }
 function enterOverview({intro=false}={}){
  if(!state.points?.length)return;
+ if(explorer.isActive())explorer.disable(false);
  stopFrame();
  state.overview=true;
  $('atlasFrame').hidden=false;
@@ -613,9 +615,10 @@ function renderRoute(t){
   const change=Math.max(-maxTurn,Math.min(maxTurn,difference*damping));
   state.filteredHeading=normHeading(state.filteredHeading+change);
  }
- setCamera(cameraPoint(p),state.filteredHeading-9,p);
+ if(explorer.isActive())explorer.repaint(cameraPoint(p),p);
+ else setCamera(cameraPoint(p),state.filteredHeading-9,p);
  updateMagicTrail(p,now);
- $('balloon').hidden=state.overview;
+ $('balloon').hidden=state.overview||explorer.isActive();
  $('balloon').style.opacity='1';
  progress(p*.82,1);
  scene(p,1);
@@ -625,9 +628,10 @@ function renderOrbit(t){
  const waypoint=state.points[state.points.length-1];
  // A measured 205-degree final panorama, eased to avoid a whip-pan.
  const ease=(1-Math.cos(Math.PI*p))/2;
- setCamera(waypoint,state.orbitStartHeading+ease*205,1);
+ if(explorer.isActive())explorer.repaint(waypoint,1);
+ else setCamera(waypoint,state.orbitStartHeading+ease*205,1);
  updateMagicTrail(.982+(Math.sin(p*Math.PI*4)+1)*.007,getNow());
- $('balloon').hidden=state.overview;
+ $('balloon').hidden=state.overview||explorer.isActive();
  const view=Math.min(3,Math.floor(p*4));
  if(view!==state.orbitView){
   state.orbitView=view;
@@ -640,6 +644,7 @@ function renderOrbit(t){
  progress(.82+.18*p,1);
 }
 function finishFlight(){
+ explorer.disable(false);
  stopFrame();clearTimeout(state.overviewTimer);state.overviewTimer=0;state.overview=false;
  $('atlasFrame').hidden=true;
  state.playing=false;state.paused=false;state.phase='done';
@@ -759,6 +764,7 @@ function pause(){
  }
 }
 function restart(){
+ explorer.disable(false);
  stopFrame();clearTimeout(state.overviewTimer);state.overviewTimer=0;state.overview=false;
  $('atlasFrame').hidden=true;
  state.flightToken++;state.playing=false;state.paused=false;state.busy=false;
@@ -777,6 +783,21 @@ function restart(){
  if(state.loaded){resetCamera();status('GOOGLE MAPS · FOTOGRAFÍA 3D')}
  progress(0,1);
 }
+const explorer=installLook360({
+ state,$,now:getNow,norm:normHeading,shortest:shortestTurn,
+ routeProgress:()=>state.phase==='orbit'?1:clamp01(state.progressMs/Math.max(1,state.routeDurationMs)),
+ routePoint:()=>state.phase==='orbit'?state.points.at(-1)
+  :cameraPoint(clamp01(state.progressMs/Math.max(1,state.routeDurationMs))),
+ terrainAt:terrainAltitudeAt,
+ headingNow:()=>state.phase==='orbit'
+  ?state.orbitStartHeading:((state.filteredHeading??state.takeoffBearing)-9),
+ restoreCamera:()=>{
+  if(state.phase==='route')renderRoute(clamp01(state.progressMs/Math.max(1,state.routeDurationMs)));
+  else if(state.phase==='orbit')renderOrbit(state.orbitElapsedMs/state.orbitDurationMs);
+  else if(state.phase==='takeoff')renderTakeoff(state.takeoffMs/state.takeoffDurationMs);
+ },
+ notify:info
+});
 $('launch').addEventListener('click',fly);
 $('overviewToggle').addEventListener('click',toggleOverview);
 $('pause').addEventListener('click',pause);
