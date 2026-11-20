@@ -851,3 +851,44 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
 @media(min-width:760px){
  .app.pov-active .pov-scene .pov-basket{clip-path:none}
 }
+
+
+/* Plan A: nocturnal flight is the DEFAULT. Only Google supplies the city mesh.
+ * Cinematic blue-hour grade fades away BEFORE attribution/copyright overlays;
+ * no filters are applied to Google-owned satellite tiles or Google logo. */
+html.night-active .cinema-grade,
+html.night-css-fallback .cinema-grade{
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 72%,transparent 97%);
+ mask-image:linear-gradient(to bottom,#000 0%,#000 72%,transparent 97%);
+}
+html.night-active .cinema-grade{
+ background:
+  radial-gradient(ellipse 70% 38% at 42% 28%,rgba(34,65,111,.14),transparent 91%),
+  linear-gradient(180deg,rgba(3,13,33,.14),rgba(5,14,39,.18) 40%,rgba(5,13,29,.24));
+}
+html.night-css-fallback .cinema-grade{
+ background:
+  radial-gradient(ellipse 85% 34% at 58% 22%,rgba(41,78,139,.30),transparent 82%),
+  linear-gradient(180deg,rgba(2,12,35,.56),rgba(5,17,41,.52) 55%,rgba(4,10,27,.48))!important;
+}
+.night-cinema{
+ z-index:3;bottom:66px;height:calc(100% - 66px);
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 76%,transparent 99%);
+ mask-image:linear-gradient(to bottom,#000 0%,#000 76%,transparent 99%);
+}
+.overview-tools #nightToggle{
+ background:linear-gradient(125deg,rgba(17,38,63,.95),rgba(59,47,72,.92));
+ border:1.5px solid rgba(245,202,130,.85);
+ color:#ffebba;
+ min-height:37px;
+ padding:8px 12px;
+ font-weight:800;
+ box-shadow:0 4px 16px rgba(2,11,29,.42);
+}
+html.night-active .dust-layer:not(.fx-off){opacity:.41}
+html.night-active .balloon-flare{filter:drop-shadow(0 0 9px rgba(255,198,94,.45))}
+@media(max-width:700px){
+ .overview-tools{top:max(92px,calc(env(safe-area-inset-top) + 72px));gap:5px}
+ .overview-tools #nightToggle{font-size:11px;min-height:33px;padding:7px 11px}
+}
+@media(prefers-reduced-motion:reduce){.night-cinema{display:none!important}}
