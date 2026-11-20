@@ -666,7 +666,8 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
   overflow: hidden;
 }
 .app.pov-active .pov-drag {
-  inset: 0;
+  /* Let users tap Google's information/attribution links at the map bottom. */
+  inset: 0 0 var(--pov-credit-clearance) 0;
   z-index:1;
 }
 .app.pov-active .pov-scene .pov-basket {
