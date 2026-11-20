@@ -477,3 +477,45 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
  .pov-actions button{padding:10px 5px;font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){.pov-basket{animation:none}}
+
+/* v5.4 — Approved cinematic transparent PNG in the 360° POV.
+   Preserve the original photo's details, clear center and Google's credits. */
+.pov-scene .pov-basket{
+  left:50%;
+  right:auto;
+  top:0;
+  bottom:42px;
+  width:100%;
+  height:calc(100% - 42px);
+  max-width:none;
+  object-fit:fill;
+  object-position:center center;
+  pointer-events:none;
+  image-rendering:auto;
+  mix-blend-mode:normal;
+  filter:drop-shadow(0 -2px 5px rgba(20,22,28,.18));
+  transform:translateX(-50%);
+  transform-origin:center 75%;
+  animation:povBasketPhotoFloat 8.2s ease-in-out infinite;
+}
+@keyframes povBasketPhotoFloat {
+  0%,100% {transform:translateX(-50%) translateY(0)}
+  50% {transform:translateX(-50%) translateY(2px)}
+}
+/* Restrict the portrait foreground to the central viewport on laptops and
+   landscape phones. It must not be stretched across a 16:9 landscape screen. */
+@media(min-width:760px){
+  .pov-scene .pov-basket {width:min(100%, 640px)}
+}
+@media(max-height:500px) and (orientation:landscape){
+  .pov-scene .pov-basket {width:min(100%, 52vh)}
+  .pov-controls {
+    bottom:max(49px,env(safe-area-inset-bottom) + 46px);
+  }
+  .pov-caption{padding:5px 8px}
+}
+/* The POV frame is the only active figure in first-person mode; never
+   superpose the old basket graphic or obscure the legal Google attribution. */
+@media(prefers-reduced-motion:reduce){
+  .pov-scene .pov-basket{animation:none!important;transform:translateX(-50%)}
+}
