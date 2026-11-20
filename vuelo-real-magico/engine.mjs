@@ -255,6 +255,8 @@ function check3DData(){
   let count=0;
   try{count=(map.querySourceFeatures('vp-3d-buildings',{sourceLayer:'building'})||[]).length}catch(e){}
   if(count>0&&map.getLayer('magic-real-buildings')){
+   // The primary source has recovered; remove the temporary second-source extrusion.
+   if(map.getLayer('vp-building-rescue'))try{map.removeLayer('vp-building-rescue')}catch(e){}
    try{
     map.moveLayer('magic-real-buildings');
     if(map.getLayer('magic-real-roof-caps'))map.moveLayer('magic-real-roof-caps');
@@ -264,6 +266,32 @@ function check3DData(){
    return;
   }
   if(count===0){
+   // Recovery source B: the style's existing vector data, which supplied the 3D
+   // buildings in the earlier working version. No buildings are invented.
+   const source=currentVectorSource(),layer=buildingSourceLayer();
+   let alternativeCount=0;
+   if(source&&source!=='vp-3d-buildings'){
+    try{alternativeCount=(map.querySourceFeatures(source,{sourceLayer:layer})||[]).length}catch(e){}
+   }
+   if(alternativeCount>0){
+    if(!map.getLayer('vp-building-rescue'))try{
+     map.addLayer({
+      id:'vp-building-rescue',type:'fill-extrusion',source,'source-layer':layer,minzoom:13,
+      paint:{
+       'fill-extrusion-color':day?'#b7b6aa':'#7789a1',
+       'fill-extrusion-base':['max',0,['to-number',['get','render_min_height'],0]],
+       'fill-extrusion-height':cityHeight(),
+       'fill-extrusion-opacity':1,
+       'fill-extrusion-vertical-gradient':true
+      }
+     });
+    }catch(e){console.warn('Secondary real 3D layer unavailable',e)}
+    if(map.getLayer('vp-building-rescue')){
+     try{map.moveLayer('vp-building-rescue')}catch(e){}
+     status('EDIFICIOS 3D · PROVEEDOR ALTERNATIVO');
+     return;
+    }
+   }
    if(!styleFallback){
     status('ESPERANDO DATOS DE EDIFICIOS');
     message('La fotografía ha cargado, pero los edificios 3D siguen descargándose. Mantengo el mapa sin sustituirlo.',5200);
