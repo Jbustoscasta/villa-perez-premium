@@ -1,6 +1,6 @@
 import {calculateStreetRoute,interpolate as geoLerp} from './flight-native.mjs?v=3.1.2';
 import {installLook360} from './look360.mjs?v=5.4.0';
-import {CinemaNight} from './night-cinema.mjs?v=6.2.0';
+import {CinemaNight} from './night-cinema.mjs?v=7.0.0';
 import {StreetNightScene} from './street-night-v7.mjs?v=7.0.0';
 /*
  * Villa Pérez Google 3D experiment.
