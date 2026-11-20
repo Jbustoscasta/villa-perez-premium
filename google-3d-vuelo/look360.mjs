@@ -2,11 +2,11 @@
  * orientation when granted, touch-drag fallback and transparent basket overlay.
  * No geolocation or sensor data is transmitted to a Villa Pérez server.
  */
-export function installLook360({state,$,now,norm,shortest,routeProgress,routePoint,terrainAt,headingNow,restoreCamera,notify}){
+export function installLook360({state,$,now,norm,shortest,routeProgress,routePoint,terrainAt,headingNow,restoreCamera,notify,onPause}){
  const l={active:false,sensorWorking:false,lastYaw:null,accumYaw:0,pitchZero:null,
   pitch:0,dragYaw:0,dragTilt:0,anchor:0,heading:0,tilt:77,lastDraw:0,
   pointer:null,x:0,y:0,savedFov:null,faulted:false,permissionTimer:0};
- const pad=$('lookGesturePad');
+ const pad=$('povDrag');
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
  function repaint(position=routePoint(),progress=routeProgress(),force=false){
   if(!l.active||!state.map||!position)return;
@@ -55,7 +55,7 @@ export function installLook360({state,$,now,norm,shortest,routeProgress,routePoi
     l.pitch=clamp((pitch-l.pitchZero)*.65,-42,42);
   }
   l.sensorWorking=true;
-  $('lookStatus').textContent='Gira el móvil para explorar. También puedes arrastrar con el dedo.';
+  $('povHint').textContent='Gira el móvil para explorar. También puedes arrastrar con el dedo.';
   if(state.paused)repaint(routePoint(),routeProgress(),true);
  }
  function recenter(){
@@ -71,13 +71,15 @@ export function installLook360({state,$,now,norm,shortest,routeProgress,routePoi
   l.active=false;l.sensorWorking=false;l.lastYaw=null;l.pitchZero=null;l.pointer=null;
   clearTimeout(l.permissionTimer);
   window.removeEventListener('deviceorientation',onSensor);
-  $('povOverlay').hidden=true;
+  $('povScene').hidden=true;
   pad.hidden=true;
-  $('povTools').hidden=true;
-  $('lookToggle').textContent='🔭 Mirar 360°';
-  $('lookToggle').setAttribute('aria-pressed','false');
+  $('povControls').hidden=true;
+  $('povToggle').textContent='🔭 Mirar 360°';
+  $('povToggle').setAttribute('aria-pressed','false');
   if(Number.isFinite(l.savedFov)&&state.map)try{state.map.fov=l.savedFov}catch(e){}
   $('balloon').hidden=state.overview||state.phase==='done';
+  $('povToggle').hidden=!state.playing;
+  $('.app').classList.remove('pov-active');
   if(restore)restoreCamera();
  }
  async function toggle(){
@@ -92,10 +94,12 @@ export function installLook360({state,$,now,norm,shortest,routeProgress,routePoi
   l.anchor=norm(state.map?.heading??headingNow());
   l.heading=l.anchor;l.tilt=77;l.savedFov=state.map?.fov;
   $('balloon').hidden=true;
-  $('povOverlay').hidden=false;pad.hidden=false;$('povTools').hidden=false;
-  $('lookToggle').textContent='↩ Salir de 360°';
-  $('lookToggle').setAttribute('aria-pressed','true');
-  $('lookStatus').textContent='Arrastra para mirar. Activando movimiento del móvil…';
+  $('.app').classList.add('pov-active');
+  $('povPause').textContent=state.paused?'▶ Continuar':'⏸ Pausar';
+  $('povScene').hidden=false;pad.hidden=false;$('povControls').hidden=false;
+  $('povToggle').textContent='↩ Salir de 360°';
+  $('povToggle').setAttribute('aria-pressed','true');
+  $('povHint').textContent='Arrastra para mirar. Activando movimiento del móvil…';
   try{state.map.fov=73}catch(e){}
   repaint(routePoint(),routeProgress(),true);
   // On iOS Safari this must be invoked INSIDE the tap handler, before any await.
@@ -111,10 +115,10 @@ export function installLook360({state,$,now,norm,shortest,routeProgress,routePoi
    window.addEventListener('deviceorientation',onSensor,{passive:true});
    l.permissionTimer=setTimeout(()=>{
     if(l.active&&!l.sensorWorking)
-     $('lookStatus').textContent='Sin datos de movimiento: explora arrastrando con el dedo.';
+     $('povHint').textContent='Sin datos de movimiento: explora arrastrando con el dedo.';
    },2200);
   }else{
-   $('lookStatus').textContent='Control táctil: arrastra para mirar a tu alrededor.';
+   $('povHint').textContent='Control táctil: arrastra para mirar a tu alrededor.';
   }
  }
  pad.addEventListener('pointerdown',event=>{
@@ -142,7 +146,13 @@ export function installLook360({state,$,now,norm,shortest,routeProgress,routePoi
  window.addEventListener('orientationchange',()=>{
   if(l.active){l.lastYaw=null;l.pitchZero=null}
  });
- $('lookToggle').addEventListener('click',toggle);
- $('lookRecenter').addEventListener('click',recenter);
+ $('povToggle').addEventListener('click',toggle);
+ $('povRecenter').addEventListener('click',recenter);
+ $('povExit').addEventListener('click',()=>disable());
+ $('povPause').addEventListener('click',()=>{
+  if(!l.active)return;
+  onPause();
+  $('povPause').textContent=state.paused?'▶ Continuar':'⏸ Pausar';
+ });
  return {isActive:()=>l.active,repaint,disable,recenter};
 }
