@@ -394,6 +394,7 @@ function closeOverview(){
 function enterOverview({intro=false}={}){
  if(!state.points?.length)return;
  if(explorer.isActive())explorer.disable(false);
+ $('povToggle').hidden=true;
  stopFrame();
  state.overview=true;
  $('atlasFrame').hidden=false;
@@ -615,6 +616,7 @@ function renderRoute(t){
   const change=Math.max(-maxTurn,Math.min(maxTurn,difference*damping));
   state.filteredHeading=normHeading(state.filteredHeading+change);
  }
+ $('povToggle').hidden=false;
  if(explorer.isActive())explorer.repaint(cameraPoint(p),p);
  else setCamera(cameraPoint(p),state.filteredHeading-9,p);
  updateMagicTrail(p,now);
@@ -628,6 +630,7 @@ function renderOrbit(t){
  const waypoint=state.points[state.points.length-1];
  // A measured 205-degree final panorama, eased to avoid a whip-pan.
  const ease=(1-Math.cos(Math.PI*p))/2;
+ $('povToggle').hidden=false;
  if(explorer.isActive())explorer.repaint(waypoint,1);
  else setCamera(waypoint,state.orbitStartHeading+ease*205,1);
  updateMagicTrail(.982+(Math.sin(p*Math.PI*4)+1)*.007,getNow());
@@ -645,6 +648,7 @@ function renderOrbit(t){
 }
 function finishFlight(){
  explorer.disable(false);
+ $('povToggle').hidden=true;
  stopFrame();clearTimeout(state.overviewTimer);state.overviewTimer=0;state.overview=false;
  $('atlasFrame').hidden=true;
  state.playing=false;state.paused=false;state.phase='done';
@@ -765,6 +769,7 @@ function pause(){
 }
 function restart(){
  explorer.disable(false);
+ $('povToggle').hidden=true;
  stopFrame();clearTimeout(state.overviewTimer);state.overviewTimer=0;state.overview=false;
  $('atlasFrame').hidden=true;
  state.flightToken++;state.playing=false;state.paused=false;state.busy=false;
@@ -796,7 +801,7 @@ const explorer=installLook360({
   else if(state.phase==='orbit')renderOrbit(state.orbitElapsedMs/state.orbitDurationMs);
   else if(state.phase==='takeoff')renderTakeoff(state.takeoffMs/state.takeoffDurationMs);
  },
- notify:info
+ notify:info,onPause:pause
 });
 $('launch').addEventListener('click',fly);
 $('overviewToggle').addEventListener('click',toggleOverview);
