@@ -58,3 +58,42 @@ body:not(.day) #map .maplibregl-canvas{filter:contrast(1.075) saturate(1.18) bri
 .real-3d-cta>span:last-child{font-size:23px;font-weight:800}
 .real-3d-footnote{font-size:10px!important;color:#bacdd1!important;line-height:1.45!important;margin-bottom:14px!important}
 @media(max-width:700px){.real-3d-cta{margin:10px 0 6px;padding:10px 12px}.real-3d-cta strong{font-size:12px}}
+
+/* Villa Pérez 3.0 PNOA POV: always reserve a real strip for the native map credits,
+   never erase them and never cut a hole into the photographic balloon basket. */
+:root{--credit-height:56px}
+.brand-crest img{width:30px;height:30px;object-fit:contain}
+.maplibregl-ctrl-bottom-right{position:absolute!important;left:0!important;right:0!important;bottom:0!important;z-index:25!important;width:100%!important;pointer-events:auto}
+.maplibregl-ctrl-bottom-right>.maplibregl-ctrl{float:none!important;margin:0!important}
+.maplibregl-ctrl-attrib{display:block!important;width:100%!important;max-width:100%!important;max-height:var(--credit-height);overflow-y:auto;text-align:center;padding:7px 12px!important;line-height:1.3!important;background:rgba(5,19,31,.97)!important;border-top:1px solid rgba(255,217,151,.43);color:#dfebe8!important;font-size:10px!important}
+.maplibregl-ctrl-attrib a{color:#f2e7cf!important}
+.setup{bottom:calc(var(--credit-height) + 7px);max-height:calc(100dvh - 150px)}
+.journey-foot{bottom:calc(var(--credit-height) + 11px)}
+.journey-head-actions{display:flex;flex-direction:column;align-items:flex-end;gap:7px;pointer-events:auto}
+.journey-head-actions .overview-button{white-space:nowrap}
+.pov-scene{position:absolute;inset:0 0 var(--credit-height) 0;overflow:hidden;z-index:15;pointer-events:none}
+.pov-drag{position:absolute;inset:0;pointer-events:auto;touch-action:none;z-index:1;cursor:grab}
+.pov-drag:active{cursor:grabbing}
+.pov-basket{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;object-position:center;pointer-events:none;user-select:none;animation:povFloat 8s ease-in-out infinite}
+.pov-controls{position:absolute;left:0;right:0;bottom:var(--credit-height);z-index:18;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px;min-height:120px;padding:16px 12px 12px;background:radial-gradient(ellipse 68% 120% at 50% 0%,rgba(255,216,157,.21),transparent 80%),repeating-linear-gradient(92deg,#7d5537 0,#946841 3px,#513424 10px,#6c452e 16px);border-top:3px solid #edbe7d;box-shadow:0 -6px 21px #0a1015bd}
+.pov-caption{display:grid;text-align:center;gap:3px;text-shadow:0 2px 5px #10171c}
+.pov-caption strong{font:italic 700 clamp(17px,4.4vw,22px) Georgia,"Times New Roman",serif;color:#fff2d4}
+.pov-caption span{color:#fff2de;font-size:11px}
+.pov-actions{width:min(100%,500px);display:grid;grid-template-columns:1fr 1.17fr .82fr;gap:7px}
+.pov-actions button{min-width:0;min-height:41px;border:1px solid #f8d5a2;border-radius:13px;background:linear-gradient(180deg,#213b4c,#0a2434);color:#fff3d9;font-size:12px;font-weight:800;white-space:nowrap;touch-action:manipulation}
+body.pov-active .flight-interface,body.pov-active .topbar{display:none!important}
+body.pov-active .maplibregl-marker{display:none!important}
+body.pov-active .starscape{opacity:.1}
+@keyframes povFloat{50%{transform:translateY(1.5px)}}
+@media(max-width:700px){
+ .journey-head{top:max(82px,calc(env(safe-area-inset-top) + 60px))}
+ .journey-head-actions{gap:4px}.journey-head-actions .overview-button{padding:8px 7px;font-size:10px}
+ .journey-copy{max-width:47%}
+ .setup{bottom:calc(var(--credit-height) + 4px);max-height:calc(100dvh - 132px)}
+ .pov-controls{padding:13px 9px 8px}.pov-actions{gap:5px}.pov-actions button{font-size:11px;padding:5px 2px;min-height:39px}
+}
+@media(max-height:520px) and (orientation:landscape){
+ :root{--credit-height:35px}
+ .pov-controls{min-height:50px;padding:4px 8px}.pov-caption{display:none}.pov-actions button{min-height:30px}
+}
+@media(prefers-reduced-motion:reduce){.pov-basket{animation:none}}
