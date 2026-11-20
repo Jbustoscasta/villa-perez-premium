@@ -12,12 +12,14 @@ export function installLook360({state,$,now,norm,shortest,routeProgress,routePoi
  const povImage=$('povBasketPhoto');
  if(povImage){
   let usedFallback=false;
-  povImage.addEventListener('error',()=>{
+  const fallback=()=>{
    if(usedFallback)return;
    usedFallback=true;
    povImage.src='./assets/vista-cesta-360.svg';
    console.warn('El primer plano fotográfico del globo no está disponible: mostrando cesta vectorial de respaldo.');
-  });
+  };
+  povImage.addEventListener('error',fallback);
+  if(povImage.complete&&!povImage.naturalWidth)fallback();
  }
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
  function repaint(position=routePoint(),progress=routeProgress(),force=false){
