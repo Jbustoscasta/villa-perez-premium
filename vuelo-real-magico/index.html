@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="theme-color" content="#08182b">
+ <meta name="description" content="Vuelo 3D real sobre Madrid con el Ratón Pérez, fotografía aérea PNOA y una noche ligeramente mágica.">
+ <title>Villa Pérez · El vuelo mágico 3D</title>
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.7.0/dist/maplibre-gl.css">
+ <link rel="stylesheet" href="./styles.css?v=1.0.0">
+</head>
+<body>
+<main class="app" id="app">
+ <div id="map" class="map" aria-label="Vista aérea 3D de edificios y calles reales"></div>
+ <div class="sky-veil" aria-hidden="true"></div>
+ <canvas id="magicCanvas" class="magic-canvas" aria-hidden="true"></canvas>
+ <header class="header">
+  <div class="brand"><div class="brand-mark"><img src="../perez.png" alt="" width="34" height="40"></div><div><b>VILLA PÉREZ</b><strong>El vuelo mágico</strong></div></div>
+  <span class="map-status" id="status">CARGANDO CIUDAD REAL</span>
+ </header>
+ <nav class="top-actions" aria-label="Controles de vista">
+  <button id="day" type="button" class="cream">☀️ <span>Ver de día</span></button>
+  <button id="overview" type="button" class="cream">Ver mapa</button>
+ </nav>
+ <section class="story" id="story" hidden>
+  <div class="chapter"><h2 id="chapterTitle">Seguimos entre las nubes</h2><p id="chapterSub">Las calles reales de Madrid nos guían.</p></div>
+  <div class="mini-map"><div class="mini-title"><b>Tu recorrido</b><span>✧</span></div><canvas id="miniRoute" width="250" height="145" aria-label="Resumen esquemático de la ruta real"></canvas></div>
+ </section>
+ <div id="balloon" class="balloon" hidden role="img" aria-label="Globo de Villa Pérez con el Ratón Pérez oficial">
+  <span class="flame" aria-hidden="true"></span>
+  <img class="balloon-back" src="../google-3d-vuelo/assets/globo-cinematico.svg" alt="" draggable="false">
+  <img class="perez-official" src="../perez.png" alt="" draggable="false">
+  <img class="balloon-front" src="../google-3d-vuelo/assets/cesta-cinematica.svg" alt="" draggable="false">
+ </div>
+ <div class="setup" id="setup">
+  <span class="eyebrow">VILLA PÉREZ · EL VUELO MÁGICO</span>
+  <h1>Esta noche, <em>la ciudad es mágica.</em></h1>
+  <p>Edificios y calles de verdad, vistos desde el globo. La magia ilumina la ciudad sin cambiar su arquitectura.</p>
+  <div class="clinic-details">
+   <label for="originAddress">Clínica de salida <small>(opcional, se configura una vez)</small></label>
+   <input id="originAddress" placeholder="Dirección de tu clínica · Madrid" autocomplete="street-address">
+   <small>Si se deja vacío, la demostración sale de Puerta de Alcalá.</small>
+  </div>
+  <label for="destination">¿Adónde volará el Ratón Pérez?</label>
+  <input id="destination" placeholder="Escribe calle y ciudad" autocomplete="street-address">
+  <div class="quick-destinations">
+   <button type="button" data-place="plaza" class="choice active">Plaza Mayor</button>
+   <button type="button" data-place="bernabeu" class="choice">Bernabéu</button>
+   <button type="button" data-place="arroyofresno" class="choice">Arroyo Fresno</button>
+  </div>
+  <div class="launch-row"><button type="button" id="launch" class="gold-action">✦ Comenzar vuelo 3D</button></div>
+  <p class="error" id="error" role="alert" hidden></p>
+  <small class="legal-note">Demo sobre PNOA/IGN y edificios OpenStreetMap. La iluminación es una recreación artística. El destino familiar se oculta en el tramo final.</small>
+ </div>
+ <div id="povScene" class="pov-scene" hidden>
+  <div class="pov-drag" id="povDrag" aria-label="Arrastra para mirar desde el globo"></div>
+  <img src="../google-3d-vuelo/assets/cesta-pov-transparente.svg" alt="" class="pov-basket" draggable="false">
+  <div class="pov-label"><strong>🔭 Mira desde el globo</strong><small id="povHint">Mueve el móvil o desliza para explorar.</small></div>
+  <div class="pov-buttons">
+   <button id="povRecenter" type="button">◎ Recentrar</button>
+   <button id="povExit" type="button">✕ Salir</button>
+  </div>
+ </div>
+ <section id="flightHud" class="flight-hud" hidden>
+  <div class="journey-line"><strong id="routeLabel">Puerta de Alcalá → Plaza Mayor</strong><b id="progress">0%</b></div>
+  <div id="phase" class="phase">Vista desde el globo</div>
+  <div class="bar"><div id="barFill"></div></div>
+  <div class="flight-controls">
+   <button id="pause" type="button">Pausar vista</button>
+   <button id="magic" type="button" class="selected">✦ Magia</button>
+   <button id="pov" type="button">🔭 Vista 360°</button>
+   <button id="restart" type="button">Otro destino</button>
+  </div>
+  <div class="flight-footnote" id="routeMode">Ruta real por calles · Edificios 3D</div>
+ </section>
+ <section id="arrival" class="arrival" hidden>
+  <div class="arrival-card">
+   <span>✦ MISIÓN CUMPLIDA ✦</span><h2>¡Pérez está muy cerca!</h2>
+   <p>Hemos sobrevolado calles y edificios reales. Los últimos metros hasta casa son un secreto.</p>
+   <button class="gold-action" id="again" type="button">↻ Otro vuelo mágico</button>
+  </div>
+ </section>
+ <footer class="credits"><a href="https://pnoa.ign.es/" target="_blank" rel="noopener">PNOA / IGN</a> · <a href="https://www.scne.es/" target="_blank" rel="noopener">CC BY 4.0 scne.es</a> · <a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a> · edificios 3D recreados con datos OSM</footer>
+ <div id="message" class="message" role="status" hidden></div>
+</main>
+<script defer src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.7.0/dist/maplibre-gl.js"></script>
+<script type="module" src="./engine.mjs?v=1.0.0"></script>
+</body>
+</html>
