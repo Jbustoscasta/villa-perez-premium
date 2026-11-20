@@ -1,7 +1,7 @@
 /**
  * Villa Pérez | City of Dreams
  * Real OSM building footprints gain pitched/hipped roofs and lit windows.
- * Fictional period architecture fills sparse areas while routes remain real.
+ * Never invents architecture: lighting sits on actual mapped building footprints.
  * Renders in MapLibre's existing WebGL context (NO second renderer).
  */
 const DEG=Math.PI/180,EARTH=40075016.6856;
@@ -15,7 +15,7 @@ const vShader=[
  'void main(){gl_Position=u_matrix*vec4(a_position,1.);',
  'v_color=vec4(mix(a_color.rgb,a_color.rgb*vec3(1.12,1.1,1.06),u_day*.28),a_color.a);}'
 ].join('\n');
-const fShader=['precision mediump float;','varying vec4 v_color;','void main(){gl_FragColor=v_color;}'].join('\n');
+const fShader=['precision mediump float;','varying vec4 v_color;','uniform float u_time;', 'void main(){float pulse=0.89+0.11*sin(u_time*0.70+v_color.a*31.0);gl_FragColor=vec4(v_color.rgb*pulse,0.92);}'].join('\n');
 const roofColors=[[.12,.28,.31,1],[.47,.17,.21,1],[.42,.26,.19,1],[.25,.28,.43,1],[.48,.32,.25,1]];
 const wallColors=[[.30,.34,.41,1],[.43,.35,.32,1],[.29,.39,.39,1],[.38,.32,.39,1]];
 const lit=[.98,.74,.35,1],bright=[1,.90,.63,1],windowDark=[.08,.15,.22,1];
@@ -40,46 +40,6 @@ function getBuildings(map,src,focus){
  }
  return found;
 }
-function makeFantasy(focus,route,existing){
- const count=existing>90?0:existing>55?20:58,blocks=[];
- const seed=Math.round(focus[0]*10000)+Math.round(focus[1]*10000);
- // Pick street segments actually near the visible camera instead of random
- // streets miles away along a long destination route.
- const near=[];
- if(route?.length>2){
-  const stride=Math.max(1,Math.floor(route.length/500));
-  for(let j=0;j<route.length-1;j+=stride){
-   if(meters(route[j],focus)<580)near.push(j);
-  }
- }
- for(let i=0;i<count;i++){
-  let p,angle=0;
-  if(near.length){
-   const k=near[Math.floor(hash(i*5,seed)*near.length)];
-   const a=route[k],b=route[k+1]||route[k];
-   const d=meters(a,b);
-   if(d<8||meters(a,focus)>540)continue;
-   const t=.18+.64*hash(i,seed),r=50+48*hash(i+33,seed);
-   const dx=(b[0]-a[0])*111320*Math.cos(a[1]*DEG),dy=(b[1]-a[1])*111320;
-   angle=Math.atan2(dy,dx);
-   const side=i%2?1:-1;
-   p=[a[0]+(b[0]-a[0])*t-side*Math.sin(angle)*r/(111320*Math.cos(a[1]*DEG)),
-      a[1]+(b[1]-a[1])*t+side*Math.cos(angle)*r/111320];
-  }else{
-   const col=i%8,row=Math.floor(i/8),j=hash(i,seed);
-   const east=(col-3.5)*83+(j-.5)*25,north=(row-3.5)*83+(j-.5)*25;
-   if(Math.abs(east)<70&&Math.abs(north)<70)continue;
-   p=[focus[0]+east/(111320*Math.cos(focus[1]*DEG)),focus[1]+north/111320];
-  }
-  if(meters(p,focus)>630)continue;
-  const w=16+20*hash(i+4,seed),d=15+18*hash(i+54,seed);
-  const c=Math.cos(angle),s=Math.sin(angle),cosLat=Math.cos(p[1]*DEG);
-  const ring=[[-w/2,-d/2],[w/2,-d/2],[w/2,d/2],[-w/2,d/2]]
-   .map(([x,y])=>[p[0]+(x*c-y*s)/(111320*cosLat),p[1]+(x*s+y*c)/111320]);
-  blocks.push({ring,center:p,height:14+6*Math.floor(hash(i+2,seed)*6),seed:hash(i+9,seed),fictitious:true});
- }
- return blocks;
-}
 function projectionMatrix(P,o,scale){
  const M=[scale,0,0,0,0,-scale,0,0,0,0,scale,0,o.x,o.y,0,1];
  const A=new Float32Array(16);
@@ -95,24 +55,13 @@ function buildGeometry(map,focus,route,source,day){
  const tri=(a,b,c,color)=>{for(const v of [a,b,c])vertices.push(...v,...color)};
  const quad=(a,b,c,d,color)=>{tri(a,b,c,color);tri(a,c,d,color)};
  const shade=(color,f)=>[color[0]*f,color[1]*f,color[2]*f,1];
- const mapped=getBuildings(map,source,focus),fictitious=makeFantasy(focus,route,mapped.length);
- for(const b of [...mapped,...fictitious]){
+ const mapped=getBuildings(map,source,focus);
+ for(const b of mapped){
   const points=b.ring.map(p=>loc(p)),p=loc(b.center);
   const roofColor=roofColors[Math.floor(b.seed*roofColors.length)%roofColors.length];
-  const roofRise=3+7*hash(b.seed*91,4),h=b.height;
-  // Build walls only where real source does not provide geometry.
-  if(b.fictitious){
-   const base=wallColors[Math.floor(b.seed*wallColors.length)%wallColors.length];
-   for(let i=0;i<points.length;i++){
-    const a=points[i],c=points[(i+1)%points.length],f=.82+.25*hash(i,b.seed*90);
-    quad([a[0],a[1],0],[c[0],c[1],0],[c[0],c[1],h],[a[0],a[1],h],shade(base,f));
-   }
-  }
-  // Individual roof slopes; roof geometry sits on real 3D OSM footprints.
-  for(let i=0;i<points.length;i++){
-   const a=points[i],q=points[(i+1)%points.length];
-   tri([a[0],a[1],h],[q[0],q[1],h],[p[0],p[1],h+roofRise],shade(roofColor,.82+.25*hash(i,b.seed)));
-  }
+  const h=b.height;
+  // Actual OSM building extrusions remain the only walls.
+  // Original roof shape and PNOA photo stay untouched.
   // Warm lit windows project from the building faces (not a screen filter).
   for(let i=0;i<Math.min(10,points.length);i++){
    const a=points[i],q=points[(i+1)%points.length];
@@ -131,7 +80,8 @@ function buildGeometry(map,focus,route,source,day){
     if(z+1.8>h)continue;
     const v=[x-dir[0]*ww/2,y-dir[1]*ww/2,z],
       u=[x+dir[0]*ww/2,y+dir[1]*ww/2,z];
-    const color=day?[.39,.58,.67,1]:litSeed>.83?bright:lit;
+    const rgb=day?[.39,.58,.67]:litSeed>.83?bright:lit;
+    const color=[rgb[0],rgb[1],rgb[2],litSeed];
     quad(v,u,[u[0],u[1],z+1.75],[v[0],v[1],z+1.75],color);
     // Window muntin adds architectural detail at close range.
     if(litSeed>.91){
@@ -142,15 +92,9 @@ function buildGeometry(map,focus,route,source,day){
     }
    }
   }
-  // Copper chimney on select invented houses gives an old storybook skyline.
-  if(b.fictitious&&b.seed>.79){
-   const x=p[0]+1.5,y=p[1]+1.5,z=h+1,hh=4.5;
-   const ca=[x-1,y-1,z],cb=[x+1,y-1,z],cc=[x+1,y+1,z],cd=[x-1,y+1,z];
-   quad(ca,cb,[cb[0],cb[1],z+hh],[ca[0],ca[1],z+hh],[.46,.26,.20,1]);
-   quad(cb,cc,[cc[0],cc[1],z+hh],[cb[0],cb[1],z+hh],[.39,.21,.18,1]);
-  }
+
  }
- return {data:new Float32Array(vertices),origin:center,real:mapped.length,fantasy:fictitious.length};
+ return {data:new Float32Array(vertices),origin:center,real:mapped.length,fantasy:0};
 }
 export function createCinemaCity(map,{getRoute=()=>[],getSource=()=>null,onStats=()=>{}}={}){
  const obj={
@@ -173,6 +117,7 @@ export function createCinemaCity(map,{getRoute=()=>[],getSource=()=>null,onStats
    this.ac=gl.getAttribLocation(program,'a_color');
    this.um=gl.getUniformLocation(program,'u_matrix');
    this.ud=gl.getUniformLocation(program,'u_day');
+   this.ut=gl.getUniformLocation(program,'u_time');
    const c=m.getCenter();this.focus=[c.lng,c.lat];
    this.ready=false;
   },
@@ -207,10 +152,13 @@ export function createCinemaCity(map,{getRoute=()=>[],getSource=()=>null,onStats
    gl.vertexAttribPointer(this.ac,4,gl.FLOAT,false,28,12);
    gl.uniformMatrix4fv(this.um,false,projectionMatrix(P,this.origin,this.origin.scale));
    gl.uniform1f(this.ud,this.day?1:0);
+   gl.uniform1f(this.ut,performance.now()/1000);
+   gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
    gl.enable(gl.DEPTH_TEST);
-   gl.depthMask(true);
+   gl.depthMask(false);
    gl.disable(gl.CULL_FACE);
    gl.drawArrays(gl.TRIANGLES,0,this.count);
+   gl.depthMask(true);
    gl.disableVertexAttribArray(this.ap);
    gl.disableVertexAttribArray(this.ac);
    gl.bindBuffer(gl.ARRAY_BUFFER,null);
