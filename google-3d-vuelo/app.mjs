@@ -1,6 +1,7 @@
 import {calculateStreetRoute,interpolate as geoLerp} from './flight-native.mjs?v=3.1.2';
 import {installLook360} from './look360.mjs?v=5.4.0';
 import {CinemaNight} from './night-cinema.mjs?v=6.2.0';
+import {StreetNightScene} from './street-night-v7.mjs?v=7.0.0';
 /*
  * Villa Pérez Google 3D experiment.
  * Google Maps JavaScript API 3D, photorealistic daytime only.
@@ -49,7 +50,7 @@ const state={
  destinationMarker:null,routeGlow:null,routeLine:null,overview:false,overviewTimer:0,
  overviewWasPlaying:false,originStored:false,
  terrainSamples:[],turnLastTs:0,takeoffMs:0,takeoffDurationMs:2600,overviewSnapshot:null,takeoffBearing:0,
- routeSpark:null,routeSparkTip:null,magicLastAt:0,magicDraws:0,day:false,fireflies:[]
+ routeSpark:null,routeSparkTip:null,magicLastAt:0,magicDraws:0,day:false,fireflies:[],streetNight:null
 };
 const R=Earth=>Earth*Math.PI/180;
 function distance(a,b){
@@ -139,6 +140,7 @@ async function connectGoogle(){
      qualityMode:'FIDELITY',defaultUIHidden:true
    });
    state.map=map;
+   state.streetNight=new StreetNightScene(map,Marker3DElement);
    // Keep SATELLITE photogrammetry as the single cinematic visual mode.
    map.mode='SATELLITE';
    map.style.cssText='width:100%;height:100%;display:block;';
@@ -271,6 +273,7 @@ function createOriginMarker(){
  }catch(e){console.warn('Origin pin unavailable:',e)}
 }
 function clearRouteMap(){
+ state.streetNight?.clear();
  removeElement(state.routeGlow);removeElement(state.routeLine);
  removeElement(state.routeSpark);removeElement(state.routeSparkTip);
  for(const fly of state.fireflies)removeElement(fly);
@@ -315,34 +318,10 @@ function makePolyline(points,destination){
   path:[origin,origin],strokeColor:'#FFFCEC',strokeWidth:4,
   outerColor:'#B7F6EE',outerWidth:.95
  });
- // Floating magical lights are tied to the real geographic route, not
- // a fixed screen overlay or imaginary buildings.
- if(state.Marker3DElement){
-  const count=Math.min(12,Math.max(5,Math.floor(points.length/10)));
-  for(let i=0;i<count;i++){
-   const index=Math.min(points.length-1,Math.round((i+.5)/count*(points.length-1)));
-   const coord=points[index];
-   if(!coord||!Number.isFinite(coord.lat)||!Number.isFinite(coord.lng))continue;
-   try{
-    const fly=new state.Marker3DElement({
-     position:{lat:coord.lat,lng:coord.lng,altitude:25+(i%5)*5},
-     altitudeMode:'RELATIVE_TO_GROUND',drawsWhenOccluded:false,sizePreserved:true
-    });
-    const ns='http://www.w3.org/2000/svg';
-    const svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 32 32');
-    svg.setAttribute('width','32');svg.setAttribute('height','32');
-    const circle=document.createElementNS(ns,'circle');
-    circle.setAttribute('cx','16');circle.setAttribute('cy','16');
-    circle.setAttribute('r','13');circle.setAttribute('fill','#ffc76e');circle.setAttribute('opacity','.19');
-    const spark=document.createElementNS(ns,'path');
-    spark.setAttribute('d','M16 3L18.5 13.5L29 16L18.5 18.5L16 29L13.5 18.5L3 16L13.5 13.5Z');
-    spark.setAttribute('fill',i%3===0?'#fff2d5':'#ffd58b');
-    spark.setAttribute('opacity','.93');svg.append(circle,spark);
-    const template=document.createElement('template');template.content.append(svg);
-    fly.append(template);if(state.effectsOn)state.map.append(fly);state.fireflies.push(fly);
-   }catch(e){console.warn('A route firefly could not be rendered',e);break}
-  }
- }
+ // Geographic city lanterns and sparse enchanted glints along the actual route.
+ // These are not fabricated or recolored windows on the Google meshes.
+ try{state.streetNight?.populate(points)}
+ catch(e){console.warn('Optional 3D street lights unavailable',e)}
  createOriginMarker();
  if(state.Marker3DElement){
   try{
@@ -848,6 +827,7 @@ $('nightToggle').addEventListener('click',()=>{
  state.day=!state.day;
  document.documentElement.classList.toggle('night-active',!state.day);
  cinema.setNight(!state.day);
+ state.streetNight?.setNight(!state.day);
  $('nightToggle').textContent=state.day?'☾ Ver de noche':'☀ Ver de día';
  $('nightToggle').setAttribute('aria-pressed',String(!state.day));
  info(state.day?'Fotogrametría de día.':'Vuelo nocturno recreado sobre la ciudad 3D real.');
@@ -856,6 +836,7 @@ $('fxToggle').addEventListener('click',()=>{
  state.effectsOn=!state.effectsOn;
  $('dustLayer').classList.toggle('fx-off',!state.effectsOn);
  $('balloon').classList.toggle('fx-off',!state.effectsOn);
+ state.streetNight?.setMagic(state.effectsOn);
  for(const marker of state.fireflies){
   try{if(state.effectsOn&&!marker.isConnected)state.map?.append(marker);
    if(!state.effectsOn&&marker.isConnected)marker.remove()}catch(e){}
