@@ -1,5 +1,6 @@
 import {enableRescue} from './rescue.mjs?v=2.0.0';
-import {createCinemaCity} from './cinema-city.mjs?v=2.0.1';
+import {createCinemaCity} from './cinema-city.mjs?v=4.0.0';
+import {createMagicAtmosphere} from './magic-atmosphere.mjs?v=4.0.0';
 import {installPOV} from './look-pnoa.mjs?v=3.0.0';
 /**
  * Villa Pérez · Vuelo de cine — prototype v1.
@@ -49,8 +50,16 @@ const ctx={
  token:0,frame:0,prevTime:0,prevPaint:0,heading:0,
  overviewTimeout:null,toasts:null,magic:true,day:false,viewIndex:-1,
  effectsReady:false,mouseAssetError:false,nightWindowTimer:null,
- city3d:null,cityStats:null,cityRefreshAt:0,cityRefreshCount:0
+ city3d:null,cityStats:null,cityRefreshAt:0,cityRefreshCount:0,
+ magicRoofs:[],magicPulseTimer:null
 };
+const nightFX=createMagicAtmosphere({
+ canvas:$('magicAtmosphere'),
+ getBalloon:()=>ctx.balloon?.getElement?.(),
+ getRoofs:()=>ctx.magicRoofs,
+ getMap:()=>ctx.rescue?null:ctx.map,
+ getFlying:()=>ctx.playing&&!ctx.paused&&!ctx.overview&&['route','orbit'].includes(ctx.phase)
+});
 const safeText=s=>String(s||'').slice(0,120);
 function toast(message,ms=3900){
  $('toast').textContent=message;$('toast').hidden=false;
@@ -160,11 +169,12 @@ function enableCinemaBuildings(map,source,before){
    onStats:stats=>{
     ctx.cityStats=stats;
     if($('cityStatus'))$('cityStatus').textContent=
-      stats.real+' edificios reales + '+stats.fantasy+' de cuento';
+      'Luces mágicas sobre '+stats.real+' edificios reales';
    }
   });
   city.day=ctx.day;
-  map.addLayer(city,before);
+   city.active=ctx.magic&&!ctx.day;
+   map.addLayer(city,before);
   ctx.city3d=city;
  }catch(e){console.warn('3D architectural effects unavailable',e)}
 }
@@ -219,9 +229,11 @@ function mapLayerSetup(){
    },firstLabel);
   }
  }
+ // Procedural windows follow OSM real building geometry: no invented houses.
+ if(source&&!ctx.rescue)enableCinemaBuildings(map,source,firstLabel);
  const ensure=(id,data)=>{if(!map.getSource(id))map.addSource(id,{type:'geojson',data})};
  ensure('vp-route',emptyCollection());ensure('vp-progress',emptyCollection());
- ensure('vp-glints',emptyCollection());ensure('vp-windows',emptyCollection());
+ ensure('vp-glints',emptyCollection());ensure('vp-windows',emptyCollection());ensure('vp-roofs',emptyCollection());
  addLayerSafe({id:'vp-route-blur',type:'line',source:'vp-route',
   layout:{'line-join':'round','line-cap':'round'},
   paint:{'line-color':'#faab4e','line-width':17,'line-opacity':.69,'line-blur':7}});
@@ -244,16 +256,21 @@ function mapLayerSetup(){
   addLayerSafe({id:'vp-window-haze',type:'circle',source:'vp-windows',
    paint:{'circle-color':'#ffca6d','circle-radius':3.2,'circle-opacity':.67,'circle-blur':.82}});
   addLayerSafe({id:'vp-window-point',type:'circle',source:'vp-windows',
-   paint:{'circle-color':'#ffe1a2','circle-radius':1.1,'circle-opacity':.72}});
- }
- // Disabled the geometric fantasy city: repetitive fabricated buildings were
- // misleading and looked like identical box houses. Real 3D imagery is
- // available as a separate Google photogrammetry experience.
- ctx.city3d=null;
- if($('cityStatus'))$('cityStatus').textContent='Fotografía PNOA/IGN · edificios 3D sobre calles reales';
+    paint:{'circle-color':'#ffe1a2','circle-radius':1.1,'circle-opacity':.72}});
+   addLayerSafe({id:'vp-roof-halo',type:'circle',source:'vp-roofs',
+    paint:{'circle-color':'#ffd898','circle-radius':['interpolate',['linear'],['zoom'],13,2,18,9],
+     'circle-opacity':.28,'circle-blur':1}});
+   addLayerSafe({id:'vp-roof-star',type:'circle',source:'vp-roofs',
+    paint:{'circle-color':'#fff0b6','circle-radius':['interpolate',['linear'],['zoom'],13,.65,18,1.8],
+     'circle-opacity':.74,'circle-blur':.17}});
+  }
+ // Only actual mapped footprints receive the extra luminous windows.
+  ctx.city3d?.setActive?.(ctx.magic&&!ctx.day);
+  if($('cityStatus'))$('cityStatus').textContent='Fotografía PNOA/IGN · fachadas y calles reales';
  try{map.setLight?.({anchor:'viewport',color:dark?'#b1c5ef':'#fff0dd',intensity:dark?.68:.8,position:[1.5,205,40]})}catch(e){}
  try{map.setSky?.(dark?{'sky-color':'#08172c','horizon-color':'#344665','fog-color':'#26334d','sky-horizon-blend':.5,'horizon-fog-blend':.3,'fog-ground-blend':.1}:undefined)}catch(e){}
  ctx.effectsReady=true;
+ nightFX.setActive(ctx.magic&&!ctx.day&&!ctx.rescue);
  refreshRouteLayers();scheduleWindows();
 }
 function setCollection(id,feature){
@@ -287,13 +304,13 @@ function refreshRouteLayers(){
 }
 function scheduleWindows(){
  clearTimeout(ctx.nightWindowTimer);
- if(ctx.day)return;
+ if(ctx.day||!ctx.magic||ctx.rescue){ctx.magicRoofs=[];setPoints('vp-windows',[]);setPoints('vp-roofs',[]);return}
  ctx.nightWindowTimer=setTimeout(()=>{
-  if(!ctx.map||!ctx.map.getStyle()?.sources||ctx.map.getZoom()<14.8){setPoints('vp-windows',[]);return}
+  if(!ctx.map||!ctx.map.getStyle()?.sources||ctx.map.getZoom()<14.8){ctx.magicRoofs=[];setPoints('vp-windows',[]);setPoints('vp-roofs',[]);return}
   try{
    const b=ctx.map.getBounds();const source=getSourceId(ctx.map);
    const features=ctx.map.querySourceFeatures(source,{sourceLayer:'building'});
-   const points=[],seen=new Set();
+   const points=[],seen=new Set();ctx.magicRoofs=[];
    for(const f of features){
     if(points.length>=220)break;
     const ring=f.geometry?.type==='Polygon'?f.geometry.coordinates[0]
@@ -306,10 +323,12 @@ function scheduleWindows(){
     const seed=Math.abs(Math.sin(ix*1.7+iy*2.7));
     if(seed<.55)continue;
     points.push(center);
+    if(seed>.77&&ctx.magicRoofs.length<28)ctx.magicRoofs.push(center);
     if(seed>.89&&ring[1])points.push(interpolate(center,ring[1],.55));
    }
    setPoints('vp-windows',points);
-  }catch(e){console.warn('Window light effect unavailable',e)}
+    setPoints('vp-roofs',ctx.magicRoofs);
+   }catch(e){console.warn('Window light effect unavailable',e)}
  },420);
 }
 function activateRescue(reason=''){
@@ -317,7 +336,7 @@ function activateRescue(reason=''){
  console.warn('Map backup activated:',reason);
  clearTimeout(ctx.rescueDelay);
  const old=ctx.initialMap;
- ctx.rescue=true;ctx.ready=true;
+ ctx.rescue=true;ctx.ready=true;ctx.magicRoofs=[];nightFX.setActive(false);
  try{old?.remove?.()}catch(e){console.warn('Could not close stalled MapLibre map',e)}
  // Remove any markers created on a different engine before switching.
  try{ctx.balloon?.remove()}catch(e){}
@@ -683,6 +702,7 @@ function restart(){
 }
 function setStyle(day){
  ctx.day=day;document.body.classList.toggle('day',day);
+ nightFX.setActive(ctx.magic&&!ctx.day&&!ctx.rescue);
  $('night').textContent=day?'☾ Ver noche':'☀ Ver día';
  status(day?'CALLES REALES · DÍA':'NOCHE DE CINE · CALLES REALES');
  ctx.city3d?.setDay?.(day);
@@ -694,8 +714,19 @@ function setStyle(day){
 function toggleMagic(){
  ctx.magic=!ctx.magic;
  $('magic').textContent=ctx.magic?'✧ Magia ON':'✧ Magia OFF';
- const source=ctx.map?.getSource('vp-glints');
- if(source)ctx.magic?refreshRouteLayers():setPoints('vp-glints',[]);
+ nightFX.setActive(ctx.magic&&!ctx.day&&!ctx.rescue);
+ ctx.city3d?.setActive?.(ctx.magic&&!ctx.day);
+ const map=ctx.map;
+ if(map?.getLayer){
+  for(const id of ['vp-window-haze','vp-window-point','vp-roof-halo','vp-roof-star']){
+   if(map.getLayer(id))try{map.setLayoutProperty(id,'visibility',ctx.magic?'visible':'none')}catch(e){}
+  }
+  for(const [id,on,off] of [['vp-avenue-halo',.46,.27],['vp-avenue-core',.68,.48]]){
+   if(map.getLayer(id))try{map.setPaintProperty(id,'line-opacity',ctx.magic?on:off)}catch(e){}
+  }
+ }
+ if(ctx.magic){refreshRouteLayers();scheduleWindows()}
+ else{ctx.magicRoofs=[];setPoints('vp-glints',[]);setPoints('vp-windows',[]);setPoints('vp-roofs',[])}
 }
 const pov=installPOV({
  ctx,$,
@@ -732,6 +763,10 @@ $('magic').addEventListener('click',toggleMagic);
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden&&ctx.playing&&!ctx.paused&&!ctx.overview)pause();
 });
+ctx.magicPulseTimer=setInterval(()=>{
+ if(!document.hidden&&ctx.magic&&!ctx.day&&!ctx.rescue&&ctx.ready&&ctx.playing)
+  ctx.map?.triggerRepaint?.();
+},350);
 // Robust, immediate interaction: the user can launch before map assets arrive.
 $('start').disabled=false;
 loadClinic();select('plaza');loadMap();
