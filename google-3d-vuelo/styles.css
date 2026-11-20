@@ -645,3 +645,196 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
 @media(prefers-reduced-motion:reduce){
   .pov-scene .pov-basket{animation:none!important;transform:translateX(-50%)}
 }
+
+
+/* Villa Pérez 5.6 · The 42px below the controls was deliberately reserved
+   for attribution in v5.5. In first-person mode, move the native Google
+   attribution UP by shortening the Google map itself, not by hiding its logo.
+   The lower portion becomes a genuine leather/wicker cockpit control console.
+   The 3D map and its legal attribution are never overlaid by the control dock. */
+.app.pov-active {
+  --pov-console-height: clamp(116px, 17dvh, 146px);
+  --pov-credit-clearance: 54px;
+}
+/* The map is now a true separate region ending ABOVE the basket console.
+   Google draws its original logo at the base of this reduced map viewport. */
+.app.pov-active .map-host {
+  bottom: var(--pov-console-height);
+}
+.app.pov-active .pov-scene {
+  inset: 0 0 var(--pov-console-height) 0;
+  overflow: hidden;
+}
+.app.pov-active .pov-drag {
+  inset: 0;
+  z-index:1;
+}
+.app.pov-active .pov-scene .pov-basket {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  right: auto;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: fill;
+  object-position: center top;
+  /* Fade the lowest photographic wicker only where Google puts credits.
+     No solid image or decorative overlay obscures that legal credit area. */
+  -webkit-mask-image: linear-gradient(to bottom,
+    #000 0%,
+    #000 calc(100% - var(--pov-credit-clearance) - 20px),
+    transparent calc(100% - var(--pov-credit-clearance)));
+  mask-image: linear-gradient(to bottom,
+    #000 0%,
+    #000 calc(100% - var(--pov-credit-clearance) - 20px),
+    transparent calc(100% - var(--pov-credit-clearance)));
+  filter:drop-shadow(0 5px 7px rgba(19,25,29,.15));
+  transform:translateX(-50%);
+}
+.app.pov-active .pov-controls {
+  position:absolute;
+  inset:auto 0 0 0;
+  box-sizing:border-box;
+  z-index:14;
+  transform:none;
+  width:100%;
+  min-height:var(--pov-console-height);
+  height:var(--pov-console-height);
+  max-width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+  gap:5px;
+  padding:19px max(13px,env(safe-area-inset-right))
+    max(12px,env(safe-area-inset-bottom))
+    max(13px,env(safe-area-inset-left));
+  border:0;
+  border-top:2px solid #e2b277;
+  overflow:hidden;
+  isolation:isolate;
+  /* Dense leather + basket weave, visually connects to photo above. */
+  background:
+    radial-gradient(ellipse 65% 120% at 50% 0%,rgba(255,220,150,.24),transparent 78%),
+    linear-gradient(180deg,rgba(49,30,22,.14),rgba(7,19,27,.69)),
+    repeating-linear-gradient(93deg,
+      rgba(223,167,103,.17) 0px,rgba(212,143,80,.1) 3px,
+      rgba(62,35,27,.11) 5px,transparent 8px,transparent 17px),
+    repeating-linear-gradient(3deg,
+      #8c5b38 0px,#a46d42 4px,#623d2e 9px,#4a3026 12px,#91623e 17px),
+    #583a2d;
+  box-shadow:0 -5px 16px rgba(31,20,15,.29),inset 0 11px 14px rgba(27,16,11,.22);
+  pointer-events:auto;
+}
+/* Curved polished upper lip and stitch detail of the basket cockpit. */
+.app.pov-active .pov-controls::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0 0 auto;
+  height:12px;
+  border-bottom:1px solid rgba(255,219,158,.39);
+  background:linear-gradient(to bottom,
+    #f5daa4 0%,#b77c47 20%,#66412c 54%,#241e20 100%);
+  box-shadow:0 2px 7px rgba(0,0,0,.4);
+  pointer-events:none;
+}
+.app.pov-active .pov-controls::after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  top:8px;left:0;right:0;height:2px;
+  background:repeating-linear-gradient(90deg,
+    transparent 0 8px,#e3b67c 8px 12px,transparent 12px 19px);
+  opacity:.6;
+  pointer-events:none;
+}
+.app.pov-active .pov-caption,
+.app.pov-active .pov-actions{
+  z-index:1;
+  position:relative;
+  min-width:0;
+  width:min(100%,490px);
+}
+.app.pov-active .pov-caption{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:baseline;
+  gap:1px 9px;
+  padding:0;
+  margin:0 0 3px;
+  background:none;
+  border:0;
+  box-shadow:none;
+  backdrop-filter:none;
+  text-align:center;
+  overflow:visible;
+}
+.app.pov-active .pov-caption strong{
+  font:italic 700 clamp(16px,3.8vw,20px) Georgia,serif;
+  white-space:nowrap;
+  text-shadow:0 2px 5px rgba(5,10,13,.85);
+}
+.app.pov-active .pov-caption span{
+  flex-basis:100%;
+  font-size:clamp(10px,2.6vw,12px);
+  color:#f7e9ce;
+  line-height:1.3;
+  white-space:normal;
+  overflow-wrap:break-word;
+  text-shadow:0 2px 4px rgba(5,10,13,.88);
+}
+.app.pov-active .pov-actions{
+  display:grid;
+  grid-template-columns:1fr 1.14fr .8fr;
+  gap:7px;
+}
+.app.pov-active .pov-actions button{
+  min-width:0;
+  box-sizing:border-box;
+  min-height:40px;
+  width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:clamp(11px,2.8vw,13px);
+  padding:8px 5px;
+  border-radius:13px;
+  background:linear-gradient(180deg,rgba(24,52,65,.96),rgba(9,29,39,.97));
+  border:1px solid rgba(253,219,160,.68);
+  box-shadow:inset 0 1px rgba(255,255,255,.09),
+    0 3px 9px rgba(15,12,11,.42);
+}
+@media(max-width:700px){
+  .app.pov-active{
+    --pov-console-height:clamp(116px,17dvh,138px);
+    --pov-credit-clearance:54px;
+  }
+  .app.pov-active .pov-scene .pov-basket{
+    top:0;
+    bottom:0;
+    height:100%;
+  }
+  .app.pov-active .pov-controls{
+    bottom:0;
+    padding:18px max(9px,env(safe-area-inset-right))
+      max(8px,env(safe-area-inset-bottom))
+      max(9px,env(safe-area-inset-left));
+    gap:5px;
+  }
+  .app.pov-active .pov-caption strong{font-size:clamp(16px,4.2vw,19px)}
+  .app.pov-active .pov-actions{gap:6px}
+  .app.pov-active .pov-actions button{min-height:38px;font-size:11px;padding:8px 2px}
+}
+@media(max-height:500px) and (orientation:landscape){
+  .app.pov-active{--pov-console-height:58px;--pov-credit-clearance:47px}
+  .app.pov-active .pov-controls{padding:14px 10px 4px}
+  .app.pov-active .pov-caption{display:none}
+  .app.pov-active .pov-actions{max-width:430px}
+  .app.pov-active .pov-actions button{min-height:30px;padding:3px}
+}
+@media(prefers-reduced-motion:reduce){
+  .app.pov-active .pov-scene .pov-basket{animation:none!important;transform:translateX(-50%)}
+}
