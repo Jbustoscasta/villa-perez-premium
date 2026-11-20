@@ -361,10 +361,11 @@ function loadMap(){
   map=new window.maplibregl.Map({
    container:'map',style:STYLE.dark,center:[START.lng,START.lat],
    zoom:16.35,pitch:70,bearing:-28,antialias:true,
-   attributionControl:true,cooperativeGestures:false,
-   preserveDrawingBuffer:false,maxPitch:73
+   attributionControl:false,cooperativeGestures:false,
+   preserveDrawingBuffer:false,maxPitch:85
   });
  }catch(e){activateRescue('Cannot construct MapLibre map: '+String(e));return}
+ map.addControl(new window.maplibregl.AttributionControl({compact:false}),'bottom-right');
  ctx.initialMap=map;ctx.map=map;ctx.MarkerClass=window.maplibregl.Marker;
  function ready(){
   if(ctx.rescue||ctx.ready)return;
