@@ -21,15 +21,15 @@ const FRAG=[
 '  float sky=smoothstep(.40,.94,xy.y);',
 '  float horizon=exp(-pow((xy.y-.47)/.18,2.));',
 '  float sunset=exp(-pow((xy.y-.30)/.22,2.));',
-'  vec3 navy=vec3(.025,.075,.18);',
-'  vec3 mid=vec3(.065,.13,.27);',
-'  vec3 lower=vec3(.07,.13,.22);',
+'  vec3 navy=vec3(.017,.048,.13);',
+'  vec3 mid=vec3(.035,.10,.21);',
+'  vec3 lower=vec3(.045,.10,.19);',
 '  vec3 air=mix(lower,mid,smoothstep(.1,.55,xy.y));',
 '  air=mix(air,navy,sky*.67);',
 '  air=mix(air,vec3(.32,.18,.18),horizon*(.25+.12*(1.-t)));',
 '  air=mix(air,vec3(.62,.30,.14),sunset*.12*(1.-t));',
 '  float vignette=pow(length((xy-.5)*vec2(1.,.9)),1.25);',
-'  float alpha=t*(.38+.09*(1.-sky)+vignette*.15);',
+'  float alpha=t*(.49+.09*(1.-sky)+vignette*.11);',
 '  vec2 grid=vec2(xy.x*45.,xy.y*23.);',
 '  vec2 id=floor(grid);',
 '  vec2 center=fract(grid)-.5;',
@@ -40,7 +40,7 @@ const FRAG=[
 '  float bokeh=lightMask*glow(center-jitter,.028);',
 '  float roadGlimmer=bokeh*(.78+.22*sin(u_time*.7+seed*21.))*t;',
 '  air=mix(air,vec3(1.,.68,.33),clamp(roadGlimmer*.84,0.,1.));',
-'  alpha=max(alpha,roadGlimmer*.62);',
+'  alpha=max(alpha,roadGlimmer*.55);',
 '  vec2 st=xy*vec2(70.,41.);',
 '  vec2 sid=floor(st);',
 '  float starN=hash21(sid+15.7);',
@@ -87,6 +87,9 @@ export class CinemaNight {
  init(){
   if(this.disabled)return false;
   if(this.gl&&this.program)return true;
+  if(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches){
+   this.disabled=true;this.useFallback();return false;
+  }
   try{
    const gl=this.canvas.getContext('webgl',{
     alpha:true,depth:false,stencil:false,antialias:false,
