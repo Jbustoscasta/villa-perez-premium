@@ -19,6 +19,7 @@ const STYLE={
  dark:'https://tiles.openfreemap.org/styles/dark',
  day:'https://tiles.openfreemap.org/styles/bright'
 };
+const PNOA_TMS='https://tms-pnoa-ma.idee.es/1.0.0/pnoa-ma/{z}/{x}/{y}.jpeg';
 const emptyCollection=()=>({type:'FeatureCollection',features:[]});
 const point=(lng,lat,p={})=>({type:'Feature',geometry:{type:'Point',coordinates:[lng,lat]},properties:p});
 const line=coords=>({type:'Feature',properties:{},geometry:{type:'LineString',coordinates:coords}});
@@ -171,6 +172,20 @@ function mapLayerSetup(){
  const source=getSourceId(map);
  const firstLabel=map.getStyle().layers?.find(l=>l.type==='symbol')?.id;
  const dark=!ctx.day;
+ // Official PNOA / IGN orthophotography is captured by day. The night is an
+ // artistic MapLibre grade over the real aerial imagery (never Google tiles).
+ if(!map.getSource('vp-pnoa-aerial')){
+  try{map.addSource('vp-pnoa-aerial',{
+   type:'raster',tiles:[PNOA_TMS],tileSize:256,scheme:'tms',minzoom:0,maxzoom:19,
+   attribution:'© PNOA / Instituto Geográfico Nacional (IGN) · CC BY 4.0'
+  })}catch(e){console.warn('PNOA aerial unavailable:',e)}
+ }
+ if(map.getSource('vp-pnoa-aerial'))addLayerSafe({
+  id:'vp-pnoa-photo',type:'raster',source:'vp-pnoa-aerial',
+  paint:{'raster-opacity':.96,'raster-brightness-min':dark?.035:0,
+   'raster-brightness-max':dark?.47:1,'raster-contrast':dark?.17:.04,
+   'raster-saturation':dark?-.73:-.04}
+ },firstLabel);
  if(source){
   const textured=false; // avoid identical procedural window patterns on every facade
   const buildings={
@@ -234,7 +249,7 @@ function mapLayerSetup(){
  // misleading and looked like identical box houses. Real 3D imagery is
  // available as a separate Google photogrammetry experience.
  ctx.city3d=null;
- if($('cityStatus'))$('cityStatus').textContent='Mapa nocturno · edificios simplificados';
+ if($('cityStatus'))$('cityStatus').textContent='Fotografía PNOA/IGN · edificios 3D sobre calles reales';
  try{map.setLight?.({anchor:'viewport',color:dark?'#b1c5ef':'#fff0dd',intensity:dark?.68:.8,position:[1.5,205,40]})}catch(e){}
  try{map.setSky?.(dark?{'sky-color':'#08172c','horizon-color':'#344665','fog-color':'#26334d','sky-horizon-blend':.5,'horizon-fog-blend':.3,'fog-ground-blend':.1}:undefined)}catch(e){}
  ctx.effectsReady=true;
@@ -663,13 +678,13 @@ function restart(){
 }
 function setStyle(day){
  ctx.day=day;document.body.classList.toggle('day',day);
- $('night').textContent=day?'☾ Noche cine':'☀ Ver día';
+ $('night').textContent=day?'☾ Ver noche':'☀ Ver día';
  status(day?'CALLES REALES · DÍA':'NOCHE DE CINE · CALLES REALES');
  ctx.city3d?.setDay?.(day);
  const map=ctx.map;if(!map)return;
  map.setStyle(day?STYLE.day:STYLE.dark);
  if(ctx.rescue)mapLayerSetup();
- toast(day?'Vista de día con las mismas calles reales.':'Ciudad nocturna de cine: iluminación de calles y edificios recreada.');
+ toast(day?'Fotografía aérea PNOA a plena luz.':'PNOA/IGN: iluminación nocturna artística sobre fotografía real.');
 }
 function toggleMagic(){
  ctx.magic=!ctx.magic;
