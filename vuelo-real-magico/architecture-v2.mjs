@@ -246,21 +246,36 @@ export function createArchitecture3D(map,{getSource=()=>null,getSourceLayer=()=>
    if(!this.count||!this.origin)return;
    const P=args?.defaultProjectionData?.mainMatrix||args?.modelViewProjectionMatrix;
    if(!P)return;
-   gl.useProgram(this.program);
-   gl.bindBuffer(gl.ARRAY_BUFFER,this.buffer);
-   gl.enableVertexAttribArray(this.ap);gl.enableVertexAttribArray(this.ac);
-   gl.vertexAttribPointer(this.ap,3,gl.FLOAT,false,28,0);
-   gl.vertexAttribPointer(this.ac,4,gl.FLOAT,false,28,12);
-   gl.uniformMatrix4fv(this.um,false,composeMatrix(P,this.origin));
-   gl.uniform1f(this.ut,performance.now()/1000);
-   gl.uniform1f(this.ug,this.magic?1:0);
-   gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);
-   gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
-   gl.depthMask(false);gl.disable(gl.CULL_FACE);
-   gl.drawArrays(gl.TRIANGLES,0,this.count);
-   gl.depthMask(true);
-   gl.disableVertexAttribArray(this.ap);gl.disableVertexAttribArray(this.ac);
-   gl.bindBuffer(gl.ARRAY_BUFFER,null);
+   // MapLibre owns this WebGL context. Restore every GL state we change:
+   // leaking depthMask(true) and disabled culling can hide the real buildings.
+   const prev={
+    blend:gl.isEnabled(gl.BLEND),depth:gl.isEnabled(gl.DEPTH_TEST),
+    cull:gl.isEnabled(gl.CULL_FACE),depthWrite:gl.getParameter(gl.DEPTH_WRITEMASK),
+    blendSrcRGB:gl.getParameter(gl.BLEND_SRC_RGB),blendDstRGB:gl.getParameter(gl.BLEND_DST_RGB),
+    blendSrcA:gl.getParameter(gl.BLEND_SRC_ALPHA),blendDstA:gl.getParameter(gl.BLEND_DST_ALPHA)
+   };
+   try{
+    gl.useProgram(this.program);
+    gl.bindBuffer(gl.ARRAY_BUFFER,this.buffer);
+    gl.enableVertexAttribArray(this.ap);gl.enableVertexAttribArray(this.ac);
+    gl.vertexAttribPointer(this.ap,3,gl.FLOAT,false,28,0);
+    gl.vertexAttribPointer(this.ac,4,gl.FLOAT,false,28,12);
+    gl.uniformMatrix4fv(this.um,false,composeMatrix(P,this.origin));
+    gl.uniform1f(this.ut,performance.now()/1000);
+    gl.uniform1f(this.ug,this.magic?1:0);
+    gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+    gl.depthMask(false);gl.disable(gl.CULL_FACE);
+    gl.drawArrays(gl.TRIANGLES,0,this.count);
+   }finally{
+    gl.depthMask(prev.depthWrite);
+    if(prev.depth)gl.enable(gl.DEPTH_TEST);else gl.disable(gl.DEPTH_TEST);
+    if(prev.blend)gl.enable(gl.BLEND);else gl.disable(gl.BLEND);
+    if(prev.cull)gl.enable(gl.CULL_FACE);else gl.disable(gl.CULL_FACE);
+    gl.blendFuncSeparate(prev.blendSrcRGB,prev.blendDstRGB,prev.blendSrcA,prev.blendDstA);
+    gl.disableVertexAttribArray(this.ap);gl.disableVertexAttribArray(this.ac);
+    gl.bindBuffer(gl.ARRAY_BUFFER,null);
+   }
   },
   onRemove(m,gl){
    try{gl.deleteBuffer(this.buffer);gl.deleteProgram(this.program)}catch(e){}
