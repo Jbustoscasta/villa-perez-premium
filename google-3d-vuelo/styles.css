@@ -942,3 +942,72 @@ html.night-css-fallback .cinema-grade{
   radial-gradient(ellipse 74% 48% at 65% 23%,rgba(52,91,159,.12),transparent),
   linear-gradient(180deg,rgba(2,10,29,.79),rgba(5,15,37,.72) 54%,rgba(3,12,31,.67) 90%)!important;
 }
+
+
+/* === V9: MADRID ENCANTADO ===
+   Night dominates the city up to (but NOT over) Google attribution.
+   The old long gradient made the bottom quarter of the scene daylight.
+   Both the veil and the magic intentionally avoid the Google logo. */
+html.night-active .night-cinema{
+ bottom:58px!important;
+ height:calc(100% - 58px)!important;
+ opacity:1!important;
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 90%,transparent 100%)!important;
+ mask-image:linear-gradient(to bottom,#000 0%,#000 90%,transparent 100%)!important;
+}
+html.night-active .cinema-grade{
+ opacity:1!important;
+ background:
+  radial-gradient(ellipse 60% 38% at 77% 15%,rgba(89,139,213,.095),transparent 100%),
+  linear-gradient(180deg,rgba(1,8,26,.25),rgba(3,12,32,.11) 55%,rgba(1,7,24,.07));
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 84%,transparent 95%)!important;
+ mask-image:linear-gradient(to bottom,#000 0%,#000 84%,transparent 95%)!important;
+}
+html:not(.night-active) .cinema-grade{
+ opacity:0!important;
+}
+html:not(.night-active) .night-cinema{
+ display:none!important;
+}
+html.night-active .dust-layer:not(.fx-off){
+ opacity:.67!important;
+}
+html.night-active .balloon-flare{
+ opacity:.82!important;
+ filter:drop-shadow(0 0 12px rgba(255,200,112,.67));
+}
+/* iPhone WebView / Safari: prevent automatic text enlargement and clipped HUD. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@media(max-width:700px){
+ .app .flight-bar{
+  left:10px!important;
+  right:10px!important;
+  transform:none!important;
+  width:auto!important;
+  max-width:calc(100vw - 20px)!important;
+  padding:11px 12px!important;
+  box-sizing:border-box;
+ }
+ .app .flight-bar .bar-top{max-width:100%;overflow-wrap:anywhere}
+ .app .flight-buttons{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:6px!important;
+ }
+ .app .flight-buttons button{
+  min-width:0!important;
+  white-space:normal!important;
+  font-size:clamp(10px,2.65vw,12px)!important;
+  line-height:1.2;
+  padding:9px 5px!important;
+ }
+ .app .chapter{
+  left:12px!important;
+  max-width:47vw!important;
+  overflow-wrap:anywhere;
+ }
+ .app .overview-tools{
+  right:10px!important;
+  max-width:47vw!important;
+ }
+ .app .overview-tools button{white-space:normal!important;overflow-wrap:anywhere}
+}
