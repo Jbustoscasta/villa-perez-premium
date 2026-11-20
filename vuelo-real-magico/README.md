@@ -44,3 +44,27 @@ Inspirado visualmente en la captura de demos.ilusiono.com. No es copia del códi
 5. Vista 360° funciona arrastrando y, previa autorización, girando el móvil.
 6. El último tramo hasta la vivienda permanece oculto.
 7. Créditos visibles, FPS estables, sin errores WebGL.
+
+
+## v2.0 · Arquitectura mágica de verdad (20/11/2026)
+
+Se mantiene la foto PNOA y el volumen de los edificios cartografiados por OSM.
+El render no fabrica nuevas huellas ni calles. Añade **ornamentación artística** ligada a las coordenadas reales:
+
+- Nuevo `architecture-v2.mjs` con luces de ventana en fachadas 3D, marcos, molduras y cornisas.
+- Remates de tejado de diferentes colores; tejados inclinados pequeños en huellas compactas y convexas, y algunas chimeneas / luces decorativas en azoteas. No son una reconstrucción fiel del tejado existente: son embellecimiento deliberado.
+- Ortofoto de noche algo más legible, fachadas con más luz y calles cálidas siguiendo datos OSM.
+- `magic-atmosphere-v2.mjs` separado: estela de polvo dorado, niebla suave, brillo bajo el globo y estrellas fugaces.
+- Cámara más próxima a los edificios y giros más fluidos.
+- Menos obstrucción visual por interfaz y nombres de calles en el modo nocturno.
+- Botón Magia sigue apagando o encendiendo la arquitectura estilizada y la estela; se mantiene el 3D básico del callejero.
+- Máximo orientativo 85.000 vértices adicionales en móvil y sin otro contexto WebGL.
+- Copia GitHub de seguridad: `backup/vuelo-real-magico-before-fantasy-v2`.
+
+### Verificación y límites
+
+Comprobaciones estáticas: sintaxis JS, IDs HTML, referencias de archivos. Geometría 3D sintética de prueba sobre **huellas de edificios**: sin huellas no se produce ninguna decoración; polígonos reales de prueba generan ventana/moldura/cubierta; límite de vértices respetado.
+
+No se ha podido validar visualmente en Safari físico desde esta sesión. El resultado puede diferir de la captura original de `demos.ilusiono.com`, cuyo motor de hosting sigue sin estar accesible por los conectores disponibles.
+
+La versión no se ha instalado en `demos.ilusiono.com`. Solo vive en GitHub Pages; conserva dicha demo original.
