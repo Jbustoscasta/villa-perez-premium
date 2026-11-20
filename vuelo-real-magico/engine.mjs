@@ -253,12 +253,12 @@ async function initMap(){
   showMapError('El motor MapLibre 3D no se ha descargado desde ninguno de los servidores. Comprueba la conexión.');
   return;
  }
- try{
-  if(!window.maplibregl.supported()){
-   showMapError('No se ha podido activar WebGL 3D. Abre el enlace en Safari actualizado.');
-   return;
-  }
- }catch(e){showMapError('WebGL no disponible: '+String(e?.message||e));return}
+ // MapLibre GL JS 5.x may not expose the old supported() API.
+ // Validate the constructor and let MapLibre initialize WebGL itself.
+ if(typeof window.maplibregl.Map!=='function'){
+  showMapError('Se ha descargado el motor de mapas, pero no ofrece un constructor 3D válido.');
+  return;
+ }
  try{
   map=new window.maplibregl.Map({
    container:'map',style:MAP_STYLE.night,center:ORIGIN,zoom:17.0,pitch:74,bearing:-24,
