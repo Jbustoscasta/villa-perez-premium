@@ -1,6 +1,6 @@
 import {calculateStreetRoute,interpolate as geoLerp} from './flight-native.mjs?v=3.1.2';
 import {installLook360} from './look360.mjs?v=5.4.0';
-import {CinemaNight} from './night-cinema.mjs?v=7.0.0';
+import {CinemaNight} from './night-cinema-v8.mjs?v=8.0.0';
 import {StreetNightScene} from './street-night-v7.mjs?v=7.0.0';
 /*
  * Villa Pérez Google 3D experiment.
@@ -11,7 +11,7 @@ import {StreetNightScene} from './street-night-v7.mjs?v=7.0.0';
  */
 const $=id=>document.getElementById(id);
 // The photoreal source is real Google 3D. Night is a cinematic reconstruction.
-document.documentElement.classList.add('night-active','night-css-fallback');
+document.documentElement.classList.add('night-active'); // Canvas2D night; CSS only as fallback
 const cinema=new CinemaNight($('nightCanvas'));
 const START={lat:40.42016,lng:-3.68845};
 const routes={
@@ -91,6 +91,10 @@ function setActiveChoice(choice){
  $('address').value='';
  document.querySelectorAll('.chip').forEach(b=>b.classList.toggle('active',b.dataset.route===choice));
  $('travelLabel').textContent=state.originLabel.toUpperCase()+' → '+routes[choice].label.toUpperCase();
+ if(state.loaded&&!state.playing&&!state.busy&&!state.overview){
+  try{state.streetNight?.populate(routes[choice].points)}
+  catch(e){console.warn('Night preview lamps unavailable',e)}
+ }
 }
 document.querySelectorAll('[data-route]').forEach(b=>b.addEventListener('click',()=>setActiveChoice(b.dataset.route)));
 $('address').addEventListener('input',()=>{
@@ -162,6 +166,17 @@ async function connectGoogle(){
    },25000);
    state.loaded=true;
    createOriginMarker();
+   // Preview lights must be visible BEFORE starting the flight, so
+   // "día"/"noche" offers a meaningful comparison right away.
+   let previewInstalled=false;
+   const installPreview=()=>{
+    if(previewInstalled||!state.loaded||state.playing)return;
+    previewInstalled=true;
+    try{state.streetNight?.populate(routes[state.route].points)}
+    catch(e){console.warn('Preview street lights unavailable',e)}
+   };
+   map.addEventListener('gmp-steadystate',installPreview,{once:true});
+   setTimeout(installPreview,3400);
    try{sessionStorage.setItem('vp_google3d_trial_key',key)}catch(e){}
    $('keyGroup').classList.add('connected');
    $('setup').classList.add('ready');
