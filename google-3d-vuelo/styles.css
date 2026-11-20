@@ -892,3 +892,24 @@ html.night-active .balloon-flare{filter:drop-shadow(0 0 9px rgba(255,198,94,.45)
  .overview-tools #nightToggle{font-size:11px;min-height:33px;padding:7px 11px}
 }
 @media(prefers-reduced-motion:reduce){.night-cinema{display:none!important}}
+
+
+/* Plan A+: warm georeferenced light sources carry the city illumination.
+   This atmospheric grade only adds tonal separation; it never masks credits. */
+html.night-active .cinema-grade{
+ background:
+  radial-gradient(ellipse 52% 36% at 48% 42%,rgba(61,87,139,.09),transparent 94%),
+  linear-gradient(180deg,rgba(2,9,30,.20) 0%,rgba(9,23,44,.09) 35%,rgba(9,20,37,.10) 65%,rgba(5,11,26,.12) 100%);
+}
+html.night-active .night-cinema{opacity:.94!important}
+html.night-active .flight-bar{
+ border-color:rgba(245,203,133,.88);
+ box-shadow:0 13px 35px rgba(3,12,31,.66),inset 0 0 22px rgba(209,159,91,.08);
+}
+html.night-active .flight-bar .bar-track{
+ box-shadow:inset 0 0 7px rgba(238,190,116,.18);
+}
+html.night-active .route-group .cta.gold{
+ box-shadow:0 7px 23px rgba(217,165,89,.20);
+}
+/* Plan A+: nocturnal lighting comes from geographic 3D markers, not fixed 2D 'window dots'. */
