@@ -655,6 +655,7 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
 .app.pov-active {
   --pov-console-height: clamp(116px, 17dvh, 146px);
   --pov-credit-clearance: 54px;
+  --pov-credit-width: min(68vw, 244px);
 }
 /* The map is now a true separate region ending ABOVE the basket console.
    Google draws its original logo at the base of this reduced map viewport. */
@@ -680,16 +681,19 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
   max-width: none;
   object-fit: fill;
   object-position: center top;
-  /* Fade the lowest photographic wicker only where Google puts credits.
-     No solid image or decorative overlay obscures that legal credit area. */
-  -webkit-mask-image: linear-gradient(to bottom,
-    #000 0%,
-    #000 calc(100% - var(--pov-credit-clearance) - 20px),
-    transparent calc(100% - var(--pov-credit-clearance)));
-  mask-image: linear-gradient(to bottom,
-    #000 0%,
-    #000 calc(100% - var(--pov-credit-clearance) - 20px),
-    transparent calc(100% - var(--pov-credit-clearance)));
+  /* v5.7: keep all wicker at full opacity through the lower edge.
+     Only a bottom-left notch exposes the ORIGINAL, clickable Google Maps
+     attribution. Do not move, recreate, mask, or cover Google's own marks. */
+  -webkit-mask-image: none;
+  mask-image: none;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 100%,
+    var(--pov-credit-width) 100%,
+    var(--pov-credit-width) calc(100% - var(--pov-credit-clearance)),
+    0 calc(100% - var(--pov-credit-clearance))
+  );
   filter:drop-shadow(0 5px 7px rgba(19,25,29,.15));
   transform:translateX(-50%);
 }
@@ -830,7 +834,7 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
   .app.pov-active .pov-actions button{min-height:38px;font-size:11px;padding:8px 2px}
 }
 @media(max-height:500px) and (orientation:landscape){
-  .app.pov-active{--pov-console-height:58px;--pov-credit-clearance:47px}
+  .app.pov-active{--pov-console-height:58px;--pov-credit-clearance:47px;--pov-credit-width:0px}
   .app.pov-active .pov-controls{padding:14px 10px 4px}
   .app.pov-active .pov-caption{display:none}
   .app.pov-active .pov-actions{max-width:430px}
@@ -838,4 +842,10 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
 }
 @media(prefers-reduced-motion:reduce){
   .app.pov-active .pov-scene .pov-basket{animation:none!important;transform:translateX(-50%)}
+}
+
+/* v5.7 responsive attribution recess: on wide screens, the centred image
+   does not overlap the far-left provider credit. */
+@media(min-width:760px){
+ .app.pov-active .pov-scene .pov-basket{clip-path:none}
 }
