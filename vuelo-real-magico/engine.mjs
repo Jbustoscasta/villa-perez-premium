@@ -15,6 +15,24 @@ const DEST={
 };
 const PNOA='https://tms-pnoa-ma.idee.es/1.0.0/pnoa-ma/{z}/{x}/{y}.jpeg';
 const MAP_STYLE={night:'https://tiles.openfreemap.org/styles/dark',day:'https://tiles.openfreemap.org/styles/bright'};
+/* In-browser fallback: real PNOA raster and OSM vector buildings,
+   no synthetic architecture, even if the provider's style JSON fails. */
+function local3DStyle(isDay=false){
+ return {version:8,name:'Villa Pérez · 3D real',
+  sources:{
+   openmaptiles:{type:'vector',url:'https://tiles.openfreemap.org/planet'},
+   'magic-pnoa':{type:'raster',tiles:[PNOA],tileSize:256,scheme:'tms',maxzoom:19,
+    attribution:'PNOA © Instituto Geográfico Nacional · CC BY 4.0 scne.es'}
+  },
+  layers:[
+   {id:'vp-base',type:'background',paint:{'background-color':isDay?'#7d939b':'#08192d'}},
+   {id:'magic-pnoa-photo',type:'raster',source:'magic-pnoa',paint:{
+    'raster-opacity':.98,'raster-brightness-min':isDay?0:.025,
+    'raster-brightness-max':isDay?1:.48,'raster-contrast':isDay?.03:.16,
+    'raster-saturation':isDay?0:-.7
+   }}
+  ]};
+}
 const rad=d=>d*Math.PI/180;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const lerp=(a,b,t)=>a+(b-a)*t;
@@ -32,7 +50,7 @@ const deltaAngle=(a,b)=>((b-a+540)%360)-180;
 const empty=()=>({type:'FeatureCollection',features:[]});
 const point=p=>({type:'Feature',properties:{},geometry:{type:'Point',coordinates:p}});
 const geoLine=coords=>({type:'FeatureCollection',features:[{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:coords}}]});
-let chosen='plaza',map=null,city=null,styleLoaded=false,styleVersion=0,rooftops=[],windowTimer=0,toastTimer=0,ready=false,cityTilesRefresh=0,cityRefreshAt=0;
+let chosen='plaza',map=null,city=null,styleLoaded=false,styleVersion=0,rooftops=[],windowTimer=0,toastTimer=0,ready=false,cityTilesRefresh=0,cityRefreshAt=0,styleWatchdog=0,styleFallback=false,cityLampTimer=0,buildingCheckTimer=0;
 let day=false,magic=true,playing=false,paused=false,overview=false,pov=false,phase='idle',mode='Ruta por calles',frame=0,lastFrame=0,elapsed=0,duration=68000,orbitTime=0,progress=0,currentHeading=280;
 let origin=[...ORIGIN],originName='Puerta de Alcalá · demo',destination=[...DEST.plaza.coords],destinationName=DEST.plaza.name,route=[],lengths=[],routeLength=0,privacyClipped=false;
 const message=(s,ms=3400)=>{clearTimeout(toastTimer);$('message').textContent=s;$('message').hidden=false;toastTimer=setTimeout(()=>$('message').hidden=true,ms)};
@@ -96,15 +114,18 @@ function addMapFeatures(){
     paint:{'line-color':'#f5c17d','line-width':['interpolate',['linear'],['zoom'],12,.1,16,.7,18,1.25],
      'line-opacity':.55,'line-blur':.4}},firstSymbol);
   }
-  // The independent 3D shader only draws real mapped facade windows; no fantasy buildings.
-  if(!map.getLayer('vp-cinema-city')&&dark){
+  // Delay optional shader until the photographic base and real extrusion render.
+  clearTimeout(cityLampTimer);
+  if(dark)cityLampTimer=setTimeout(()=>{
+   if(!map||day||map.getLayer('vp-cinema-city')||!map.getLayer('magic-real-buildings'))return;
    try{
-    city=createCinemaCity(map,{getSource:()=>currentVectorSource(),getRoute:()=>route,
-     onStats:info=>{if(info.real>0&&phase==='idle')status('MADRID REAL · EDIFICIOS 3D')}});
-    city.day=false;city.active=magic;
-    map.addLayer(city,firstSymbol);
-   }catch(e){console.warn('Extra 3D facade lamps not supported',e);city=null}
-  }
+    const lamps=createCinemaCity(map,{getSource:()=>currentVectorSource(),getRoute:()=>route,
+     onStats:info=>{if(info.real>0&&phase==='idle')status('CIUDAD REAL · FACHADAS 3D')}});
+    lamps.day=false;lamps.active=magic;
+    map.addLayer(lamps,map.getStyle()?.layers?.find(l=>l.type==='symbol')?.id);
+    city=lamps;
+   }catch(e){console.warn('Optional lamps unavailable; native 3D preserved',e);city=null}
+  },1300);
  }
  for(const name of ['magic-route','magic-done','magic-sparks','magic-roofs']){
   if(!map.getSource(name))map.addSource(name,{type:'geojson',data:empty()});
@@ -129,7 +150,7 @@ function addMapFeatures(){
  try{if(dark)map.setSky?.({'sky-color':'#091930','horizon-color':'#233951','fog-color':'#1c2c47','sky-horizon-blend':.5,'horizon-fog-blend':.2,'fog-ground-blend':.12})}catch(e){}
  if(ver===styleVersion){updateLayers();scheduleWindows()}
  fx.setActive(dark&&magic);
- status(dark?'MADRID REAL · EDIFICIOS 3D':'FOTOGRAFÍA REAL · DÍA');
+ status(dark?'EDIFICIOS 3D · CAPAS ACTIVAS':'FOTOGRAFÍA REAL · DÍA');
 }
 function setSource(id,data){
  const s=map?.getSource(id);
@@ -166,26 +187,104 @@ function scheduleWindows(){
   }catch(e){console.warn('Rooftop lights optional',e)}
  },550);
 }
+async function ensureMapLibre(){
+ if(window.maplibregl)return true;
+ const begun=Date.now();
+ while(!window.maplibregl&&Date.now()-begun<3500)await new Promise(r=>setTimeout(r,100));
+ if(window.maplibregl)return true;
+ status('RECUPERANDO MOTOR 3D');
+ await new Promise(resolve=>{
+  const script=document.createElement('script');script.async=true;
+  script.src='https://unpkg.com/maplibre-gl@5.7.0/dist/maplibre-gl.js';
+  let done=false;const complete=()=>{if(done)return;done=true;resolve()};
+  script.onload=complete;script.onerror=complete;
+  document.head.appendChild(script);setTimeout(complete,7000);
+ });
+ return Boolean(window.maplibregl);
+}
+function showMapError(info){
+ status('MAPA 3D NO DISPONIBLE');
+ $('error').textContent=info;$('error').hidden=false;
+ $('launch').disabled=true;
+}
+function check3DData(){
+ clearTimeout(buildingCheckTimer);
+ buildingCheckTimer=setTimeout(()=>{
+  if(!map||!ready||day)return;
+  const vector=currentVectorSource();
+  let count=0;
+  try{count=vector?(map.querySourceFeatures(vector,{sourceLayer:'building'})||[]).length:0}catch(e){}
+  if(count===0){
+   status('PROVEEDOR 3D SIN EDIFICIOS');
+   message('La cartografía responde, pero faltan las geometrías de edificios. Este modo no las sustituye por edificios inventados.',7600);
+  }
+ },9200);
+}
+function armStyleWatchdog(){
+ clearTimeout(styleWatchdog);
+ styleWatchdog=setTimeout(()=>{
+  if(ready)return;
+  if(!styleFallback){
+   styleFallback=true;
+   status('RECUPERANDO MAPA 3D');
+   message('El estilo remoto no respondió; probando directamente fotografía PNOA y geometría OSM.',4600);
+   try{map?.setStyle(local3DStyle(day));armStyleWatchdog()}
+   catch(e){showMapError('No se pudo recuperar el mapa: '+String(e?.message||e))}
+  }else{
+   showMapError('El mapa 3D no responde. Ábrelo en Safari directamente, fuera del navegador integrado de otra app.');
+  }
+ },9500);
+}
 async function initMap(){
- let attempts=0;
- while(!window.maplibregl&&attempts++<65)await new Promise(r=>setTimeout(r,100));
- if(!window.maplibregl){status('ERROR AL CARGAR MAPLIBRE');$('error').textContent='No se ha podido cargar el mapa 3D. Comprueba Internet y vuelve a abrir la página.';$('error').hidden=false;return}
- if(!maplibregl.supported()){status('NECESITA WEBGL');$('error').textContent='Este modo necesita gráficos 3D WebGL. No sustituimos tus edificios por un mapa plano.';$('error').hidden=false;return}
+ status('CONECTANDO CARTOGRAFÍA 3D');
+ if(!await ensureMapLibre()){
+  showMapError('El motor MapLibre 3D no se ha descargado desde ninguno de los servidores. Comprueba la conexión.');
+  return;
+ }
  try{
-  map=new maplibregl.Map({container:'map',style:MAP_STYLE.night,center:ORIGIN,zoom:17.3,pitch:75,bearing:-24,
+  if(!window.maplibregl.supported()){
+   showMapError('No se ha podido activar WebGL 3D. Abre el enlace en Safari actualizado.');
+   return;
+  }
+ }catch(e){showMapError('WebGL no disponible: '+String(e?.message||e));return}
+ try{
+  map=new window.maplibregl.Map({
+   container:'map',style:MAP_STYLE.night,center:ORIGIN,zoom:17.0,pitch:74,bearing:-24,
    maxPitch:85,antialias:true,attributionControl:true,cooperativeGestures:false,
-   preserveDrawingBuffer:false,renderWorldCopies:false});
-  map.on('style.load',()=>{styleLoaded=true;try{addMapFeatures()}catch(e){console.warn('3D layer installation',e)}});
+   preserveDrawingBuffer:false,renderWorldCopies:false
+  });
+  const onStyleReady=()=>{
+   ready=true;styleLoaded=true;
+   clearTimeout(styleWatchdog);$('error').hidden=true;$('launch').disabled=false;
+   status('INICIANDO EDIFICIOS 3D');
+   setTimeout(()=>{
+    try{addMapFeatures();map?.resize()}
+    catch(e){console.warn('Some optional map layers unavailable',e);
+     message('Mapa activo, pero una capa no se ha cargado: '+String(e?.message||e),4700)}
+    check3DData();
+   },170);
+  };
+  map.on('style.load',onStyleReady);
+  map.on('load',()=>{if(!ready)onStyleReady()});
   map.on('moveend',scheduleWindows);
   map.on('sourcedata',e=>{
    if(!e.isSourceLoaded||!city||e.sourceId!==currentVectorSource()||cityTilesRefresh>=9)return;
    const now=Date.now();if(now-cityRefreshAt<1800)return;
    cityRefreshAt=now;cityTilesRefresh++;city.ready=false;map.triggerRepaint?.();
   });
-  map.on('error',e=>{console.warn('MapLibre resource error',e?.error||e);});
-  map.on('load',()=>{ready=true;try{addMapFeatures()}catch(e){}});
+  map.on('error',e=>{
+   const error=String(e?.error?.message||e?.error||e||'unknown');
+   console.warn('MapLibre loading error:',error);
+   if(!ready&&/Failed|403|404|CORS|network|timeout/i.test(error))
+    status('PROVEEDOR DE MAPAS LENTO');
+  });
+  map.on('webglcontextlost',()=>{
+   status('GRÁFICOS 3D INTERRUMPIDOS');
+   message('Safari ha interrumpido WebGL. Recarga la página.',7600);
+  });
   window.addEventListener('resize',()=>map?.resize(),{passive:true});
- }catch(e){status('NO SE PUEDE INICIAR 3D');$('error').textContent=String(e?.message||e);$('error').hidden=false;}
+  armStyleWatchdog();
+ }catch(e){showMapError('No se pudo iniciar la vista 3D: '+String(e?.message||e))}
 }
 function buildDistances(){
  lengths=[0];for(let i=1;i<route.length;i++)lengths.push(lengths.at(-1)+distance(route[i-1],route[i]));
@@ -331,7 +430,7 @@ function startTimer(){
 }
 async function startFlight(){
  if(playing)return;
- if(!map||!ready){message('El mapa 3D aún está cargando. Comprueba Internet si no aparece.');return}
+ if(!map||!ready){message('El motor 3D sigue cargando. Si no aparece, consulta el aviso sobre el mapa.');return}
  $('error').hidden=true;$('launch').disabled=true;
  try{
   $('launch').textContent='Localizando las calles…';
@@ -389,10 +488,11 @@ function toggleOverview(){
  }
 }
 function toggleDay(){
+ clearTimeout(cityLampTimer);clearTimeout(buildingCheckTimer);
  day=!day;document.body.classList.toggle('day',day);$('day').innerHTML=day?'☾ <span>Ver de noche</span>':'☀️ <span>Ver de día</span>';
  fx.setActive(!day&&magic);
  city=null;rooftops=[];clearTimeout(windowTimer);
- map?.setStyle(day?MAP_STYLE.day:MAP_STYLE.night);
+ ready=false;map?.setStyle(styleFallback?local3DStyle(day):(day?MAP_STYLE.day:MAP_STYLE.night));armStyleWatchdog();
  message(day?'Ortofoto PNOA real.':'Noche artística sobre fotografía aérea real.');
 }
 function toggleMagic(){
