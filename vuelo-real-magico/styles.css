@@ -44,3 +44,40 @@ body.pov .story,body.pov .top-actions,body.pov .flight-hud,body.pov .header{disp
  .setup{bottom:max(51px,calc(env(safe-area-inset-bottom) + 35px));left:10px;width:calc(100% - 20px);padding:15px;max-height:min(70dvh,550px)}.setup h1{font-size:27px}.balloon{width:132px;height:184px}
 }
 @media(prefers-reduced-motion:reduce){.balloon,.flame{animation:none}.sky-veil{opacity:.12}}
+
+
+/* Cinema v2: give the real 3D city more screen space on iPhone. */
+.maplibregl-canvas{image-rendering:auto}
+.sky-veil{
+ background:
+  radial-gradient(ellipse 67% 31% at 45% 20%,rgba(61,92,135,.11),transparent 100%),
+  linear-gradient(180deg,rgba(5,16,33,.19) 0%,transparent 26%,transparent 76%,rgba(8,17,30,.12) 100%);
+}
+.flight-hud{
+ background:linear-gradient(130deg,rgba(16,33,59,.93),rgba(11,27,51,.93));
+ border-color:rgba(239,199,135,.87);
+ box-shadow:0 0 0 2px rgba(249,217,156,.12) inset,0 8px 26px rgba(2,10,25,.50);
+ padding:11px 13px 10px;
+ backdrop-filter:blur(11px);
+}
+.flight-hud .journey-line{font-size:13px}
+.flight-hud .journey-line b{font-size:15px}
+.flight-hud .phase{font-size:11px;margin-top:1px}
+.flight-hud .bar{margin:7px 0 8px}
+.flight-hud .flight-controls button{min-height:39px}
+.flight-hud .flight-footnote{margin-top:5px;font-size:9px}
+.story .chapter{background:linear-gradient(145deg,rgba(20,41,71,.87),rgba(17,36,64,.81))}
+.story .mini-map{background:rgba(23,45,75,.90)}
+.story .mini-map canvas{background:repeating-linear-gradient(32deg,rgba(171,195,218,.12) 0 1px,transparent 1px 17px),#233a5b}
+@media(max-width:600px){
+ .story{gap:7px}
+ .story .mini-map{width:34%;padding:5px}
+ .story .mini-map canvas{height:65px}
+ .story .mini-title{font-size:11px}
+ .story .chapter{padding:9px 11px;max-width:66%}
+ .story .chapter h2{font-size:clamp(17px,4.2vw,23px)}
+ .flight-hud{padding:10px 11px 9px;bottom:max(55px,calc(env(safe-area-inset-bottom) + 39px))}
+ .flight-hud .flight-controls button{min-height:36px;font-size:10px}
+ .balloon{width:122px;height:173px}
+}
+@media(prefers-reduced-motion:reduce){.sky-veil{animation:none}}
