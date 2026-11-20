@@ -40,11 +40,11 @@ function lateralOffset(position,side,metres){
  return {lat:position.lat+north/111320,
   lng:position.lng+east/(111320*Math.max(.2,Math.cos(position.lat*R)))};
 }
-export function buildStreetNightPoints(path,{maxRoad=22,maxSparkles=6}={}){
+export function buildStreetNightPoints(path,{maxRoad=30,maxSparkles=8}={}){
  const prepared=preparePath(path);
  if(prepared.total<65)return {lamps:[],sparks:[],distance:prepared.total};
  // evenly spaced along the real street route, not based on screen coordinates
- const n=Math.min(maxRoad,Math.max(5,Math.floor(prepared.total/105)));
+ const n=Math.min(maxRoad,Math.max(5,Math.floor(prepared.total/74)));
  const lamps=[],sparks=[];
  for(let i=0;i<n;i++){
   const along=(i+.5)/(n+1)*prepared.total,position=pathAt(prepared,along);
@@ -59,15 +59,17 @@ export function buildStreetNightPoints(path,{maxRoad=22,maxSparkles=6}={}){
   if(!position)continue;
   // These are sparse magical lights above the city, not alleged
   // authentic windows/roof objects whose surfaces we cannot inspect.
-  const p=lateralOffset(position,i%2?1:-1,15);
-  sparks.push({...p,altitude:19+(i%3)*6,index:i});
+  const p=lateralOffset(position,i%2?1:-1,17);
+  // Google's RELATIVE_TO_MESH anchors a magical glint to the 3D
+  // surface (roof, terrain or tree) rather than floating at a fake height.
+  sparks.push({...p,altitude:1.5+(i%3)*.8,mesh:true,index:i});
  }
  return {lamps,sparks,distance:prepared.total};
 }
 function svgLamp(i){
  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
  svg.setAttribute('xmlns',ns);svg.setAttribute('viewBox','0 0 40 40');
- svg.setAttribute('width','28');svg.setAttribute('height','28');
+ svg.setAttribute('width','32');svg.setAttribute('height','32');
  const defs=document.createElementNS(ns,'defs'),g=document.createElementNS(ns,'radialGradient');
  g.setAttribute('id','halo');g.setAttribute('cx','.5');g.setAttribute('cy','.5');g.setAttribute('r','.5');
  for(const [at,color,opacity] of [
@@ -78,9 +80,9 @@ function svgLamp(i){
  }
  defs.append(g);svg.append(defs);
  const halo=document.createElementNS(ns,'circle');halo.setAttribute('cx','20');halo.setAttribute('cy','20');
- halo.setAttribute('r',i%5===0?'19':'15');halo.setAttribute('fill','url(#halo)');svg.append(halo);
+ halo.setAttribute('r',i%5===0?'19':'17');halo.setAttribute('fill','url(#halo)');svg.append(halo);
  const core=document.createElementNS(ns,'circle');core.setAttribute('cx','20');core.setAttribute('cy','20');
- core.setAttribute('r','1.65');core.setAttribute('fill','#fff1c4');core.setAttribute('opacity','.9');
+ core.setAttribute('r','2.15');core.setAttribute('fill','#fff1c4');core.setAttribute('opacity','.9');
  svg.append(core);
  return svg;
 }
@@ -104,7 +106,8 @@ export class StreetNightScene{
   if(!this.map||!this.Marker3DElement)return null;
   const marker=new this.Marker3DElement({
    position:{lat:point.lat,lng:point.lng,altitude:point.altitude},
-   altitudeMode:'RELATIVE_TO_GROUND',drawsWhenOccluded:false,
+   altitudeMode:point.mesh?'RELATIVE_TO_MESH':'RELATIVE_TO_GROUND',
+   drawsWhenOccluded:false,
    sizePreserved:true,zIndex:2
   });
   const template=document.createElement('template');
