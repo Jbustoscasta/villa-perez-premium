@@ -128,8 +128,9 @@ function roofSVG(type,index,special){
  return svg;
 }
 export class EnchantedRoofScene{
- constructor(map,Marker3DElement){
+ constructor(map,Marker3DElement,Model3DElement=null){
   this.map=map;this.Marker3DElement=Marker3DElement;
+  this.Model3DElement=Model3DElement;
   this.markers=[];this.candidates=[];this.byIndex=new Map();
   this.windowStart=-1;this.night=true;this.magic=true;this.lastCount=0;
  }
@@ -138,7 +139,7 @@ export class EnchantedRoofScene{
   this.markers=[];this.candidates=[];this.byIndex.clear();
   this.windowStart=-1;this.lastCount=0;
  }
- create(p){
+ createMarker(p){
   const marker=new this.Marker3DElement({
    position:{lat:p.lat,lng:p.lng,altitude:p.altitude},
    altitudeMode:'RELATIVE_TO_MESH',drawsWhenOccluded:false,
@@ -147,6 +148,43 @@ export class EnchantedRoofScene{
   const template=document.createElement('template');
   template.content.append(roofSVG(p.type,p.index,p.special));
   marker.append(template);return marker;
+ }
+ create(p){
+  const paths={
+   door:'./assets/mini-puerta-v9.glb',
+   tower:'./assets/mini-torre-v9.glb',
+   observatory:'./assets/mini-observatorio-v9.glb'
+  };
+  // Three special landmarks are genuine GLB 3D objects. Ordinary rooftops
+  // remain very lightweight SVG markers rasterized by the Maps 3D API.
+  if(!p.special||!this.Model3DElement||!paths[p.type])return this.createMarker(p);
+  let model;
+  try{
+   model=new this.Model3DElement({
+    src:paths[p.type],
+    position:{lat:p.lat,lng:p.lng,altitude:.15},
+    altitudeMode:'RELATIVE_TO_MESH',
+    orientation:{heading:(p.index*43)%360,tilt:0,roll:0},
+    scale:p.type==='door'?2.35:p.type==='tower'?1.48:1.65
+   });
+  }catch(e){
+   console.warn('Native miniature 3D model unavailable; using detailed marker',e);
+   return this.createMarker(p);
+  }
+  const fallback=()=>{
+   // Google can reject models asynchronously, particularly on mobile Safari.
+   // Keep the enchanted location rather than leaving a blank space.
+   const index=this.candidates.indexOf(p);
+   if(index<0||this.byIndex.get(index)!==model)return;
+   try{
+    const replacement=this.createMarker(p);
+    model.remove();this.byIndex.set(index,replacement);
+    this.markers=[...this.byIndex.values()];this.sync();
+   }catch(e){console.warn('Miniature model fallback unavailable',e)}
+  };
+  model.addEventListener?.('error',fallback,{once:true});
+  model.addEventListener?.('gmp-error',fallback,{once:true});
+  return model;
  }
  populate(points){
   this.clear();
