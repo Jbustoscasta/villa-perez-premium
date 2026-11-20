@@ -1,5 +1,6 @@
 import {enableRescue} from './rescue.mjs?v=2.0.0';
 import {createCinemaCity} from './cinema-city.mjs?v=2.0.1';
+import {installPOV} from './look-pnoa.mjs?v=3.0.0';
 /**
  * Villa Pérez · Vuelo de cine — prototype v1.
  * Real street geometry: © OpenStreetMap contributors, through OpenFreeMap.
@@ -568,7 +569,8 @@ function render(t){
   // Keep the globo on screen near the center, never magnified or occluded.
   const ahead=coordAt(Math.min(1,p+.006));
   const focus=interpolate(here,ahead,.13);
-  ctx.map.jumpTo({center:focus,zoom:17.0,pitch:71,bearing:ctx.heading-16});
+  if(pov.isActive())pov.draw(here);
+   else ctx.map.jumpTo({center:focus,zoom:17.0,pitch:71,bearing:ctx.heading-16});
   ctx.city3d?.setFocus?.(focus);
   $('phaseLabel').textContent='Vuelo bajo · ciudad real';
   progress(.82*p);
@@ -581,7 +583,8 @@ function render(t){
   const c=[dest[0]+Math.sin(angle)*radM/(111320*Math.max(.15,Math.cos(rad(lat)))),
            dest[1]+Math.cos(angle)*radM/111320];
   ctx.balloon?.setLngLat(c);
-  ctx.map.jumpTo({center:dest,pitch:71,bearing:ctx.heading+p*360,zoom:16.8});
+  if(pov.isActive())pov.draw(c);
+   else ctx.map.jumpTo({center:dest,pitch:71,bearing:ctx.heading+p*360,zoom:16.8});
   ctx.city3d?.setFocus?.(dest);
   const q=Math.min(3,Math.floor(p*4));
   if(q!==ctx.viewIndex){ctx.viewIndex=q;$('chapterTitle').textContent=['Sobre el destino','La ciudad desde otro ángulo','Los tejados de cerca','Última panorámica'][q]}
@@ -656,10 +659,11 @@ function pause(){
 }
 function finish(){
  cancelAnimationFrame(ctx.frame);ctx.frame=0;ctx.phase='done';ctx.playing=false;
- showBalloon(false);progress(1);
+ pov.exit();showBalloon(false);progress(1);
  $('flightInterface').hidden=true;$('arrival').hidden=false;status('MISIÓN COMPLETADA');
 }
 function restart(){
+ pov.exit();
  clearTimeout(ctx.overviewTimeout);clearTimeout(ctx.nightWindowTimer);
  cancelAnimationFrame(ctx.frame);ctx.frame=0;
  ctx.phase='idle';ctx.playing=false;ctx.paused=false;ctx.overview=false;
@@ -692,6 +696,28 @@ function toggleMagic(){
  const source=ctx.map?.getSource('vp-glints');
  if(source)ctx.magic?refreshRouteLayers():setPoints('vp-glints',[]);
 }
+const pov=installPOV({
+ ctx,$,
+ position:()=>{
+  if(ctx.phase==='route')return coordAt(clamp(ctx.routeMs/Math.max(1,ctx.durationMs),0,1));
+  if(ctx.phase==='orbit'){
+   const p=clamp(ctx.orbitMs/Math.max(1,ctx.orbitDuration),0,1),dest=ctx.destination;
+   const angle=(ctx.heading+p*360)*Math.PI/180,radM=44;
+   return [dest[0]+Math.sin(angle)*radM/(111320*Math.max(.15,Math.cos(rad(dest[1])))),
+     dest[1]+Math.cos(angle)*radM/111320];
+  }
+  return ctx.origin;
+ },
+ heading:()=>ctx.heading,
+ paused:()=>ctx.paused,
+ renderNormal:()=>{
+  if(ctx.map&&ctx.playing&&!ctx.overview&&['route','orbit'].includes(ctx.phase)){
+   render(ctx.phase==='route'?ctx.routeMs/ctx.durationMs:ctx.orbitMs/ctx.orbitDuration);
+  }
+ },
+ notify:toast
+});
+
 $('start').addEventListener('click',start);
 $('pause').addEventListener('click',pause);
 $('restart').addEventListener('click',restart);
