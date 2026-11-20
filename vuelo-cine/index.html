@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#051326">
 <meta name="description" content="Villa Pérez: vuelo mágico cinematográfico sobre las calles reales de Madrid.">
-<title>Villa Pérez · Noche de cine</title>
+<title>Villa Pérez · Vuelo nocturno PNOA · 360°</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.7.0/dist/maplibre-gl.css">
-<link rel="stylesheet" href="./styles.css?v=2.1.0">
+<link rel="stylesheet" href="./styles.css?v=3.0.0">
 </head>
 <body>
 <main class="app" id="app">
@@ -15,17 +15,13 @@
  <div class="starscape" aria-hidden="true"></div>
  <div class="mood-haze" aria-hidden="true"></div>
  <div class="topbar">
-  <div class="branding"><span class="brand-crest">✦</span><div><span>VILLA PÉREZ</span><strong>El vuelo de los sueños</strong></div></div>
+  <div class="branding"><span class="brand-crest"><img src="../perez.png" width="30" height="30" alt=""></span><div><span>VILLA PÉREZ</span><strong>El vuelo de los sueños</strong></div></div>
   <span id="mapStatus" class="map-status">PREPARANDO CIUDAD</span>
  </div>
  <section class="setup" id="setup" aria-label="Preparar vuelo">
   <div class="eyebrow"><span class="star">✦</span> EN BUSCA DEL DIENTE PERDIDO</div>
-  <h1>Tu barrio, <em>de verdad.</em></h1>
-  <p>Para ver fachadas, balcones y tejados reconocibles, prueba el vuelo sobre edificios fotográficos reales. El mapa de esta pantalla queda como alternativa nocturna ilustrada.</p>
-  <a class="real-3d-cta" href="../google-3d-vuelo/?v=4.0.0">
-    <span class="real-3d-icon">✦</span><span><strong>Volar entre edificios reales</strong><small>Google 3D fotorrealista · mismo globo y recorrido</small></span><span>→</span>
-  </a>
-  <p class="real-3d-footnote">La vista real necesita tu clave de Google Maps 3D si no está conectada ya. Su versión nocturna es estilizada; las fotografías auténticas son de día.</p>
+  <h1>Esta noche, <em>volamos a casa.</em></h1>
+  <p>Fotografías aéreas reales PNOA/IGN transformadas en una noche cinematográfica. Explora en 360° desde la cesta moviendo el iPhone.</p>
   <details class="clinic-settings" id="clinicSettings">
    <summary><span>🏥 Origen: <strong id="clinicSummary">Puerta de Alcalá · prueba</strong></span><span class="edit-label">Configurar clínica</span></summary>
    <label for="clinicName">Nombre de la clínica</label>
@@ -43,13 +39,13 @@
   <input id="address" placeholder="O escribe calle, número y ciudad" maxlength="220" autocomplete="street-address">
   <button id="start" class="primary-button" type="button" aria-describedby="setupError"><span>✦</span> Comenzar vuelo mágico <span>→</span></button>
   <div id="setupError" class="error" role="alert" hidden></div>
-  <div id="cityStatus" class="city-status" aria-live="polite">Mapa nocturno ilustrado · edificios simplificados</div>
-  <div class="setup-footer">Los trazados de las calles son reales. Los edificios de esta vista son representaciones simplificadas; utiliza «Volar entre edificios reales» para ver fotogrametría.</div>
+  <div id="cityStatus" class="city-status" aria-live="polite">PNOA / IGN · FOTOGRAFÍA AÉREA</div>
+  <div class="setup-footer">La fotografía PNOA es real, captada de día y reinterpretada con iluminación nocturna. Los volúmenes de edificios 3D son aproximados.</div>
  </section>
  <div class="flight-interface" id="flightInterface" hidden>
   <div class="journey-head">
    <div class="journey-copy"><span>EN BUSCA DEL DIENTE</span><strong id="chapterTitle">Despegamos</strong></div>
-   <button id="overview" type="button" class="overview-button"><span>◉</span> Ver ruta completa</button>
+   <div class="journey-head-actions"><button id="povToggle" type="button" class="overview-button" aria-pressed="false">🔭 Mira desde el globo · 360°</button><button id="overview" type="button" class="overview-button"><span>◉</span> Ver ruta</button></div>
   </div>
   <div class="journey-foot">
    <div class="journey-points">
@@ -58,7 +54,7 @@
    <div class="progress-track"><div id="progressFill"></div></div>
    <div class="journey-buttons">
     <button id="pause" type="button"><span>Ⅱ</span> Pausar</button>
-    <button id="night" type="button"><span>☾</span> Noche cine</button>
+    <button id="night" type="button"><span>☀</span> Ver día</button>
     <button id="magic" type="button"><span>✧</span> Magia ON</button>
     <button id="restart" type="button"><span>↻</span> Reiniciar</button>
    </div>
@@ -72,6 +68,14 @@
   <button id="flyAgain" class="primary-button" type="button">↻ Repetir el vuelo</button>
  </section>
  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <div id="povScene" class="pov-scene" hidden aria-label="Vista subjetiva desde la cesta">
+    <div id="povDrag" class="pov-drag" aria-label="Desliza para mirar alrededor"></div>
+    <img id="povBasketPhoto" class="pov-basket" src="https://ilusiono.com/wp-content/uploads/2026/11/villa-perez-pov-cesta-globo-transparente-2026.png" alt="" draggable="false" aria-hidden="true">
+  </div>
+  <div id="povControls" class="pov-controls" hidden>
+    <div class="pov-caption"><strong>🔭 Mira desde el globo</strong><span id="povHint">Gira el móvil o arrastra con el dedo.</span></div>
+    <div class="pov-actions"><button id="povPause" type="button">⏸ Pausar</button><button id="povRecenter" type="button">◎ Recentrar</button><button id="povExit" type="button">✕ Salir</button></div>
+  </div>
  <template id="balloonTemplate">
   <div class="balloon" aria-label="Globo mágico con el Ratón Pérez oficial">
    <div class="balloon-halo"></div>
@@ -83,6 +87,6 @@
  </template>
 </main>
 <script defer src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.7.0/dist/maplibre-gl.js" onerror="(function(){var f=document.createElement('script');f.src='https://unpkg.com/maplibre-gl@5.7.0/dist/maplibre-gl.js';document.head.appendChild(f)})()"></script>
-<script type="module" src="./app.mjs?v=2.1.0"></script>
+<script type="module" src="./app.mjs?v=3.0.0"></script>
 </body>
 </html>
