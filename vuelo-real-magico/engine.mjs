@@ -1,4 +1,4 @@
-import {createArchitecture3D} from './architecture-v2.mjs?v=2.0.0';
+import {createArchitecture3D} from './architecture-v2.mjs?v=2.1.0';
 import {createMagicAtmosphere} from './magic-atmosphere-v2.mjs?v=2.0.0';
 
 /* Villa Pérez · Vuelo real mágico v1
@@ -254,6 +254,15 @@ function check3DData(){
   if(!map||!ready||day)return;
   let count=0;
   try{count=(map.querySourceFeatures('vp-3d-buildings',{sourceLayer:'building'})||[]).length}catch(e){}
+  if(count>0&&map.getLayer('magic-real-buildings')){
+   try{
+    map.moveLayer('magic-real-buildings');
+    if(map.getLayer('magic-real-roof-caps'))map.moveLayer('magic-real-roof-caps');
+    if(map.getLayer('vp-architecture-v2'))map.moveLayer('vp-architecture-v2');
+   }catch(e){console.warn('Could not re-prioritize 3D building layers',e)}
+   status('EDIFICIOS 3D REALES · '+count+' GEOMETRÍAS');
+   return;
+  }
   if(count===0){
    if(!styleFallback){
     status('ESPERANDO DATOS DE EDIFICIOS');
