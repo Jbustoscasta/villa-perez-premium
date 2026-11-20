@@ -2,6 +2,7 @@
  * Villa Pérez: Cinematic WebGL blue hour / night atmosphere.
  * Independent canvas over Google Maps 3D. It does not extract imagery,
  * sample the map frame buffer or relight buildings at geometry level.
+ * The warm street glows now live in georeferenced 3D, not screen-space fake lights.
  */
 const VERT=[
 'attribute vec2 a_position;',
@@ -19,28 +20,19 @@ const FRAG=[
 '  vec2 xy=gl_FragCoord.xy/u_resolution;',
 '  float t=clamp(u_night,0.,1.);',
 '  float sky=smoothstep(.40,.94,xy.y);',
-'  float horizon=exp(-pow((xy.y-.47)/.18,2.));',
-'  float sunset=exp(-pow((xy.y-.30)/.22,2.));',
+'  float horizon=exp(-pow((xy.y-.43)/.18,2.));',
+'  float sunset=exp(-pow((xy.y-.31)/.20,2.));',
 '  vec3 navy=vec3(.017,.048,.13);',
 '  vec3 mid=vec3(.035,.10,.21);',
 '  vec3 lower=vec3(.045,.10,.19);',
 '  vec3 air=mix(lower,mid,smoothstep(.1,.55,xy.y));',
 '  air=mix(air,navy,sky*.67);',
-'  air=mix(air,vec3(.32,.18,.18),horizon*(.25+.12*(1.-t)));',
-'  air=mix(air,vec3(.62,.30,.14),sunset*.12*(1.-t));',
+'  air=mix(air,vec3(.22,.17,.24),horizon*.17);',
+'  air=mix(air,vec3(.42,.25,.15),sunset*.11);',
 '  float vignette=pow(length((xy-.5)*vec2(1.,.9)),1.25);',
-'  float alpha=t*(.49+.09*(1.-sky)+vignette*.11);',
-'  vec2 grid=vec2(xy.x*45.,xy.y*23.);',
-'  vec2 id=floor(grid);',
-'  vec2 center=fract(grid)-.5;',
-'  float seed=hash21(id+vec2(12.,33.));',
-'  float lightsRegion=1.-smoothstep(.22,.52,xy.y);',
-'  float lightMask=step(.948,seed)*lightsRegion;',
-'  vec2 jitter=vec2(hash21(id+4.12)-.5,hash21(id+8.39)-.5)*.57;',
-'  float bokeh=lightMask*glow(center-jitter,.028);',
-'  float roadGlimmer=bokeh*(.78+.22*sin(u_time*.7+seed*21.))*t;',
-'  air=mix(air,vec3(1.,.68,.33),clamp(roadGlimmer*.84,0.,1.));',
-'  alpha=max(alpha,roadGlimmer*.55);',
+'  float alpha=t*(.37+.16*sky+vignette*.15);',
+// The old random on-screen dot grid was removed: city lights now
+// follow geocoded streets as Google Map3D markers with depth occlusion.
 '  vec2 st=xy*vec2(70.,41.);',
 '  vec2 sid=floor(st);',
 '  float starN=hash21(sid+15.7);',
@@ -51,8 +43,8 @@ const FRAG=[
 '  air=mix(air,vec3(.87,.94,1.),clamp(sparkle,0.,1.));',
 '  alpha=max(alpha,sparkle*.75);',
 '  float drift=sin((xy.x*.9+xy.y*.36)*14.+u_time*.065+u_motion*.2);',
-'  alpha+=t*.013*drift*horizon;',
-'  gl_FragColor=vec4(clamp(air,0.,1.),clamp(alpha,0.,.74));',
+'  alpha+=t*.015*drift*horizon;',
+'  gl_FragColor=vec4(clamp(air,0.,1.),clamp(alpha,0.,.64));',
 '}'
 ].join('\n');
 export class CinemaNight {
