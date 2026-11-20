@@ -1,10 +1,100 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Villa Pérez · Vuelo nocturno</title>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#091927">
-<meta http-equiv="refresh" content="0;url=../vuelo-cine/?v=3.0.0">
-<script>location.replace('../vuelo-cine/?v=3.0.0')</script>
-</head><body style="font:16px system-ui;background:#091927;color:#fff3db;text-align:center;padding:32px">
-<p>Abriendo el nuevo vuelo nocturno del Ratón Pérez…</p>
-<a style="color:#f5d392" href="../vuelo-cine/?v=3.0.0">Abrir el mapa nocturno</a>
+<meta name="description" content="Sobrevuela las calles reales de tu barrio con el Ratón Pérez en un globo mágico.">
+<title>Villa Pérez · Vuelo fotorrealista 3D</title>
+<link rel="stylesheet" href="./styles.css?v=6.0.0">
+<script type="module" src="./app.mjs?v=6.0.0"></script>
+</head>
+<body>
+<div class="app">
+ <div class="map-host" id="mapHost" aria-label="Google Maps 3D fotorrealista de Madrid">
+  <div class="unloaded-map" id="beforeMap" aria-hidden="true"><div class="unloaded-orbit"></div><div class="unloaded-star">✦</div><div class="unloaded-text">EL CIELO DE MADRID NOS ESPERA</div></div>
+ </div>
+ <div class="atlas-frame" id="atlasFrame" hidden aria-label="Mapa secreto ilustrado del Ratón Pérez">
+  <div class="atlas-light" aria-hidden="true"></div>
+  <div class="atlas-title"><span>✦ LA RUTA SECRETA ✦</span><strong>El mapa del Ratón Pérez</strong></div>
+  <div class="atlas-compass" aria-hidden="true"><span>✦</span><b>N</b></div>
+  <div class="atlas-footer"><span>DEL CONSULTORIO A TU BARRIO</span><span class="atlas-crown">✧ ✧ ✧</span></div>
+  <div class="atlas-corner atlas-corner-one" aria-hidden="true">✦</div>
+  <div class="atlas-corner atlas-corner-two" aria-hidden="true">✦</div>
+ </div>
+ <div class="dust-layer" id="dustLayer" aria-hidden="true"></div>
+ <header class="topline">
+  <div class="logo"><img class="header-perez" src="../perez.png" alt="" width="26" height="30" loading="lazy"><div><span>VILLA PÉREZ · FOTORREALISMO</span><strong>El vuelo mágico</strong></div></div>
+  <div class="live-indicator"><i></i><span id="mapState">MAPA 3D REAL</span></div>
+ </header>
+ <section class="setup" id="setup" aria-label="Configuración de Google Maps y ruta">
+  <span class="eyebrow">EL VUELO MÁGICO · MADRID 3D FOTORREALISTA</span>
+  <h1>Tu barrio real, <em>lleno de magia.</em></h1>
+  <p class="lead">Sobrevuela tejados, árboles y edificios reconstruidos de fotografías reales. Nada de bloques 3D inventados. La magia acompaña al globo sin tapar la ciudad.</p>
+  <div class="key-group" id="keyGroup">
+   <div class="section-head"><span class="round">01</span><div><b>Activar ciudad fotorrealista</b><small>Google Maps 3D requiere una clave web de prueba o producción</small></div></div>
+   <label for="apiKey">Google Maps Demo Key o API key web</label>
+   <div class="input-outer"><input id="apiKey" type="password" placeholder="AIza…" autocomplete="off" spellcheck="false" autocapitalize="off"><button id="showKey" type="button" aria-label="Mostrar clave" aria-pressed="false">VER</button></div>
+   <button class="cta" id="connect" type="button">Activar cartografía 3D <span>→</span></button>
+   <div class="help"><a href="https://console.cloud.google.com/google/maps-hosted/tos?ref=https%3A%2F%2Fdevelopers.google.com%2Fmaps%2F" target="_blank" rel="noopener noreferrer">Obtener Demo Key gratis</a><span> · </span><a href="./GUIA-GOOGLE-MAPS.md" target="_blank" rel="noopener noreferrer">Instrucciones</a></div>
+   <p class="small-note">El mapa real necesita una clave de Google Maps JavaScript API. Si tu cuenta es elegible puedes solicitar una Demo Key sin tarjeta, solo para pruebas. Para producción, activa la facturación según las condiciones de Google y restringe la clave a este dominio y la API necesaria. La clave no se publica en GitHub.</p>
+  </div>
+  <div class="route-group">
+   <details class="clinic-config" id="clinicConfig">
+    <summary><span class="clinic-symbol">✚</span><span><strong>Clínica de salida</strong><small id="clinicSummary">Origen de prueba · Puerta de Alcalá</small></span><span class="clinic-edit">Configurar</span></summary>
+    <div class="clinic-fields">
+     <label for="clinicName">Nombre de la clínica</label>
+     <input id="clinicName" type="text" autocomplete="organization" value="Clínica del Doctor Abreu" maxlength="100">
+     <label for="clinicAddress">Dirección de la clínica</label>
+     <input id="clinicAddress" type="text" autocomplete="street-address" placeholder="Calle y número, Madrid" maxlength="180">
+     <p class="micro">Se guarda en este navegador. Para una clínica real, el origen se configurará previamente; los padres solo introducirán su destino.</p>
+    </div>
+   </details>
+   <div class="section-head section-destination"><span class="round">01</span><div><b>¿Adónde volará Pérez?</b><small>Escribe el destino o prueba un lugar de Madrid</small></div></div>
+   <div class="destination-chips"><button class="chip active" data-route="plaza" type="button">Plaza Mayor</button><button class="chip" data-route="bernabeu" type="button">Bernabéu</button><button class="chip" data-route="arroyofresno" type="button">Arroyo Fresno</button></div>
+   <label for="address">Dirección del niño</label>
+   <input id="address" autocomplete="street-address" placeholder="Calle, número, municipio" maxlength="220">
+   <p class="micro">Para domicilios se necesitan Geocoding y Routes de Google habilitados. El vuelo terminará antes de llegar a la puerta.</p>
+   <p class="form-error" id="error" role="alert" hidden></p>
+   <button class="cta gold" id="launch" type="button" disabled>✦ Comenzar vuelo mágico</button>
+  </div>
+  <p class="setup-tail">Plan A · Fotogrametría auténtica, no extrusiones OSM. Las zonas sin cobertura Google 3D pueden ofrecer menor detalle. El mapa no tiene una noche fotográfica real: la magia se añade sin cambiar las imágenes originales.</p>
+ </section>
+ <div id="balloon" class="balloon" aria-label="Globo aerostático fotográfico de Villa Pérez con Ratón Pérez oficial" role="img" hidden>
+  <div class="balloon-flare" aria-hidden="true"></div>
+  <div class="balloon-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="balloon-motes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <img class="balloon-base" src="./assets/globo-cinematico.svg" alt="" decoding="async" draggable="false">
+  <img class="official" src="../perez.png" alt="" decoding="async" draggable="false">
+  <img class="balloon-basket-front" src="./assets/cesta-cinematica.svg" alt="" decoding="async" aria-hidden="true" draggable="false">
+ </div>
+ <div class="pov-scene" id="povScene" hidden aria-label="Vista desde el interior del globo">
+  <div class="pov-drag" id="povDrag" aria-label="Desliza el dedo para mirar alrededor si no usas el giroscopio"></div>
+  <img id="povBasketPhoto" class="pov-basket" src="https://ilusiono.com/wp-content/uploads/2026/11/villa-perez-pov-cesta-globo-transparente-2026.png" alt="" aria-hidden="true" draggable="false" decoding="async" fetchpriority="high">
+ </div>
+ <div class="pov-controls" id="povControls" hidden>
+  <div class="pov-caption"><strong>🔭 Mira desde el globo</strong><span id="povHint" role="status">Gira el móvil o arrastra para explorar.</span></div>
+  <div class="pov-actions">
+   <button id="povPause" type="button">⏸ Pausar</button>
+   <button id="povRecenter" type="button">◎ Recentrar</button>
+   <button id="povExit" type="button" aria-label="Salir de la cesta" title="Salir de la cesta">✕ Salir</button>
+  </div>
+ </div>
+ <div class="flight-overlay" id="flightUI" hidden>
+  <div class="chapter"><span class="eyebrow" id="chapterEyebrow">EL VUELO DEL RATÓN PÉREZ</span><h2 id="chapterTitle">Sobre Madrid</h2><p id="chapterDescription" hidden></p></div>
+  <div class="overview-tools"><button id="overviewToggle" type="button" aria-pressed="false">🗺 Ver recorrido completo</button><button id="povToggle" type="button" aria-pressed="false" hidden>🔭 Mira desde el globo · 360°</button><span id="originBadge">Origen de prueba · Puerta de Alcalá</span></div>
+  <div class="flight-bar">
+   <div class="bar-top"><span id="travelLabel">PUERTA DE ALCALÁ → PLAZA MAYOR</span><span id="progressLabel">0%</span></div>
+   <div class="flight-labels"><span id="routeMode">PREPARANDO EL CAMINO DE ESTRELLAS</span></div>
+   <div class="bar-track"><div id="progressFill"></div></div>
+   <div class="flight-buttons">
+    <button id="pause" type="button">⏸ Pausar</button>
+    <button id="fxToggle" type="button" aria-label="Activar o desactivar efectos especiales">✨ Magia ON</button>
+    <button id="restart" type="button">↺ Reiniciar</button>
+   </div>
+  </div>
+ </div>
+ <div id="arrival" class="arrival" hidden><div class="arrival-card"><span>✦ LA MAGIA HA LLEGADO ✦</span><h2>¡El Ratón Pérez está muy cerca!</h2><p>La cámara ha sobrevolado la ciudad a altura estable y ha rodeado el destino para enseñarte sus calles y edificios. Los últimos metros hasta casa serán un secreto.</p><button class="cta gold" id="again">Repetir el vuelo</button></div></div>
+ <div id="systemMessage" class="system-message" role="status" aria-live="polite" hidden></div>
+</div>
 </body></html>
