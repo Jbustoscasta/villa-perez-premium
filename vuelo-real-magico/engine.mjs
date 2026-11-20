@@ -93,19 +93,25 @@ function addMapFeatures(){
   'raster-opacity':dark?.96:.98,'raster-brightness-min':dark?.046:0,
   'raster-brightness-max':dark?.58:1,'raster-contrast':dark?.14:.03,'raster-saturation':dark?-.57:-.03
  }},firstSymbol);
+ // Stable 3D geometry source independent of the decorative vector style.
+ // This is the official OpenFreeMap source used by MapLibre's 3D building example.
+ if(!map.getSource('vp-3d-buildings'))map.addSource('vp-3d-buildings',{
+  type:'vector',url:'https://tiles.openfreemap.org/planet',
+  attribution:'© OpenStreetMap contributors / OpenFreeMap'
+ });
  if(vec){
-  safeLayer({id:'magic-real-buildings',type:'fill-extrusion',source:vec,'source-layer':buildingSourceLayer(),minzoom:12,
+  safeLayer({id:'magic-real-buildings',type:'fill-extrusion',source:'vp-3d-buildings','source-layer':'building',minzoom:13,
    paint:{
-    'fill-extrusion-color':dark?['interpolate',['linear'],cityHeight(),2,'#374761',16,'#52647d',35,'#4c607b',60,'#465d77']:
+    'fill-extrusion-color':dark?['interpolate',['linear'],cityHeight(),2,'#61728a',16,'#6f819b',35,'#7589a3',60,'#879bb5']:
      ['interpolate',['linear'],cityHeight(),2,'#aaa99f',16,'#b6b0a6',35,'#a5a5a2',60,'#a3a9ac'],
     'fill-extrusion-height':cityHeight(),
     'fill-extrusion-base':['max',0,['to-number',['get','render_min_height'],0]],
-    'fill-extrusion-opacity':dark?.98:.94,
+    'fill-extrusion-opacity':1,
     'fill-extrusion-vertical-gradient':true
    }},firstSymbol);
    // Real footprint cap: a slate / copper / terracotta accent, 40 cm thick.
-   safeLayer({id:'magic-real-roof-caps',type:'fill-extrusion',source:vec,
-    'source-layer':buildingSourceLayer(),minzoom:14,
+   safeLayer({id:'magic-real-roof-caps',type:'fill-extrusion',source:'vp-3d-buildings',
+    'source-layer':'building',minzoom:14,
     paint:{
      'fill-extrusion-color':dark?
       ['match',['to-string',['coalesce',['get','roof:colour'],['get','roof:color'],'']],
@@ -134,10 +140,12 @@ function addMapFeatures(){
    clearTimeout(cityLampTimer);
    if(dark)cityLampTimer=setTimeout(()=>{
     if(!map||day||map.getLayer('vp-architecture-v2')||!map.getLayer('magic-real-buildings'))return;
+    let features=[];try{features=map.querySourceFeatures('vp-3d-buildings',{sourceLayer:'building'})||[]}catch(e){}
+    if(!features.length)return; // Asynchronous vector tiles are not ready yet.
     try{
      const architecture=createArchitecture3D(map,{
-      getSource:()=>currentVectorSource(),
-      getSourceLayer:()=>buildingSourceLayer(),
+      getSource:()=>map?.getSource('vp-3d-buildings')?'vp-3d-buildings':null,
+      getSourceLayer:()=> 'building',
       onStats:info=>{
        if(info.real>0&&phase==='idle')status('CIUDAD REAL · ARQUITECTURA MÁGICA 3D');
       }
@@ -167,7 +175,12 @@ function addMapFeatures(){
   paint:{'circle-color':'#fff8cc','circle-radius':1.6,'circle-blur':.2,'circle-opacity':.92}},firstSymbol);
  try{map.setLight?.({anchor:'viewport',color:dark?'#afc5ed':'#fff3dd',intensity:dark?.7:.85,position:[1.3,195,45]})}catch(e){}
  try{if(dark)map.setSky?.({'sky-color':'#091930','horizon-color':'#233951','fog-color':'#1c2c47','sky-horizon-blend':.5,'horizon-fog-blend':.2,'fog-ground-blend':.12})}catch(e){}
- // Avoid rendering intrusive street labels on top of cinematic rooftops.
+ // Ensure real 3D sits above aerial rasters and vector fills, even if
+  // some styles insert opaque layers above the first label layer.
+  for(const id of ['magic-real-buildings','magic-real-roof-caps']){
+   if(map.getLayer(id))try{map.moveLayer(id)}catch(e){console.warn('3D priority layer failed',id,e)}
+  }
+  // Avoid rendering intrusive street labels on top of cinematic rooftops.
   // Map attributions remain untouched.
   for(const layer of map.getStyle()?.layers||[]){
    if(layer.type!=='symbol')continue;
@@ -239,16 +252,13 @@ function check3DData(){
  clearTimeout(buildingCheckTimer);
  buildingCheckTimer=setTimeout(()=>{
   if(!map||!ready||day)return;
-  const vector=currentVectorSource();
   let count=0;
-  try{count=vector?(map.querySourceFeatures(vector,{sourceLayer:buildingSourceLayer()})||[]).length:0}catch(e){}
+  try{count=(map.querySourceFeatures('vp-3d-buildings',{sourceLayer:'building'})||[]).length}catch(e){}
   if(count===0){
    if(!styleFallback){
-    ready=false;styleFallback=true;
-    status('RECUPERANDO EDIFICIOS 3D');
-    message('El primer proveedor no ha entregado edificios. Probando geometría 3D alternativa.',5200);
-    try{map.setStyle(local3DStyle(day));armStyleWatchdog()}
-    catch(e){showMapError('No se pudo recuperar la geometría de edificios: '+String(e?.message||e))}
+    status('ESPERANDO DATOS DE EDIFICIOS');
+    message('La fotografía ha cargado, pero los edificios 3D siguen descargándose. Mantengo el mapa sin sustituirlo.',5200);
+    if(!map.getLayer('magic-real-buildings'))try{addMapFeatures()}catch(e){}
    }else{
     status('NO SE RECIBEN EDIFICIOS 3D');
     $('error').textContent='La fotografía puede estar disponible, pero no han llegado los datos 3D. No se sustituirán por edificios planos. Prueba de nuevo con Safari y conexión estable.';
@@ -306,9 +316,27 @@ async function initMap(){
   map.on('load',()=>{if(!ready)onStyleReady()});
   map.on('moveend',scheduleWindows);
   map.on('sourcedata',e=>{
-   if(!e.isSourceLoaded||!city||e.sourceId!==currentVectorSource()||cityTilesRefresh>=9)return;
-   const now=Date.now();if(now-cityRefreshAt<1800)return;
-   cityRefreshAt=now;cityTilesRefresh++;city.ready=false;map.triggerRepaint?.();
+   if(e.sourceId!=='vp-3d-buildings'||!e.isSourceLoaded)return;
+   const now=Date.now();
+   if(!city&&!day&&map.getLayer('magic-real-buildings')){
+    clearTimeout(cityLampTimer);
+    cityLampTimer=setTimeout(()=>{
+     if(city||day||!map?.getLayer('magic-real-buildings'))return;
+     let fs=[];try{fs=map.querySourceFeatures('vp-3d-buildings',{sourceLayer:'building'})||[]}catch(e){}
+     if(!fs.length)return;
+     try{
+      const layer=createArchitecture3D(map,{
+       getSource:()=>map?.getSource('vp-3d-buildings')?'vp-3d-buildings':null,
+       getSourceLayer:()=> 'building',
+       onStats:info=>{if(info.real>0&&phase==='idle')status('EDIFICIOS REALES · FACHADAS MÁGICAS')}
+      });
+      layer.active=magic;map.addLayer(layer);city=layer;
+     }catch(e){console.warn('Decorative 3D shader optional',e)}
+    },600);
+   }
+   if(city&&cityTilesRefresh<10&&now-cityRefreshAt>1700){
+    cityRefreshAt=now;cityTilesRefresh++;city.ready=false;map.triggerRepaint?.();
+   }
   });
   map.on('error',e=>{
    const error=String(e?.error?.message||e?.error||e||'unknown');
