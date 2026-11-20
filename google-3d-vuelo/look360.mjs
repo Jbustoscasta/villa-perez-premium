@@ -79,7 +79,7 @@ export function installLook360({state,$,now,norm,shortest,routeProgress,routePoi
   if(Number.isFinite(l.savedFov)&&state.map)try{state.map.fov=l.savedFov}catch(e){}
   $('balloon').hidden=state.overview||state.phase==='done';
   $('povToggle').hidden=!state.playing;
-  $('.app').classList.remove('pov-active');
+  document.querySelector('.app').classList.remove('pov-active');
   if(restore)restoreCamera();
  }
  async function toggle(){
@@ -94,7 +94,7 @@ export function installLook360({state,$,now,norm,shortest,routeProgress,routePoi
   l.anchor=norm(state.map?.heading??headingNow());
   l.heading=l.anchor;l.tilt=77;l.savedFov=state.map?.fov;
   $('balloon').hidden=true;
-  $('.app').classList.add('pov-active');
+  document.querySelector('.app').classList.add('pov-active');
   $('povPause').textContent=state.paused?'▶ Continuar':'⏸ Pausar';
   $('povScene').hidden=false;pad.hidden=false;$('povControls').hidden=false;
   $('povToggle').textContent='↩ Salir de 360°';
