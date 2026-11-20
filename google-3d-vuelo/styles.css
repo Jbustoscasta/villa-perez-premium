@@ -294,3 +294,146 @@ html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 
 @media(max-width:400px){
  .balloon{width:138px;height:193px;top:43%}
 }
+
+/* v5.2 — Atlas del Ratón Pérez. Illustration is an ornamental frame, while
+   Google satellite cartography in the clear central window stays untouched. */
+.atlas-frame{
+ position:absolute;top:max(86px,calc(env(safe-area-inset-top) + 74px));
+ right:clamp(13px,4vw,56px);bottom:max(174px,calc(env(safe-area-inset-bottom) + 170px));
+ left:clamp(13px,4vw,56px);z-index:7;
+ background:transparent url("./assets/mapa-pergamino.svg") center center/100% 100% no-repeat;
+ pointer-events:none;overflow:visible;
+ filter:drop-shadow(0 17px 26px rgba(14,16,25,.38));
+ animation:atlasAppear .55s cubic-bezier(.19,1,.22,1) both;
+}
+.atlas-frame[hidden]{display:none!important}
+.atlas-frame::before{
+ content:"";position:absolute;inset:0;border-radius:14px;
+ box-shadow:inset 0 0 20px rgba(41,27,14,.12);pointer-events:none
+}
+.atlas-light{
+ position:absolute;left:9%;right:9%;top:12%;bottom:11%;
+ border:2px solid rgba(255,232,179,.47);border-radius:17px;
+ box-shadow:0 0 34px rgba(234,185,95,.09),inset 0 0 20px rgba(245,198,119,.11);
+ animation:atlasBreath 4.7s ease-in-out infinite;pointer-events:none
+}
+.atlas-title{
+ position:absolute;top:2.4%;left:19%;right:19%;
+ text-align:center;color:#503723;text-shadow:0 1px #fff1c9;
+ display:grid;gap:0;line-height:1.09;
+}
+.atlas-title span{font-size:clamp(7px,.78vw,11px);font-weight:850;letter-spacing:.27em}
+.atlas-title strong{font-family:Georgia,"Times New Roman",serif;font-size:clamp(15px,2.3vw,30px);font-style:italic;font-weight:700;white-space:nowrap}
+.atlas-footer{
+ position:absolute;bottom:3.5%;left:18%;right:18%;
+ color:#67482b;text-align:center;text-shadow:0 1px #fff6ce;
+ display:flex;align-items:center;justify-content:center;gap:17px;
+ font-size:clamp(7px,.9vw,10px);font-weight:800;letter-spacing:.18em
+}
+.atlas-crown{font-size:15px;color:#ab7840}
+.atlas-compass{
+ position:absolute;left:2.7%;bottom:13%;
+ width:clamp(37px,7vw,83px);aspect-ratio:1;display:grid;place-items:center;
+ border-radius:50%;border:2px solid rgba(126,85,48,.5);color:#80502d;
+ background:radial-gradient(circle,#f7deb0 0%,#e4bf83 67%,#ac7948 100%);
+ box-shadow:inset 0 0 0 3px #f9e6bb,inset 0 0 0 5px #ae7f4b,0 2px 9px #49352044;
+ transform:rotate(-17deg)
+}
+.atlas-compass::before{content:"";position:absolute;inset:11%;border:1px dashed #855d3e;border-radius:50%}
+.atlas-compass span{font-size:clamp(23px,4vw,46px);line-height:1}
+.atlas-compass b{position:absolute;top:5%;font:700 9px Georgia,serif}
+.atlas-corner{position:absolute;font-size:clamp(13px,2.3vw,24px);color:#6f492b;text-shadow:1px 1px #ffecc6}
+.atlas-corner-one{right:4%;top:6%}.atlas-corner-two{right:4%;bottom:7%}
+@keyframes atlasAppear{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes atlasBreath{0%,100%{opacity:.44}50%{opacity:.88}}
+/* Physical, gentle motion: the official Perez PNG stays as its own untouched layer. */
+.balloon{
+ animation:cinemaBalloonFloat 5.8s ease-in-out infinite;
+ transform-origin:50% 57%;
+ filter:drop-shadow(0 11px 17px rgba(21,30,43,.31))
+  drop-shadow(0 0 13px rgba(255,229,185,.11))!important;
+}
+.balloon-base{
+ animation:cinemaEnvelopeSway 7.1s ease-in-out infinite!important;
+ filter:saturate(.85) brightness(.94) drop-shadow(0 5px 7px rgba(16,29,46,.23))!important;
+}
+.balloon-basket-front{animation:cinemaEnvelopeSway 7.1s ease-in-out infinite!important}
+.balloon .official{
+ animation:ratonAsomarse 11.8s ease-in-out infinite!important;
+ transform-origin:53% 86%;
+}
+.balloon-flare{
+ animation:burnerPulse 3.9s ease-in-out infinite!important;
+ opacity:.36;mix-blend-mode:screen
+}
+.balloon-motes{
+ position:absolute;inset:14% -25% -14% -35%;z-index:0;
+ pointer-events:none;overflow:visible;filter:drop-shadow(0 0 8px #efbc7e);
+}
+.balloon-motes i{
+ position:absolute;top:79%;left:54%;width:4px;height:4px;border-radius:50%;
+ border:1px solid rgba(255,248,214,.77);
+ background:radial-gradient(circle at 35% 30%,#fffcee,#f3e5b7 44%,#8bb6a8 92%);
+ box-shadow:0 0 9px #fbe6a0,0 0 19px rgba(239,189,123,.5);
+ opacity:0;animation:magicWake 4.4s linear infinite;will-change:transform,opacity
+}
+.balloon-motes i:nth-child(2){animation-delay:-.35s;--vx:-44px;--vy:23px;--sz:5px}
+.balloon-motes i:nth-child(3){animation-delay:-.7s;--vx:-68px;--vy:-15px;--sz:3px}
+.balloon-motes i:nth-child(4){animation-delay:-1.05s;--vx:-78px;--vy:52px;--sz:5px}
+.balloon-motes i:nth-child(5){animation-delay:-1.4s;--vx:-90px;--vy:12px;--sz:3px}
+.balloon-motes i:nth-child(6){animation-delay:-1.75s;--vx:-55px;--vy:69px;--sz:6px}
+.balloon-motes i:nth-child(7){animation-delay:-2.1s;--vx:-114px;--vy:35px;--sz:3px}
+.balloon-motes i:nth-child(8){animation-delay:-2.45s;--vx:-76px;--vy:-24px;--sz:4px}
+.balloon-motes i:nth-child(9){animation-delay:-2.8s;--vx:-127px;--vy:51px;--sz:2px}
+.balloon-motes i:nth-child(10){animation-delay:-3.15s;--vx:-95px;--vy:70px;--sz:4px}
+.balloon-motes i:nth-child(11){animation-delay:-3.5s;--vx:-142px;--vy:21px;--sz:3px}
+.balloon-motes i:nth-child(12){animation-delay:-3.85s;--vx:-108px;--vy:-4px;--sz:5px}
+.balloon-motes i:first-child{--vx:-37px;--vy:-10px;--sz:4px}
+@keyframes cinemaBalloonFloat{
+ 0%,100%{transform:translate(-50%,-50%) translateY(0) rotate(-.7deg)}
+ 25%{transform:translate(-50%,-50%) translateY(-6px) rotate(.65deg)}
+ 52%{transform:translate(-50%,-50%) translateY(2px) rotate(.95deg)}
+ 78%{transform:translate(-50%,-50%) translateY(-4px) rotate(-.45deg)}
+}
+@keyframes cinemaEnvelopeSway{
+ 0%,100%{transform:rotate(-.35deg) scale(1)}
+ 50%{transform:rotate(.65deg) scale(1.002)}
+}
+@keyframes ratonAsomarse{
+ 0%,22%,41%,75%,100%{transform:translate(0,0) rotate(0)}
+ 26%,33%{transform:translate(-1px,3px) rotate(5deg)}
+ 35%{transform:translate(-1px,2px) rotate(3deg)}
+ 79%,84%{transform:translate(1px,2px) rotate(-3deg)}
+}
+@keyframes burnerPulse{
+ 0%,100%{opacity:.25;transform:scale(.95)}
+ 22%{opacity:.47;transform:scale(1.03)}
+ 37%{opacity:.32;transform:scale(.96)}
+ 55%{opacity:.52;transform:scale(1.05)}
+ 75%{opacity:.3;transform:scale(.94)}
+}
+@keyframes magicWake{
+ 0%{opacity:0;transform:translate3d(0,0,0) scale(.35)}
+ 12%{opacity:.84}
+ 28%{opacity:1}
+ 76%{opacity:.55}
+ 100%{opacity:0;transform:translate3d(var(--vx,-60px),var(--vy,28px),0) scale(var(--sz,4px))}
+}
+.balloon.fx-off .balloon-motes,.balloon.fx-off .balloon-sparkles{opacity:0!important}
+@media(max-width:700px){
+ .atlas-frame{left:4px;right:4px;top:max(83px,calc(env(safe-area-inset-top) + 76px));
+  bottom:max(195px,calc(env(safe-area-inset-bottom) + 180px))}
+ .atlas-title{left:16%;right:16%;top:3.4%}
+ .atlas-title span{font-size:7px;letter-spacing:.12em}
+ .atlas-title strong{font-size:clamp(12px,3.8vw,18px)}
+ .atlas-footer{bottom:4%;left:19%;right:19%;font-size:6px;letter-spacing:.1em}
+ .atlas-crown{display:none}
+ .atlas-compass{width:34px;left:3.2%;bottom:10%}
+ .atlas-compass span{font-size:23px}
+ .atlas-corner{font-size:12px}
+ .balloon-motes{inset:14% -25% -14% -35%}
+}
+@media(prefers-reduced-motion:reduce){
+ .balloon,.balloon-base,.balloon-basket-front,.balloon .official,.balloon-flare,
+ .balloon-motes i,.atlas-light{animation:none!important}
+}
