@@ -97,3 +97,11 @@ body.pov-active .starscape{opacity:.1}
  .pov-controls{min-height:50px;padding:4px 8px}.pov-caption{display:none}.pov-actions button{min-height:30px}
 }
 @media(prefers-reduced-motion:reduce){.pov-basket{animation:none}}
+
+/* Night Magic v4 — transparent dynamic layer, not another tile map. */
+.magic-atmosphere{
+ position:absolute;inset:0;width:100%;height:100%;z-index:3;
+ pointer-events:none;contain:strict;user-select:none;
+}
+body.day .magic-atmosphere{opacity:0}
+@media(prefers-reduced-motion:reduce){.magic-atmosphere{opacity:0}}
