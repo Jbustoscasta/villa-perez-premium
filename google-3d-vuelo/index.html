@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#091927">
 <meta name="description" content="Sobrevuela las calles reales de tu barrio con el Ratón Pérez en un globo mágico.">
 <title>Villa Pérez · Vuelo mágico sobre tu barrio</title>
-<link rel="stylesheet" href="./styles.css?v=5.2.0">
-<script type="module" src="./app.mjs?v=5.2.0"></script>
+<link rel="stylesheet" href="./styles.css?v=5.3.0">
+<script type="module" src="./app.mjs?v=5.3.0"></script>
 </head>
 <body>
 <div class="app">
@@ -68,9 +68,21 @@
   <img class="official" src="../perez.png" alt="" decoding="async" draggable="false">
   <img class="balloon-basket-front" src="./assets/cesta-cinematica.svg" alt="" decoding="async" aria-hidden="true" draggable="false">
  </div>
+ <div class="pov-scene" id="povScene" hidden aria-label="Vista desde el interior del globo">
+  <div class="pov-drag" id="povDrag" aria-label="Desliza el dedo para mirar alrededor si no usas el giroscopio"></div>
+  <img class="pov-basket" src="./assets/vista-cesta-360.svg" alt="" aria-hidden="true" draggable="false">
+ </div>
+ <div class="pov-controls" id="povControls" hidden>
+  <div class="pov-caption"><strong>🔭 Mira desde el globo</strong><span id="povHint" role="status">Gira tu móvil o desliza el dedo para explorar.</span></div>
+  <div class="pov-actions">
+   <button id="povPause" type="button">⏸ Pausar</button>
+   <button id="povRecenter" type="button">◎ Recentrar</button>
+   <button id="povExit" type="button">✕ Salir de la cesta</button>
+  </div>
+ </div>
  <div class="flight-overlay" id="flightUI" hidden>
   <div class="chapter"><span class="eyebrow" id="chapterEyebrow">EL VUELO DEL RATÓN PÉREZ</span><h2 id="chapterTitle">Sobre Madrid</h2><p id="chapterDescription" hidden></p></div>
-  <div class="overview-tools"><button id="overviewToggle" type="button" aria-pressed="false">🗺 Ver recorrido completo</button><span id="originBadge">Origen de prueba · Puerta de Alcalá</span></div>
+  <div class="overview-tools"><button id="overviewToggle" type="button" aria-pressed="false">🗺 Ver recorrido completo</button><button id="povToggle" type="button" aria-pressed="false" hidden>🔭 Mira desde el globo · 360°</button><span id="originBadge">Origen de prueba · Puerta de Alcalá</span></div>
   <div class="flight-bar">
    <div class="bar-top"><span id="travelLabel">PUERTA DE ALCALÁ → PLAZA MAYOR</span><span id="progressLabel">0%</span></div>
    <div class="flight-labels"><span id="routeMode">PREPARANDO EL CAMINO DE ESTRELLAS</span></div>
