@@ -43,7 +43,8 @@ const state={
  originLabel:'Origen de prueba · Puerta de Alcalá',clinicVerified:false,originMarker:null,
  destinationMarker:null,routeGlow:null,routeLine:null,overview:false,overviewTimer:0,
  overviewWasPlaying:false,originStored:false,
- terrainSamples:[],turnLastTs:0,takeoffMs:0,takeoffDurationMs:2600,overviewSnapshot:null,takeoffBearing:0
+ terrainSamples:[],turnLastTs:0,takeoffMs:0,takeoffDurationMs:2600,overviewSnapshot:null,takeoffBearing:0,
+ routeSpark:null,routeSparkTip:null,magicLastAt:0,magicDraws:0
 };
 const R=Earth=>Earth*Math.PI/180;
 function distance(a,b){
@@ -265,44 +266,93 @@ function createOriginMarker(){
 }
 function clearRouteMap(){
  removeElement(state.routeGlow);removeElement(state.routeLine);
+ removeElement(state.routeSpark);removeElement(state.routeSparkTip);
  removeElement(state.destinationMarker);state.routeGlow=null;
- state.routeLine=null;state.destinationMarker=null;
+ state.routeLine=null;state.routeSpark=null;state.routeSparkTip=null;
+ state.magicLastAt=0;state.destinationMarker=null;
 }
 function makePolyline(points,destination){
  if(!state.Polyline3DElement||!state.map)return;
  clearRouteMap();
- // Raise the entire path above many roofs; render occluded segments in overview
- // so a parent can recognize all waypoints. A gold line remains in the map.
- const path=points.map(p=>({...p,altitude:18}));
- try{
-  state.routeGlow=new state.Polyline3DElement({
-   path,strokeColor:'#e3ab58',strokeWidth:13,
-   outerColor:'#ffe0a3',outerWidth:.8,
-   altitudeMode:'RELATIVE_TO_GROUND',drawsOccludedSegments:true
-  });
-  state.routeGlow.id='vpRouteGlow';
-  state.map.append(state.routeGlow);
- }catch(e){console.warn('Route glow disabled',e)}
- try{
-  state.routeLine=new state.Polyline3DElement({
-   path,strokeColor:'#fff1c1',strokeWidth:5,
-   outerColor:'#bb742e',outerWidth:.5,
-   altitudeMode:'RELATIVE_TO_GROUND',drawsOccludedSegments:true
-  });
-  state.routeLine.id='vpRouteLine';
-  state.map.append(state.routeLine);
- }catch(e){console.warn('Route line unavailable',e)}
+ // Pale pearl-and-lilac thread, 3D world coordinates from the ACTUAL road
+ // route. It does not depict or alter Google map photography.
+ const path=points.map(p=>({...p,altitude:22}));
+ function addMagicalLine(id,options){
+  try{
+   const line=new state.Polyline3DElement({
+    ...options,altitudeMode:'RELATIVE_TO_GROUND',
+    drawsOccludedSegments:true
+   });
+   line.id=id;
+   state.map.append(line);
+   return line;
+  }catch(e){console.warn('Magical 3D line unavailable',id,e);return null}
+ }
+ // A faint wide halo plus a thin silvery thread; no opaque yellow GPS stripe.
+ state.routeGlow=addMagicalLine('vpRouteAura',{
+  path,strokeColor:'#B7A3D5',strokeWidth:6.5,
+  outerColor:'#E1D3EC',outerWidth:.43
+ });
+ state.routeLine=addMagicalLine('vpRouteThread',{
+  path,strokeColor:'#F6EDE0',strokeWidth:2.2,
+  outerColor:'#B18AA9',outerWidth:.5
+ });
+ // Two animated pulses slide along the REAL route throughout the journey.
+ const origin=path[0];
+ state.routeSpark=addMagicalLine('vpMagicComet',{
+  path:[origin,origin],strokeColor:'#EDD7FF',strokeWidth:8,
+  outerColor:'#FFF9DE',outerWidth:.43
+ });
+ state.routeSparkTip=addMagicalLine('vpMagicCometTip',{
+  path:[origin,origin],strokeColor:'#FFFCEC',strokeWidth:4,
+  outerColor:'#B7F6EE',outerWidth:.95
+ });
  createOriginMarker();
  if(state.Marker3DElement){
   try{
    state.destinationMarker=new state.Marker3DElement({
     position:{...points.at(-1),altitude:8},altitudeMode:'RELATIVE_TO_GROUND',
-    label:'Destino · '+destination.label,sizePreserved:true,
+    label:'✧ Destino · '+destination.label,sizePreserved:true,
     drawsWhenOccluded:true,zIndex:18
    });
    state.map.append(state.destinationMarker);
   }catch(e){console.warn('Destination pin unavailable',e)}
  }
+}
+function updateMagicTrail(progress,now=getNow(),force=false){
+ if(!state.routeSpark&&!state.routeSparkTip)return;
+ if(!force&&now-state.magicLastAt<140)return; // ~7 updates/sec on mobile
+ state.magicLastAt=now;
+ const enabled=state.effectsOn;
+ if(!enabled){
+  for(const segment of [state.routeSpark,state.routeSparkTip]){
+   if(segment)try{segment.path=[]}catch(e){}
+  }
+  return;
+ }
+ const total=Math.max(1,state.routeLength);
+ const p=clamp01(progress);
+ const travel=state.phase==='orbit'?0:40/total;
+ const position=clamp01(p+travel);
+ const pathBetween=(from,to,n=6)=>{
+  const a=clamp01(from),b=clamp01(to);
+  return Array.from({length:n},(_,i)=>{
+   const t=a+(b-a)*(i/(n-1));
+   const point=routePosition(t);
+   return {...point,altitude:25+4*Math.sin(t*53+now*.00042)};
+  });
+ };
+ // Lilac comet about 68m long, with a short luminous tip. The opacity and
+ // surface glow come from the material colors, not a dark Google map filter.
+ const start=Math.max(0,position-69/total);
+ const end=Math.min(1,position+24/total);
+ const tipStart=Math.max(0,position-9/total);
+ const tipEnd=Math.min(1,position+15/total);
+ try{
+  if(state.routeSpark)state.routeSpark.path=pathBetween(start,end,8);
+  if(state.routeSparkTip)state.routeSparkTip.path=pathBetween(tipStart,tipEnd,4);
+  state.magicDraws++;
+ }catch(e){console.warn('Magic route animation unsupported by this browser',e)}
 }
 function overviewCamera(){
  const points=state.points;
@@ -325,6 +375,7 @@ function overviewCamera(){
 function closeOverview(){
  if(!state.overview)return;
  state.overview=false;
+ $('atlasFrame').hidden=true;
  clearTimeout(state.overviewTimer);state.overviewTimer=0;
  $('overviewToggle').textContent='🗺 Ver recorrido completo';
  $('overviewToggle').setAttribute('aria-pressed','false');
@@ -343,13 +394,14 @@ function enterOverview({intro=false}={}){
  if(!state.points?.length)return;
  stopFrame();
  state.overview=true;
+ $('atlasFrame').hidden=false;
  $('overviewToggle').textContent=intro?'▶ Empezar vuelo':'▶ Volver al vuelo';
  $('overviewToggle').setAttribute('aria-pressed','true');
  $('balloon').hidden=true;
- $('chapterTitle').textContent='Así será el recorrido';
+ $('chapterTitle').textContent='El mapa del Ratón Pérez';
  $('chapterEyebrow').textContent='VISTA GENERAL · RUTA COMPLETA';
  $('travelLabel').textContent=state.originLabel.toUpperCase()+' → '+(state.activeDestination?.label||'DESTINO').toUpperCase();
- status('MAPA COMPLETO · ORIGEN Y DESTINO');
+ status('EL MAPA SECRETO · VILLA PÉREZ');
  overviewCamera();
  if(intro){
   state.phase='preview';
@@ -372,7 +424,7 @@ function toggleOverview(){
 // Low-altitude flight: roughly half the previous camera-to-subject distance.
 // Altitude is absolute (sea level). Where available, terrain elevations
 // supply a safe, smoothed 52 m clearance for the target point.
-const CAMERA={altitude:733,range:270,tilt:67,clearance:52,headingLimit:19};
+const CAMERA={altitude:717,range:205,tilt:64,clearance:43,headingLimit:14};
 
 const ORBIT_CHAPTERS=[
  ['Primera vista del destino','Los tejados y las calles aparecen justo bajo el globo.'],
@@ -499,7 +551,7 @@ function progress(n,total){
 }
 function scene(n,total){
  const names=state.custom
-  ?['Despegamos de Madrid','Sobre las avenidas','Rumbo a tus calles','Luces en el camino','¿Reconoces el barrio?','Últimos metros secretos']
+  ?['Despegamos de la clínica','Calles bajo el globo','El camino de estrellas','Siguiendo el polvo mágico','¿Reconoces tu barrio?','Últimos metros secretos']
   :routes[state.route].chapters;
  const chapter=Math.min(names.length-1,Math.floor(clamp01(n/Math.max(1,total))*names.length));
  $('chapterEyebrow').textContent='EN BUSCA DEL DIENTE · CAPÍTULO '+(chapter+1);
@@ -544,7 +596,7 @@ function renderRoute(t){
  const p=clamp01(t);
  // Direction is estimated over the next ~55–115 m, not over an abrupt road
  // vertex. This anticipates turns while keeping the geographic route intact.
- const lead=Math.min(115,Math.max(55,state.routeLength*.028));
+ const lead=Math.min(155,Math.max(85,state.routeLength*.038));
  const span=lead/Math.max(1,state.routeLength);
  const before=routePosition(Math.max(0,p-span*.58));
  const after=routePosition(Math.min(1,p+span));
@@ -556,12 +608,13 @@ function renderRoute(t){
   state.filteredHeading=desired;
  }else{
   const difference=shortestTurn(state.filteredHeading,desired);
-  const damping=1-Math.exp(-dt/.95);
+  const damping=1-Math.exp(-dt/1.35);
   const maxTurn=CAMERA.headingLimit*dt;
   const change=Math.max(-maxTurn,Math.min(maxTurn,difference*damping));
   state.filteredHeading=normHeading(state.filteredHeading+change);
  }
  setCamera(cameraPoint(p),state.filteredHeading-9,p);
+ updateMagicTrail(p,now);
  $('balloon').hidden=state.overview;
  $('balloon').style.opacity='1';
  progress(p*.82,1);
@@ -570,9 +623,10 @@ function renderRoute(t){
 function renderOrbit(t){
  const p=clamp01(t);
  const waypoint=state.points[state.points.length-1];
- // A gentle 270° arrival panorama with an eased start and finish.
+ // A measured 205-degree final panorama, eased to avoid a whip-pan.
  const ease=(1-Math.cos(Math.PI*p))/2;
- setCamera(waypoint,state.orbitStartHeading+ease*270,1);
+ setCamera(waypoint,state.orbitStartHeading+ease*205,1);
+ updateMagicTrail(.982+(Math.sin(p*Math.PI*4)+1)*.007,getNow());
  $('balloon').hidden=state.overview;
  const view=Math.min(3,Math.floor(p*4));
  if(view!==state.orbitView){
@@ -587,6 +641,7 @@ function renderOrbit(t){
 }
 function finishFlight(){
  stopFrame();clearTimeout(state.overviewTimer);state.overviewTimer=0;state.overview=false;
+ $('atlasFrame').hidden=true;
  state.playing=false;state.paused=false;state.phase='done';
  state.progressMs=state.routeDurationMs;state.orbitElapsedMs=state.orbitDurationMs;
  progress(1,1);
@@ -638,13 +693,13 @@ function renderTick(now){
 function flightStart(){
  stopFrame();
  state.progressMs=0;state.orbitElapsedMs=0;state.filteredHeading=null;state.orbitView=-1;
- state.turnLastTs=0;state.cameraFaulted=false;
+ state.turnLastTs=0;state.magicLastAt=0;state.cameraFaulted=false;
  state.phase='takeoff';state.playing=true;state.paused=false;
  state.takeoffMs=0;state.takeoffDurationMs=2600;
  const previewSpan=Math.min(.035,75/Math.max(1,state.routeLength));
  state.takeoffBearing=heading(routePosition(0),routePosition(previewSpan));
  state.routeDurationMs=Math.max(42000,Math.min(85000,state.routeLength/28*1000));
- state.orbitDurationMs=21000;
+ state.orbitDurationMs=23000;
  state.lastFrame=getNow();state.lastPaint=0;
  $('pause').textContent='⏸ Pausar';
  renderTakeoff(0);
@@ -679,8 +734,8 @@ async function fly(){
  $('balloon').hidden=false;
  $('balloon').classList.toggle('fx-off',!state.effectsOn);
  $('routeMode').textContent=state.routeSource==='google'
-    ?'RUTA POR CALLES REALES · GOOGLE'
-    :'VUELO PANORÁMICO · RUTA APROXIMADA';
+    ?'CAMINO DE ESTRELLAS · CALLES REALES'
+    :'CAMINO MÁGICO · TRAYECTO APROXIMADO';
  $('launch').textContent='✦ Comenzar vuelo mágico';
  $('launch').disabled=false;
  $('travelLabel').textContent=state.originLabel.toUpperCase()+' → '+destination.label.toUpperCase();
@@ -705,6 +760,7 @@ function pause(){
 }
 function restart(){
  stopFrame();clearTimeout(state.overviewTimer);state.overviewTimer=0;state.overview=false;
+ $('atlasFrame').hidden=true;
  state.flightToken++;state.playing=false;state.paused=false;state.busy=false;
  state.phase='idle';state.progressMs=0;state.orbitElapsedMs=0;state.takeoffMs=0;
  state.overviewSnapshot=null;
@@ -730,6 +786,7 @@ $('fxToggle').addEventListener('click',()=>{
  state.effectsOn=!state.effectsOn;
  $('dustLayer').classList.toggle('fx-off',!state.effectsOn);
  $('balloon').classList.toggle('fx-off',!state.effectsOn);
+ updateMagicTrail(state.phase==='orbit'?1:state.progressMs/Math.max(1,state.routeDurationMs),getNow(),true);
  $('fxToggle').textContent=state.effectsOn?'✨ Magia ON':'✨ Magia OFF';
 });
 
