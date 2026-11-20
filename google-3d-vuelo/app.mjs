@@ -145,6 +145,7 @@ async function connectGoogle(){
    });
    state.map=map;
    state.streetNight=new StreetNightScene(map,Marker3DElement);
+   state.streetNight.setNight(!state.day);
    // Keep SATELLITE photogrammetry as the single cinematic visual mode.
    map.mode='SATELLITE';
    map.style.cssText='width:100%;height:100%;display:block;';
