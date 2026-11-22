@@ -3,7 +3,7 @@ import {installLook360} from './look360.mjs?v=5.4.0';
 import {CinemaNight} from './night-cinema-v9-1.mjs?v=9.1.0';
 import {StreetNightScene} from './street-night-v7.mjs?v=8.0.0';
 import {EnchantedRoofScene} from './enchanted-roofs-v9.mjs?v=9.0.0';
-import {BlowBoost,MAX_BLOW_SPEED} from './blow-boost-preview.mjs?v=9.4.0';
+import {BlowBoost,MAX_BLOW_SPEED} from './blow-boost-preview.mjs?v=9.5.0';
 /*
  * Villa Pérez Google 3D experiment.
  * Google Maps JavaScript API 3D, photorealistic daytime only.
@@ -746,8 +746,10 @@ function renderTick(now){
  state.frameId=0;
  if(!state.playing||state.paused)return;
  let delta=Math.max(0,now-state.lastFrame);
- // Safari sometimes backgrounds a frame for seconds: prevent skipping the film.
- delta=Math.min(90,delta);
+ // Límite moderado para Safari: con Maps 3D a bajo FPS, 90 ms
+ // recortaban tanto el tiempo que el turbo apenas movía la cámara.
+ // visibilitychange ya pausa la app al pasar a segundo plano.
+ delta=Math.min(240,delta);
  state.lastFrame=now;
  // El soplido impulsa la cámara sobre el mapa real: no solo el indicador.
  const speed=blowBoost.active?blowBoost.sample(now):1;
