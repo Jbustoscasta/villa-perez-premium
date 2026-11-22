@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="Dibuja el vuelo del Ratón Pérez sobre una fotografía de la habitación y crea un recuerdo mágico. Todo ocurre en tu dispositivo.">
+  <title>El vuelo mágico · Ratón Pérez | Ilusiono</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">✦</div>
+        <div class="brand-copy"><strong>ILUSIONO</strong><small>Experiencias que hacen magia</small></div>
+        <div class="brand-divider"></div>
+        <div class="project-name">El vuelo de Pérez <span class="beta">ESTUDIO</span></div>
+      </div>
+      <div class="top-right"><span class="privacy"><span class="privacy-dot"></span> Privado · tus fotos no se suben</span><button class="help-btn" id="helpBtn" title="Ayuda" aria-label="Ayuda">?</button></div>
+    </header>
+
+    <main class="workspace">
+      <aside class="sidebar left-sidebar">
+        <div class="sidebar-heading"><span class="eyebrow">01 — PREPARA LA ESCENA</span><h1>Una visita<br><em>inolvidable.</em></h1><p>Convierte la fotografía de su habitación en el escenario de un vuelo mágico.</p></div>
+
+        <section class="panel-section">
+          <div class="section-top"><span class="step-number">1</span><h2>Su habitación</h2><span id="photoStatus" class="section-state">Pendiente</span></div>
+          <label class="upload-box" for="photoInput" id="photoLabel"><span class="upload-ico">▧</span><span><strong id="photoTitle">Añadir foto del dormitorio</strong><small>JPG, PNG o HEIC compatible</small></span><span class="upload-plus">＋</span><input class="native-file-picker" type="file" id="photoInput" accept="image/*,.heic,.heif" aria-label="Elegir una foto del dormitorio"></label>
+          <p id="iphoneInfo" class="tiny-hint" hidden>📱 En iPhone abre la dirección HTTPS directamente en <strong>Safari</strong>, no el visor de archivos de ChatGPT. La fotografía se queda en tu dispositivo.</p><p class="tiny-hint">Consejo: fotografía desde una esquina para que se vea la cama y espacio por encima.</p>
+        </section>
+
+        <section class="panel-section">
+          <div class="section-top"><span class="step-number">2</span><h2>El Ratón Pérez</h2><span class="section-state state-ready">Listo</span></div>
+          <div class="character-card"><img src="assets/perez-globo-iphone.webp" alt="El Ratón Pérez en su globo" class="character-thumb"><span><strong>Globo de Pérez</strong><small id="assetInfo">Arte original incluido</small></span><span class="checkmark">✓</span></div>
+          <label class="mini-upload" for="videoInput">↥ &nbsp; Cargar vídeo animado de Magnific</label>
+          <input hidden type="file" id="videoInput" accept="video/mp4,video/webm,video/quicktime,video/*">
+          <p class="tiny-hint">Sin vídeo funciona como una animación ligera. Con tu MP4, Pérez se mueve de verdad y eliminamos el verde automáticamente.</p>
+        </section>
+
+        <section class="panel-section route-panel">
+          <div class="section-top"><span class="step-number">3</span><h2>Diseña el vuelo</h2></div>
+          <div class="tool-stack" role="group" aria-label="Herramientas de edición">
+            <button id="drawBtn" class="tool-btn selected" data-mode="draw"><span class="tool-icon">〰</span><span><strong>Dibujar recorrido</strong><small>Desliza el dedo sobre la foto</small></span><span class="tool-check">✓</span></button>
+            <button id="targetBtn" class="tool-btn" data-mode="target"><span class="tool-icon">◎</span><span><strong>Marcar dónde está el diente</strong><small>El globo frenará al acercarse</small></span></button>
+            <button id="panBtn" class="tool-btn" data-mode="pan"><span class="tool-icon">✥</span><span><strong>Reencuadrar fotografía</strong><small>Arrastra la imagen con el dedo</small></span></button>
+          </div>
+          <div class="route-utilities"><button class="text-btn" id="suggestBtn">✧ Vuelo sugerido</button><button class="text-btn muted" id="clearBtn">Borrar ruta</button></div>
+          <div class="route-meta"><span id="routeStatus">Ruta sugerida cargada</span><span id="routeLength">15 s</span></div>
+        </section>
+      </aside>
+
+      <section class="center-column">
+        <div class="preview-bar"><span><span class="live-dot"></span> <strong>Vista previa</strong> <span class="preview-sub">· vertical 9:16</span></span><span class="scene-pill" id="scenePill">EDITANDO</span></div>
+        <div class="stage-wrap">
+          <div class="stage" id="stage" aria-label="Zona de dibujo del recorrido">
+            <canvas id="sceneCanvas" width="720" height="1280" aria-label="Vista previa de la habitación y globo"></canvas>
+            <canvas id="overlayCanvas" width="720" height="1280" aria-label="Dibuja aquí el recorrido" tabindex="0"></canvas>
+            <div class="empty-overlay" id="emptyOverlay"><div class="empty-icon">☾</div><strong>La magia empieza aquí</strong><span>Sube una foto de la habitación para dibujar<br>el recorrido del Ratón Pérez.</span><label class="empty-button" id="emptyUploadBtn"><span>Elegir una fotografía</span><input id="centerPhotoInput" type="file" accept="image/*,.heic,.heif" aria-label="Seleccionar fotografía del iPhone"></label></div>
+          </div>
+          <div class="stage-outline"></div>
+        </div>
+        <div class="player">
+          <button id="playBtn" class="play-btn" title="Reproducir o pausar" aria-label="Reproducir o pausar">▶</button>
+          <div class="play-timeline"><input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Avance de la animación"><div class="play-times"><span id="elapsed">00:00</span><span id="totalTime">00:15</span></div></div>
+          <button id="restartBtn" class="player-round" title="Volver al principio" aria-label="Volver al principio">↺</button>
+          <button id="soundBtn" class="player-round" title="Activar o desactivar sonido" aria-label="Activar o desactivar sonido">♫</button>
+        </div>
+        <p class="preview-foot" id="contextHint">✦ <span>Dibuja una curva sobre la foto. Después pulsa reproducir para ver cómo Pérez la sigue.</span></p>
+      </section>
+
+      <aside class="sidebar right-sidebar">
+        <span class="eyebrow">02 — A TU GUSTO</span>
+        <h2 class="right-title">Dirige la magia <span>✧</span></h2>
+        <p class="right-intro">El vuelo se adapta a tu fotografía, sin necesidad de volver a generar vídeos con IA.</p>
+        <section class="control-section"><div class="slider-heading"><label for="sizeControl">Tamaño del globo</label><output id="sizeValue">22%</output></div><input id="sizeControl" type="range" min="10" max="43" step="1" value="22"><div class="slider-extents"><span>Discreto</span><span>Más cerca</span></div></section>
+        <section class="control-section"><div class="slider-heading"><label for="durationControl">Duración del vuelo</label><output id="durationValue">15 s</output></div><input id="durationControl" type="range" min="8" max="30" step="1" value="15"><div class="slider-extents"><span>8 segundos</span><span>30 segundos</span></div></section>
+        <section class="control-section"><div class="slider-heading"><label for="magicControl">Estela de magia</label><output id="magicValue">65%</output></div><input id="magicControl" type="range" min="0" max="100" step="5" value="65"><div class="slider-extents"><span>Sutil</span><span>Resplandeciente</span></div></section>
+        <section class="control-section"><div class="slider-heading"><label for="zoomControl">Encuadre de la foto</label><output id="zoomValue">100%</output></div><input id="zoomControl" type="range" min="100" max="200" step="5" value="100"><div class="slider-extents"><span>Normal</span><span>Zoom</span></div></section>
+        <section class="control-section" id="chromaSection" hidden><div class="slider-heading"><label for="chromaControl">Eliminar fondo verde</label><output id="chromaValue">55%</output></div><input id="chromaControl" type="range" min="15" max="95" step="1" value="55"><div class="slider-extents"><span>Suave</span><span>Intenso</span></div><p class="tiny-hint">Ajusta hasta que desaparezca el verde sin borrar partes del globo.</p></section>
+        <section class="control-section"><div class="slider-heading"><label for="qualitySelect">Calidad de exportación</label></div><select id="qualitySelect" class="quality-select"><option value="720">HD · 720 × 1280 (recomendado)</option><option value="1080">Full HD · 1080 × 1920</option></select><p class="tiny-hint">Full HD requiere un móvil más potente.</p></section>
+        <section class="control-section sound-section"><div><strong>Sonidos de la visita</strong><p>Quemador, viento y pequeños destellos.</p></div><label class="switch"><input id="soundToggle" type="checkbox" checked><span></span></label></section>
+        <section class="tip-card"><span class="tip-star">✦</span><strong>Un pequeño secreto mágico</strong><p>Marca el diente en la mesita. Pérez desacelerará con suavidad cuando pase cerca, como si lo estuviera buscando.</p></section>
+        <div class="export-block"><button id="exportBtn" class="primary-button">✧ &nbsp; Crear mi vídeo mágico</button><button id="snapshotBtn" class="secondary-button">Guardar fotograma</button><button id="shareBtn" class="secondary-button" hidden>Compartir vídeo creado</button><div class="export-detail"><span>🔒</span> Se procesa en tu dispositivo, sin subir fotos.</div></div>
+      </aside>
+    </main>
+
+    <footer class="footer"><span>© Ilusiono · Villa Pérez</span><span><button id="saveRouteBtn">Guardar recorrido</button> <button id="loadRouteBtn">Cargar recorrido</button><input hidden type="file" accept=".json,application/json" id="routeInput"></span><span>Experiencia privada · No se almacena ninguna foto</span></footer>
+  </div>
+
+  <video id="assetVideo" playsinline loop muted preload="metadata" hidden></video>
+  <audio id="magicAudio" src="assets/sonido-vuelo-magico-iphone.mp3" preload="auto" loop></audio>
+  <div class="toast" id="toast" aria-live="polite"></div>
+  <div class="modal-backdrop" id="exportModal" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="exportTitle"><div class="modal-symbol">✧</div><h2 id="exportTitle">Creando tu recuerdo mágico…</h2><p id="exportMessage">Pérez está siguiendo el recorrido que has dibujado.</p><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><span id="progressValue">0%</span><button id="cancelExportBtn" class="secondary-button">Cancelar exportación</button></div></div>
+  <div class="modal-backdrop" id="helpModal" hidden><div class="modal help-modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><button id="closeHelpBtn" class="modal-close" aria-label="Cerrar">×</button><h2 id="helpTitle">Cómo funciona el vuelo</h2><ol><li>Sube una foto del dormitorio.</li><li>Con <b>Dibujar recorrido</b> activado, arrastra el dedo dibujando la trayectoria.</li><li>Opcionalmente marca el lugar donde está el diente.</li><li>Reproduce para comprobar la animación y ajusta el tamaño.</li><li>Exporta el vídeo para guardarlo o compartirlo.</li></ol><p>La imagen oficial permite probar la herramienta desde el primer momento. Para utilizar los movimientos de la versión IA, carga su MP4 descargado de Magnific. El fondo verde se elimina en el navegador.</p><p>Todo se procesa localmente; no enviamos fotos a ningún servidor. En Chrome la exportación habitual es WebM y en Safari puede ser MP4 según el dispositivo.</p><button class="primary-button" id="helpDoneBtn">Entendido</button></div></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
