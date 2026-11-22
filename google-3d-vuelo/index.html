@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#091927">
 <meta name="description" content="Sobrevuela las calles reales de tu barrio con el Ratón Pérez en un globo mágico.">
 <title>Villa Pérez · Madrid encantado 3D nocturno</title>
-<link rel="stylesheet" href="./styles.css?v=9.1.0">
-<script type="module" src="./app.mjs?v=9.1.0"></script>
+<link rel="stylesheet" href="./styles.css?v=9.2.0">
+<script type="module" src="./app.mjs?v=9.2.0"></script>
 </head>
 <body>
 <div class="app">
@@ -78,6 +78,7 @@
   <div class="pov-caption"><strong>🔭 Mira desde el globo</strong><span id="povHint" role="status">Gira el móvil o arrastra para explorar.</span></div>
   <div class="pov-actions">
    <button id="povPause" type="button">⏸ Pausar</button>
+    <button id="povBlowToggle" type="button" aria-pressed="false" title="Sopla al micrófono para acelerar el vuelo">🌬 Soplar</button>
    <button id="povRecenter" type="button">◎ Recentrar</button>
    <button id="povExit" type="button" aria-label="Salir de la cesta" title="Salir de la cesta">✕ Salir</button>
   </div>
@@ -93,6 +94,10 @@
     <button id="pause" type="button">⏸ Pausar</button>
     <button id="fxToggle" type="button" aria-label="Activar o desactivar efectos especiales">✨ Magia ON</button>
     <button id="restart" type="button">↺ Reiniciar</button>
+   </div>
+   <div class="blow-strip" aria-label="Impulsar el globo soplando">
+    <button id="blowToggle" type="button" aria-pressed="false" title="El sonido se analiza en tu móvil y no se graba">🎤 Activar soplido</button>
+    <div class="blow-readout"><span id="blowStatus">Micrófono apagado</span><div class="blow-meter" aria-hidden="true"><i id="blowMeter"></i></div></div>
    </div>
   </div>
  </div>
