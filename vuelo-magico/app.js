@@ -313,7 +313,8 @@
     if(state.playing)return;
     state.playing=true;state.startedAt=performance.now()-state.time*1000;
     $('playBtn').textContent='Ⅱ';$('scenePill').textContent='REPRODUCIENDO';
-    if(state.loadedVideo){try{video.currentTime=state.time%Math.max(video.duration||15,1);await video.play();}catch(e){console.warn('video play',e);}}
+    // Safari puede ignorar preload=auto: arrancar el MP4 desde el toque real del padre.
+    if(state.loadedVideo||video.src){try{if(state.loadedVideo)video.currentTime=state.time%Math.max(video.duration||15,1);await video.play();}catch(e){console.warn('video play',e);}}
     await startAudio();ticker();
   }
   function ticker(){if(!state.playing)return;state.time=Math.min(state.duration,(performance.now()-state.startedAt)/1000);drawFrame();
@@ -356,7 +357,7 @@
       };
       rec.start(250);state.time=0;state.playing=true;state.startedAt=performance.now();
       $('playBtn').textContent='Ⅱ';$('scenePill').textContent='EXPORTANDO';
-      if(state.loadedVideo){try{video.currentTime=0;await video.play();}catch(e){console.warn('video asset',e);}}
+      if(state.loadedVideo||video.src){try{if(state.loadedVideo)video.currentTime=0;await video.play();}catch(e){console.warn('video asset',e);}}
       await startAudio();state.startedAt=performance.now();ticker();
     }catch(err){console.error(err);state.recording=false;$('exportModal').hidden=true;resizeCanvas(720);toast('No se pudo exportar el vídeo. Prueba otro navegador o calidad HD.');}
   }
@@ -416,7 +417,7 @@
       catch(err){console.warn('Cannot initialize chroma video',err);state.loadedVideo=false;}
       $('assetInfo').textContent=state.loadedVideo?'Vídeo animado integrado · 15 s':'Vídeo no compatible en este navegador';
       $('chromaSection').hidden=!state.loadedVideo;
-      video.pause();drawFrame();
+      if(!state.playing&&!state.recording)video.pause();drawFrame();
     };
     video.onerror=()=>{
       if(state.videoUrl)return;
