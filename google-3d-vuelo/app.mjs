@@ -64,7 +64,7 @@ function renderBlowUi(speed=1, message='') {
  $('blowStatus').textContent=label;
  $('blowMeter').style.width=(Math.max(0,Math.min(1,(speed-1)/(MAX_BLOW_SPEED-1)))*100).toFixed(0)+'%';
  $('blowToggle').textContent=pending?'⌛ Permiso…':active?'🎤 Desactivar soplido':'🎤 Activar soplido';
- $('povBlowToggle').textContent=active?'🎤 Mic ON':'🌬 Soplar';
+ $('povBlowToggle').textContent=active?(speed>1.12?'🌬 ×'+speed.toFixed(1):'🎤 Mic ON'):'🌬 Soplar';
  for(const button of [$('blowToggle'),$('povBlowToggle')]){
   button.disabled=pending;button.setAttribute('aria-pressed',String(active));
  }
@@ -77,8 +77,9 @@ async function toggleBlow(){
  renderBlowUi(1,'Solicitando permiso al micrófono…');
  try {
   const started=await blowBoost.start();
+  if(!state.playing||state.paused||document.hidden)blowBoost.stop();
   renderBlowUi();
-  if(started) info('¡Micrófono listo! Sopla hacia él para impulsar el globo.');
+  if(started&&blowBoost.active) info('¡Micrófono listo! Sopla hacia él para impulsar el globo.');
  }catch(e){
   blowBoost.stop();
   renderBlowUi(1,'Micrófono no disponible · vuelo normal');
