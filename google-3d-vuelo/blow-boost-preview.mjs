@@ -3,22 +3,25 @@
  * Analiza únicamente amplitud en memoria; no graba ni transmite audio.
  * El micro se activa siempre mediante un clic del usuario y se libera al salir.
  */
-export const MAX_BLOW_SPEED = 2.8;
+export const MAX_BLOW_SPEED = 10;
+export const BLOW_MIN_TURBO = 3.5;
 export const BASE_BLOW_SPEED = 1;
 
 export function blowSpeedTarget(rms, noiseFloor=0) {
   if (!Number.isFinite(rms) || rms <= 0) return BASE_BLOW_SPEED;
   const floor = Math.max(0, Number.isFinite(noiseFloor) ? noiseFloor : 0);
-  // Umbral adaptativo + mínimo absoluto para evitar activación por ruido ambiente.
-  const threshold = Math.max(0.028, floor * 3.2 + 0.015);
-  const force = Math.max(0, Math.min(1, (rms - threshold) / 0.095));
-  return BASE_BLOW_SPEED + (MAX_BLOW_SPEED - BASE_BLOW_SPEED) * force;
+  // Un soplido en el móvil puede registrar un RMS muy bajo.
+  // La calibración anterior ignoraba soplidos y los trataba como ruido.
+  const threshold = Math.max(0.008, floor * 1.35 + 0.0025);
+  if (rms <= threshold) return BASE_BLOW_SPEED;
+  const force = Math.sqrt(Math.max(0, Math.min(1, (rms - threshold) / 0.07)));
+  return BLOW_MIN_TURBO + (MAX_BLOW_SPEED - BLOW_MIN_TURBO) * force;
 }
 
 export function smoothBlowSpeed(current, target, elapsedMs=70) {
   const from = Math.max(BASE_BLOW_SPEED, Math.min(MAX_BLOW_SPEED, current));
   const to = Math.max(BASE_BLOW_SPEED, Math.min(MAX_BLOW_SPEED, target));
-  const tau = to > from ? 145 : 530; // respuesta rápida, retorno progresivo
+  const tau = to > from ? 70 : 360; // ataque inmediato y retorno suave
   const alpha = 1 - Math.exp(-Math.max(0, elapsedMs) / tau);
   return from + (to - from) * alpha;
 }
@@ -36,7 +39,7 @@ export class BlowBoost {
     this.samples = null;
     this.startedAt = 0;
     this.lastSampleAt = 0;
-    this.noiseFloor = 0.008;
+    this.noiseFloor = 0.006;
     this.speed = BASE_BLOW_SPEED;
   }
 
@@ -92,7 +95,7 @@ export class BlowBoost {
       this.samples = new Float32Array(analyser.fftSize);
       this.startedAt = performance.now();
       this.lastSampleAt = 0;
-      this.noiseFloor = 0.008;
+      this.noiseFloor = 0.006;
       this.speed = BASE_BLOW_SPEED;
       this.active = true;
       stream.getAudioTracks().forEach(track => {
@@ -119,15 +122,14 @@ export class BlowBoost {
     for (let i=0; i<this.samples.length; i++) power += this.samples[i] ** 2;
     const rms = Math.sqrt(power / this.samples.length);
 
-    if (now - this.startedAt < 450) {
-      // Calibración inicial corta antes de pedir que sople.
-      this.noiseFloor = this.noiseFloor * 0.82 + rms * 0.18;
-      return BASE_BLOW_SPEED;
+    // Calibrar solo silencio: soplar justo al activar el permiso funciona.
+    const threshold = Math.max(0.008, this.noiseFloor * 1.35 + 0.0025);
+    if (now - this.startedAt < 450 && rms < threshold) {
+      this.noiseFloor = this.noiseFloor * 0.75 + rms * 0.25;
     }
-
     const target = blowSpeedTarget(rms, this.noiseFloor);
-    if (target <= BASE_BLOW_SPEED + 0.01) {
-      this.noiseFloor = this.noiseFloor * 0.995 + Math.min(rms, 0.04) * 0.005;
+    if (target === BASE_BLOW_SPEED) {
+      this.noiseFloor = this.noiseFloor * 0.995 + Math.min(rms, 0.015) * 0.005;
     }
     this.speed = smoothBlowSpeed(this.speed, target, elapsed);
     if (this.speed < 1.015) this.speed = BASE_BLOW_SPEED;
