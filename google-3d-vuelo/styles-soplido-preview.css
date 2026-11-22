@@ -1111,3 +1111,23 @@ html,body,.app{
  .app.pov-active .pov-actions{gap:4px}
  .app.pov-active .pov-actions #povBlowToggle{padding-left:3px;padding-right:3px;font-size:10px}
 }
+
+
+/* v9.4 — Turbo claro y visible, sin cambiar el trazado del vuelo. */
+.blow-strip.is-boosted {
+ border-top-color:rgba(244,207,110,.82);
+ background:linear-gradient(90deg,rgba(105,69,17,.34),rgba(11,68,77,.27));
+ box-shadow:0 0 17px rgba(255,202,99,.24);
+ border-radius:8px;
+ padding-left:6px;padding-right:6px;
+}
+.blow-strip.is-boosted .blow-readout{
+ color:#fff3bd;font-weight:850;
+ text-shadow:0 0 8px rgba(245,192,68,.64);
+}
+.blow-strip.is-boosted .blow-meter i{background:linear-gradient(90deg,#e2ffa8,#ffd45c,#ff9759)}
+.blow-strip.is-boosted #blowToggle{box-shadow:0 0 12px rgba(255,199,88,.48)}
+.balloon.blow-fast .balloon-base{filter:drop-shadow(0 0 12px rgba(255,222,135,.6))}
+@media(prefers-reduced-motion:reduce){
+ .blow-meter i{transition:none}
+}
