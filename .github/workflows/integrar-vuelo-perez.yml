@@ -13,7 +13,9 @@ jobs:
     steps:
       - name: Obtener codigo
         uses: actions/checkout@v4
-      - name: Instalar herramientas de vídeo\n        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg\n      - name: Descargar video ya generado de Magnific
+      - name: Instalar herramientas de vídeo
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Descargar video ya generado de Magnific
         env:
           FUENTE: 'https://pikaso.cdnpk.net/private/production/6122959042/4400800f-22ba-41a3-b86c-3ae6a269d7fc-0.mp4?token=exp=1795737600~hmac=97a9d3e4825b31977386231b652950da96e01d602fc7187ad27d75fb501232dc'
         run: |
