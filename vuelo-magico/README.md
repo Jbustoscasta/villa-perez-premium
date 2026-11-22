@@ -1,21 +1,23 @@
-# Villa Pérez — El vuelo mágico v1.0.2 (iPhone)
+# Villa Pérez — El vuelo mágico v1.1.0
 
-Aplicación estática para GitHub Pages. Dirección prevista `https://jbustoscasta.github.io/villa-perez-premium/vuelo-magico/`.
+Aplicación publicada en https://jbustoscasta.github.io/villa-perez-premium/vuelo-magico/ y adaptada para Safari de iPhone.
 
-## Fotos en Safari
+## Vídeo del globo integrado
 
-Abrir la dirección HTTPS en **Safari** (no un HTML descargado en el visor de ChatGPT). El botón central y el lateral usan `input type=file` nativos.
+La aplicación carga automáticamente `assets/raton-perez-vuelo.mp4` (15 s, H.264 optimizado, 480 píxeles de ancho). Es el vídeo de Wan 3.0 Prime generado previamente en Magnific. El vídeo **no tiene transparencia en el archivo original**: la webapp elimina el fondo verde en tiempo real, localmente, para mostrar solo al Ratón Pérez sobre la foto. El globo sigue el recorrido dibujado con el dedo y mantiene la escala fijada en el control de tamaño. La tarjeta lateral puede seguir mostrando una miniatura fija como referencia visual.
 
-Al seleccionar una imagen JPG/PNG/HEIC, el navegador la procesa **localmente**, sin subirla a GitHub ni al servidor. El GIF/MP4 de Magnific se añade después desde el propio teléfono si se desea.
+Si el archivo no carga, se puede cargar otro MP4 propio con «Cargar otro vídeo». Una imagen del globo sirve únicamente de respaldo mientras el vídeo está cargando.
 
-## Uso
+## Cómo utilizar
 
-1. Elegir una fotografía del dormitorio.
-2. Dibujar la trayectoria con el dedo.
-3. Señalar dónde está el diente.
-4. Previsualizar y ajustar duración, tamaño y partículas.
-5. Guardar fotograma o intentar exportar vídeo según las funciones multimedia admitidas por el navegador.
+1. Abrir el sitio online directamente en Safari (no en el visor de ChatGPT).
+2. Seleccionar una foto de la habitación desde el dispositivo.
+3. Dibujar el recorrido con el dedo; opcionalmente marcar dónde está el diente.
+4. Reproducir, cambiar tamaño, duración, velocidad y brillo de las partículas.
+5. Exportar en el navegador si este admite `canvas.captureStream` + `MediaRecorder`.
+
+La fotografía permanece en el dispositivo. El vídeo público está servido desde GitHub Pages; el chroma y la exportación se ejecutan en el navegador.
 
 ## Limitaciones
 
-No se ha verificado en un iPhone físico. Algunas versiones de Safari no admiten exportación de vídeo mediante `canvas.captureStream` + `MediaRecorder`, aunque sí permiten foto y previsualización. La fotografía y el MP4 seleccionados permanecen en el dispositivo.
+No se ha probado físicamente en Safari de iPhone. Puede haber incompatibilidades de reproducción o exportación en iOS; la exportación también está condicionada al codec y a `MediaRecorder` del sistema. No modifica la portada ni los demás módulos del repositorio.
