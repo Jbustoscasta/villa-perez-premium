@@ -3,7 +3,7 @@ import {installLook360} from './look360.mjs?v=5.4.0';
 import {CinemaNight} from './night-cinema-v9-1.mjs?v=9.1.0';
 import {StreetNightScene} from './street-night-v7.mjs?v=8.0.0';
 import {EnchantedRoofScene} from './enchanted-roofs-v9.mjs?v=9.0.0';
-import {BlowBoost,MAX_BLOW_SPEED} from './blow-boost.mjs?v=9.2.0';
+import {BlowBoost,MAX_BLOW_SPEED} from './blow-boost.mjs?v=9.4.0';
 /*
  * Villa Pérez Google 3D experiment.
  * Google Maps JavaScript API 3D, photorealistic daytime only.
@@ -59,16 +59,17 @@ let lastBlowUiAt = 0;
 function renderBlowUi(speed=1, message='') {
  const active=blowBoost.active, pending=blowBoost.pending;
  const label=message || (pending?'Solicitando permiso al micrófono…'
-  :active?(speed>1.12?'¡Sigue soplando! · ×'+speed.toFixed(1):'Sopla cerca del micrófono para acelerar')
+  :active?(speed>1.3?'🌬 TURBO ×'+speed.toFixed(1)+' · ¡El globo acelera!':'Sopla cerca del micrófono para acelerar')
   :'Micrófono apagado');
  $('blowStatus').textContent=label;
  $('blowMeter').style.width=(Math.max(0,Math.min(1,(speed-1)/(MAX_BLOW_SPEED-1)))*100).toFixed(0)+'%';
  $('blowToggle').textContent=pending?'⌛ Permiso…':active?'🎤 Desactivar soplido':'🎤 Activar soplido';
- $('povBlowToggle').textContent=active?(speed>1.12?'🌬 ×'+speed.toFixed(1):'🎤 Mic ON'):'🌬 Soplar';
+ $('povBlowToggle').textContent=active?(speed>1.3?'🚀 ×'+speed.toFixed(1):'🎤 Mic ON'):'🌬 Soplar';
  for(const button of [$('blowToggle'),$('povBlowToggle')]){
   button.disabled=pending;button.setAttribute('aria-pressed',String(active));
  }
  $('balloon').classList.toggle('blow-fast',active&&speed>1.4);
+ document.querySelector('.blow-strip')?.classList.toggle('is-boosted',active&&speed>1.4);
 }
 async function toggleBlow(){
  if(blowBoost.pending)return;
@@ -687,8 +688,9 @@ function renderRoute(t){
   state.filteredHeading=desired;
  }else{
   const difference=shortestTurn(state.filteredHeading,desired);
-  const damping=1-Math.exp(-dt/1.35);
-  const maxTurn=CAMERA.headingLimit*dt;
+  const turnBoost=blowBoost.active?Math.max(1,blowBoost.speed*.85):1;
+  const damping=1-Math.exp(-dt/(1.35/turnBoost));
+  const maxTurn=CAMERA.headingLimit*dt*turnBoost;
   const change=Math.max(-maxTurn,Math.min(maxTurn,difference*damping));
   state.filteredHeading=normHeading(state.filteredHeading+change);
  }
@@ -747,8 +749,13 @@ function renderTick(now){
  // Safari sometimes backgrounds a frame for seconds: prevent skipping the film.
  delta=Math.min(90,delta);
  state.lastFrame=now;
+ // El soplido impulsa la cámara sobre el mapa real: no solo el indicador.
+ const speed=blowBoost.active?blowBoost.sample(now):1;
+ if(blowBoost.active&&now-lastBlowUiAt>=120){
+  lastBlowUiAt=now;renderBlowUi(speed);
+ }
  if(state.phase==='takeoff'){
-  state.takeoffMs=Math.min(state.takeoffDurationMs,state.takeoffMs+delta);
+  state.takeoffMs=Math.min(state.takeoffDurationMs,state.takeoffMs+delta*Math.min(speed,3));
   if(state.takeoffMs>=state.takeoffDurationMs){
    state.phase='route';state.lastPaint=0;state.turnLastTs=0;
    state.filteredHeading=state.takeoffBearing;
@@ -757,12 +764,8 @@ function renderTick(now){
    state.lastPaint=now;renderTakeoff(state.takeoffMs/state.takeoffDurationMs);
   }
  }else if(state.phase==='route'){
-  const speed=blowBoost.active?blowBoost.sample(now):1;
-  // Acelera el avance sobre el mismo itinerario, sin cambiar los puntos.
+  // El avance sobre las coordenadas reales acelera hasta x10.
   state.progressMs=Math.min(state.routeDurationMs,state.progressMs+delta*speed);
-  if(blowBoost.active&&now-lastBlowUiAt>=170){
-   lastBlowUiAt=now;renderBlowUi(speed);
-  }
   if(state.progressMs>=state.routeDurationMs){
    const end=state.points[state.points.length-1];
    renderRoute(1);
@@ -774,7 +777,7 @@ function renderTick(now){
    renderRoute(state.progressMs/state.routeDurationMs);
   }
  }else if(state.phase==='orbit'){
-  state.orbitElapsedMs=Math.min(state.orbitDurationMs,state.orbitElapsedMs+delta);
+  state.orbitElapsedMs=Math.min(state.orbitDurationMs,state.orbitElapsedMs+delta*Math.min(speed,3));
   if(state.orbitElapsedMs>=state.orbitDurationMs){
    renderOrbit(1);finishFlight();return;
   }else if(now-state.lastPaint>=50){
