@@ -1,0 +1,1113 @@
+:root{--navy:#081d2a;--gold:#f7d795;--ivory:#fff6e3;--muted:#c7d2d0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:var(--navy);color:var(--ivory)}
+*{box-sizing:border-box}html,body{height:100%;width:100%;margin:0;overflow:hidden}
+button,input{font:inherit}button{cursor:pointer}a{color:#f5dcae;text-decoration:underline;text-underline-offset:3px}
+button:focus-visible,input:focus-visible{outline:3px solid #f4d383;outline-offset:3px}
+.app{position:fixed;inset:0;overflow:hidden;isolation:isolate;background:#0b1c30}
+.map-host{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 54% 43%,#294958,#0c2033 65%)}
+.map-host gmp-map-3d{display:block;width:100%;height:100%}
+.unloaded-map{position:absolute;inset:0;background:radial-gradient(ellipse at 60% 30%,#203f4d 0%,#102c3b 46%,#061a2a 96%);overflow:hidden;display:grid;place-items:center}
+.unloaded-map::before{content:"";position:absolute;inset:-25%;background:repeating-linear-gradient(63deg,rgba(226,189,117,.04) 0 3px,transparent 4px 58px);transform:rotate(-8deg)}
+.unloaded-orbit{position:absolute;width:78vmin;height:78vmin;border:1px solid rgba(244,209,142,.18);border-radius:50%;box-shadow:0 0 70px rgba(220,179,111,.06)}
+.unloaded-star{font-size:75px;color:#ffe1a2;text-shadow:0 0 85px #f3cb7e;animation:pulse 4s infinite alternate}
+.unloaded-text{position:absolute;top:60%;font-size:10px;color:#d1c5a8;letter-spacing:.25em}
+@keyframes pulse{to{opacity:.4;transform:scale(.9)}}
+.cinema-grade{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 55% 37%,transparent 31%,rgba(6,21,36,.27) 99%);opacity:1;transition:background .6s}
+/* Map remains photorealistic SATELLITE. The shader provides cinematic atmosphere.
+   Do not put CSS brightness/backdrop filters over Google imagery or its credits. */
+.night-cinema{
+ position:absolute;inset:0 0 42px 0;width:100%;height:calc(100% - 42px);
+ z-index:3;pointer-events:none;opacity:.95;
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 82%,transparent 100%);
+ mask-image:linear-gradient(to bottom,#000 0%,#000 82%,transparent 100%);
+}
+.night-cinema[hidden]{display:none}
+html.night-css-fallback .cinema-grade{
+ background:
+  linear-gradient(180deg,rgba(16,42,76,.31),rgba(15,33,66,.18) 40%,rgba(6,18,43,.33) 85%),
+  radial-gradient(ellipse at 50% 40%,rgba(235,136,55,.06),transparent 50%);
+}
+.dust-layer{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden}
+.dust-layer i{position:absolute;border-radius:50%;width:3px;height:3px;background:#ffe3a3;box-shadow:0 0 10px #ffe19a;animation:drift 3s ease-in-out infinite alternate;opacity:.5}
+@keyframes drift{to{transform:translate3d(16px,-19px,0);opacity:0}}
+.topline{position:absolute;top:max(20px,env(safe-area-inset-top));left:21px;right:21px;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:12px;pointer-events:none;text-shadow:0 2px 17px #061624}
+.logo{display:flex;align-items:center;gap:10px}.logo-mark{width:38px;height:38px;border:1px solid rgba(255,223,160,.48);border-radius:11px;display:grid;place-items:center;background:rgba(7,30,42,.63);font-size:23px;color:var(--gold)}
+.logo span{display:block;font-size:9px;font-weight:750;letter-spacing:.19em;color:#f7d492}.logo strong{display:block;font-size:15px;font-family:Georgia,serif;font-weight:500}
+.live-indicator{display:flex;gap:7px;align-items:center;border:1px solid rgba(255,230,169,.3);background:rgba(8,25,38,.77);backdrop-filter:blur(14px);border-radius:44px;padding:10px 13px;font-size:10px;font-weight:700;letter-spacing:.05em}
+.live-indicator i{width:7px;height:7px;background:#a7e6c8;border-radius:50%;box-shadow:0 0 8px #a7e6c8}
+.setup{position:absolute;z-index:12;left:23px;bottom:35px;max-height:calc(100dvh - 125px);overflow-y:auto;width:min(424px,calc(100vw - 45px));padding:29px 30px 25px;border-radius:22px;border:1px solid rgba(255,230,170,.32);background:linear-gradient(154deg,rgba(14,38,51,.97),rgba(7,22,37,.97));box-shadow:0 16px 72px rgba(0,0,0,.43);backdrop-filter:blur(18px);transition:opacity .4s,transform .4s}
+.setup.off{opacity:0;transform:translateY(110%);pointer-events:none}
+.eyebrow{color:#f1ce8e;letter-spacing:.19em;font-weight:750;font-size:10px}
+h1,h2{font-family:Georgia,serif;font-weight:500;letter-spacing:-.032em}
+h1{font-size:36px;line-height:1.09;margin:12px 0 10px;color:#fff6e4}h1 em{font-style:normal;color:var(--gold)}
+.lead{font-size:13px;line-height:1.6;color:#d0d9d5;margin:0 0 19px}
+.key-group{padding:15px 16px;background:rgba(251,228,173,.06);border-radius:15px;border:1px solid rgba(251,227,171,.25);margin-bottom:15px}
+.key-group.connected{border-color:rgba(165,222,190,.55);background:rgba(92,160,132,.09)}
+.section-head{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.section-head b{font-weight:700;color:#f7eddb;font-size:13px}.section-head small{display:block;color:#aebfbd;font-size:10px;margin-top:3px}
+.round{height:30px;width:30px;display:grid;place-items:center;border:1px solid rgba(249,219,157,.34);color:#edc98a;border-radius:50%;font-size:11px;font-weight:700;flex:none}
+label{display:block;color:#e3c897;font-size:10px;font-weight:700;letter-spacing:.07em;margin:11px 0 7px}
+input{display:block;width:100%;border:1px solid rgba(252,236,200,.24);background:rgba(235,245,240,.07);border-radius:10px;padding:13px 14px;color:#fdf8e9;font-size:13px;outline:none}
+input:focus{border-color:#eace91;box-shadow:0 0 0 3px rgba(236,196,118,.09)}
+input::placeholder{color:#a9bbb9}
+.input-outer{display:flex;align-items:center;position:relative}.input-outer input{padding-right:50px}.input-outer button{position:absolute;right:5px;top:5px;bottom:5px;border:0;border-radius:8px;background:transparent;color:#dec898;font-size:10px;font-weight:700}
+.cta{display:flex;align-items:center;justify-content:center;width:100%;min-height:46px;padding:12px 15px;gap:8px;border:1px solid rgba(255,242,200,.62);border-radius:11px;background:rgba(255,228,168,.13);color:#fff3df;font-weight:750;font-size:13px}
+.cta.gold{background:linear-gradient(180deg,#ffe1a2,#e8bd77);color:#322a20;border:1px solid #fff3cd;box-shadow:0 7px 24px rgba(237,183,101,.22)}
+.cta:disabled{opacity:.48;cursor:not-allowed}.cta:active{filter:brightness(.85)}#connect{margin-top:11px}
+.help{margin:10px 0;font-size:10px}
+.small-note,.micro,.setup-tail{font-size:10px;line-height:1.53;color:#aabdbb}
+.small-note{margin:6px 0 0}.route-group{padding-top:4px}
+.destination-chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:8px 10px;color:#efecdc;border:1px solid rgba(255,231,192,.3);border-radius:20px;background:rgba(250,240,215,.07);font-size:11px}
+.chip.active{border-color:#f5d493;color:#ffe4ae;background:rgba(246,202,128,.17)}
+.micro{margin:7px 0 12px}
+.form-error{font-size:11px;color:#ffccaf;margin:7px 0 12px}
+.setup-tail{border-top:1px solid rgba(255,255,255,.11);padding-top:10px;margin:13px 0 0}
+
+/* High-detail transparent PNG shell plus untouched official character PNG.
+   Keep independent layers: the character is never regenerated or repainted. */
+.balloon{
+  position:absolute;top:46%;left:50%;width:146px;height:184px;
+  z-index:5;pointer-events:none;transform:translate(-50%,-50%);
+  filter:drop-shadow(0 18px 14px rgba(0,0,0,.38));
+}
+.balloon-base{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+  animation:balloonSway 3.8s ease-in-out infinite alternate;
+  transform-origin:50% 88%;
+  filter:drop-shadow(0 0 9px rgba(255,198,118,.18));
+}
+.balloon .official{
+  position:absolute;left:52px;top:126px;z-index:1;
+  width:42px;height:48px;object-fit:contain;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.52));
+  animation:passengerSway 3.8s ease-in-out infinite alternate;
+  transform-origin:50% 92%;
+}
+.balloon-basket-front{
+  position:absolute;inset:0;width:100%;height:100%;z-index:2;
+  object-fit:contain;clip-path:inset(81% 0 0 0);
+  pointer-events:none;
+  animation:balloonSway 3.8s ease-in-out infinite alternate;
+  transform-origin:50% 88%;
+}
+.balloon-flare{
+  position:absolute;z-index:-1;left:26px;top:80px;width:100px;height:87px;
+  background:radial-gradient(circle,rgba(255,213,130,.35),transparent 74%);
+  filter:blur(10px);pointer-events:none;
+}
+/* Zero vertical motion: the balloon remains at a fixed onscreen height. */
+@keyframes balloonSway{from{transform:rotate(-.65deg)}to{transform:rotate(.65deg)}}
+@keyframes passengerSway{0%{transform:rotate(-1.8deg)}50%{transform:rotate(1.4deg)}100%{transform:rotate(-1.8deg)}}
+.flight-overlay{position:absolute;inset:0;z-index:8;pointer-events:none}
+.chapter{position:absolute;top:108px;left:27px;max-width:min(480px,70vw);text-shadow:0 2px 19px #09121e}
+.chapter h2{font-size:clamp(33px,5vw,55px);line-height:1.04;color:#ffefca;margin:10px 0}
+.chapter p{color:#e9ece4;max-width:390px;font-size:14px;line-height:1.5}
+.flight-bar{pointer-events:auto;position:absolute;left:50%;transform:translateX(-50%);bottom:max(67px,calc(env(safe-area-inset-bottom) + 55px));width:min(590px,calc(100vw - 28px));border:1px solid rgba(255,224,157,.36);padding:16px 20px;background:rgba(6,26,37,.87);backdrop-filter:blur(20px);border-radius:17px;box-shadow:0 14px 45px rgba(0,0,0,.35)}
+.bar-top{display:flex;justify-content:space-between;gap:10px;color:#f9efd8;font-size:11px;font-weight:750;margin-bottom:10px}
+.bar-track{width:100%;height:5px;background:rgba(252,245,218,.24);border-radius:5px;overflow:hidden}#progressFill{height:100%;width:0%;background:linear-gradient(90deg,#d7a661,#ffe7a8);border-radius:5px}
+.flight-buttons{display:flex;gap:8px;margin-top:13px}.flight-buttons button{flex:1;padding:10px 9px;color:#fff4df;background:rgba(251,222,153,.1);border:1px solid rgba(252,228,174,.21);border-radius:9px;font-size:11px;font-weight:700}
+.flight-warning{position:absolute;bottom:14px;left:15px;right:15px;text-align:center;font-size:10px;color:#e6e4d5;text-shadow:0 1px 7px #112}
+.arrival{position:absolute;inset:0;display:grid;place-items:center;z-index:17;background:radial-gradient(ellipse at 50% 45%,rgba(22,55,66,.95),rgba(3,15,28,.97));padding:25px}
+.arrival[hidden]{display:none}.arrival-card{max-width:410px;text-align:center}
+.arrival-card span{letter-spacing:.15em;font-size:11px;color:#f5d694}
+.arrival-card h2{font-size:41px;line-height:1.1;color:#ffebc7;margin:12px 0}
+.arrival-card p{font-size:14px;color:#d8e4dc;line-height:1.6;margin-bottom:25px}
+.system-message{position:absolute;z-index:25;top:75px;left:50%;transform:translateX(-50%);max-width:min(520px,95vw);background:rgba(24,44,55,.98);padding:15px;border:1px solid #edc883;border-radius:12px;line-height:1.5;font-size:12px;color:#ffe9bd;text-align:center}
+[hidden]{display:none!important}
+@media(max-width:700px){
+.topline{left:15px;right:12px;top:max(15px,env(safe-area-inset-top))}
+.logo-mark{width:32px;height:32px}.logo span{font-size:8px}.logo strong{font-size:13px}
+.live-indicator{font-size:9px;padding:8px;max-width:154px}
+.setup{left:0;bottom:0;width:100%;max-height:82dvh;border-radius:24px 24px 0 0;padding:20px 21px calc(16px + env(safe-area-inset-bottom));border-left:0;border-right:0}
+h1{font-size:30px;margin:8px 0}.lead{font-size:12px;margin-bottom:12px}
+.key-group{padding:11px 14px;margin-bottom:10px}.section-head{margin-bottom:10px}
+.balloon{top:45%;width:117px;height:148px}
+.balloon .official{left:41px;top:100px;width:35px;height:42px}
+.chapter{top:100px;left:19px;right:14px;max-width:calc(100% - 33px)}
+.chapter h2{font-size:33px}.chapter p{font-size:12px;max-width:290px}
+.flight-bar{bottom:max(64px,calc(env(safe-area-inset-bottom) + 50px));padding:14px 16px}
+.flight-warning{font-size:9px;bottom:16px}
+}
+@media(prefers-reduced-motion:reduce){.balloon-base,.balloon .official,.balloon-basket-front,.dust-layer i,.unloaded-star{animation:none}}
+
+/* Preserve the Google logo/copyright at the lower edge after the map is connected. */
+.setup.ready{top:102px;bottom:auto;max-height:min(70dvh,630px)}
+.setup.ready .key-group{display:none}
+@media(max-width:700px){
+.setup.ready{top:max(84px,calc(env(safe-area-inset-top) + 70px));bottom:auto;left:12px;right:12px;width:auto;max-height:53dvh;border:1px solid rgba(255,230,170,.32);border-radius:19px;padding:17px 18px}
+.setup.ready h1,.setup.ready .lead{display:none}
+.setup.ready .route-group{padding-top:5px}
+.setup.ready .setup-tail{display:none}
+}
+
+/* Google 3D native scene controls: tiny, legible labels without blocking the map. */
+.flight-labels{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;color:#e4d6b7;font-size:9px;letter-spacing:.055em;margin:-2px 0 11px;opacity:.92}
+.flight-labels span:last-child{color:#abebd5}
+.flight-buttons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.flight-buttons button{min-width:0;white-space:nowrap;font-size:10px;padding:11px 5px;touch-action:manipulation}
+.flight-buttons button:active{background:rgba(255,233,188,.28)}
+#fxToggle{color:#ffe5a1}
+#modelMode{font-weight:700}
+@media(max-width:700px){
+ .flight-buttons{gap:5px}
+ .flight-buttons button{font-size:9px;padding:10px 3px}
+ .flight-labels{font-size:8px;gap:3px}
+ .flight-warning{bottom:10px}
+ .flight-bar{bottom:max(45px,calc(env(safe-area-inset-bottom) + 32px))}
+}
+
+.flight-labels button#modelMode{
+  background:rgba(133,206,181,.08);border:1px solid rgba(162,232,200,.21);
+  border-radius:14px;color:#b2edda;font-size:9px;font-weight:750;
+  padding:5px 7px;touch-action:manipulation;pointer-events:auto;cursor:pointer;
+}
+.flight-labels button#modelMode:active{background:rgba(133,206,181,.22)}
+@media(max-width:700px){.flight-labels button#modelMode{font-size:8px;padding:5px 6px}}
+
+/* v3.1 — route legibility, clinic pin onboarding and compact HUD */
+.header-perez{width:30px;height:34px;object-fit:contain;flex:none;filter:drop-shadow(0 1px 5px rgba(254,215,155,.65))}
+.section-destination{margin-top:17px;padding-top:14px;border-top:1px solid rgba(255,224,160,.15)}
+.route-group>.micro{line-height:1.42}
+.chapter{top:94px!important;left:20px!important;max-width:calc(100vw - 45px)!important}
+.chapter h2{font-size:clamp(18px,3vw,27px)!important;margin:4px 0!important;line-height:1.1}
+.chapter p{display:none!important}
+.chapter .eyebrow{font-size:9px;letter-spacing:.09em}
+.overview-tools{position:absolute;right:18px;top:max(98px,calc(env(safe-area-inset-top) + 76px));max-width:min(350px,50vw);display:flex;flex-direction:column;align-items:flex-end;gap:6px;pointer-events:auto}
+.overview-tools button{background:rgba(9,30,44,.83);border:1px solid rgba(255,217,140,.55);color:#ffeac6;font-weight:750;border-radius:24px;padding:11px 16px;font-size:12px;box-shadow:0 5px 20px rgba(0,0,0,.26);backdrop-filter:blur(12px);touch-action:manipulation}
+.overview-tools button:active{background:rgba(244,207,136,.25)}
+.overview-tools span{background:rgba(8,27,39,.76);padding:6px 10px;border-radius:8px;border:1px solid rgba(254,231,192,.19);color:#f8e2b8;font-size:10px;max-width:100%;line-height:1.3;text-align:right}
+.night-cinema{opacity:1!important}
+html.night-active .topline .logo strong{color:#f6d296}
+html.night-active .live-indicator{border-color:rgba(255,219,148,.75);background:rgba(7,26,57,.91)}
+html.night-active .flight-bar{border-color:rgba(237,184,113,.8);box-shadow:0 9px 35px rgba(2,12,40,.8)}
+html.night-active .cinema-grade{background:radial-gradient(ellipse at 44% 35%,rgba(29,67,115,.08),rgba(3,12,34,.2) 80%)}
+html.night-css-fallback .cinema-grade{background:radial-gradient(ellipse at 65% 55%,rgba(240,137,38,.18),transparent 30%),linear-gradient(180deg,rgba(10,42,96,.48),rgba(4,15,50,.37) 60%,rgba(4,12,33,.44))!important}
+@media(max-width:700px){
+ .header-perez{width:24px;height:29px}
+ .chapter{top:max(96px,calc(env(safe-area-inset-top) + 79px))!important;left:14px!important}
+ .chapter h2{font-size:18px!important;max-width:54vw}
+ .overview-tools{right:11px;top:max(90px,calc(env(safe-area-inset-top) + 76px));max-width:48vw;gap:5px}
+ .overview-tools button{padding:9px 11px;font-size:10px}
+ .overview-tools span{font-size:9px;padding:5px 8px}
+ .setup.ready{max-height:67dvh}
+ .section-destination{margin-top:12px;padding-top:11px}
+}
+
+/* v4: actual architectural realism belongs to Google's native photogrammetry.
+   The mouse never becomes a 3D map marker, which caused it to appear gigantic.
+   The official PNG is layered unchanged inside our high-detail SVG basket. */
+.balloon{
+  width:154px;height:216px;top:47%;left:50%;
+  transform:translate(-50%,-50%);filter:drop-shadow(0 16px 13px rgba(7,14,24,.57));
+  aspect-ratio:5/7;isolation:isolate;
+}
+.balloon-base,.balloon-basket-front{
+  position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;
+  transform-origin:50% 91%;
+}
+.balloon-base{z-index:2;animation:balloonSway 4s ease-in-out infinite alternate}
+.balloon .official{
+ position:absolute;z-index:3;left:41%;top:65%;width:21%;height:22%;
+ object-fit:contain;object-position:center bottom;
+ animation:passengerSway 4.1s ease-in-out infinite alternate;
+ filter:drop-shadow(0 2px 3px #192132b5);
+}
+.balloon-basket-front{
+ z-index:4;clip-path:none!important;
+ animation:balloonSway 4s ease-in-out infinite alternate;
+}
+.balloon-flare{z-index:1;top:24%;left:20%;width:60%;height:60%;opacity:.65}
+.flight-labels #modelMode{
+ font-size:9px;color:#eacb96;border:1px solid rgba(244,206,139,.3);
+ background:rgba(8,29,43,.77);border-radius:14px;padding:5px 8px;font-weight:700;
+}
+.dust-layer.fx-off i{animation:none!important;opacity:0!important}
+@media(max-width:700px){
+ .balloon{width:123px;height:172px;top:46%}
+ .balloon .official{left:41%;top:65%;width:21%;height:22%}
+ .flight-labels #modelMode{font-size:8px;padding:5px}
+}
+
+/* Villa Pérez v5 — film-first, photorealistic daylight only, no night filters. */
+#mapHost{filter:none!important}
+.clinic-config{margin:3px 0 17px;border:1px solid rgba(250,223,173,.28);background:rgba(250,228,174,.045);border-radius:13px}
+.clinic-config summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:12px 13px;touch-action:manipulation}
+.clinic-config summary::-webkit-details-marker{display:none}
+.clinic-config summary>span:nth-child(2){flex:1;min-width:0}
+.clinic-config summary strong,.clinic-config summary small{display:block}
+.clinic-config summary strong{font-size:12px;color:#f7dfb8}
+.clinic-config summary small{font-size:10px;color:#b6c7c9;margin-top:2px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clinic-config .clinic-symbol{display:grid;place-items:center;flex:none;width:31px;height:31px;border:1px solid #cfb178;border-radius:10px;color:#fee2aa;font-size:18px}
+.clinic-config .clinic-edit{font-size:10px;color:#f7d09a;font-weight:750}
+.clinic-fields{padding:0 13px 12px}
+.clinic-config[open]{border-color:#f2ca89}
+.setup.ready{max-height:min(68dvh,610px)}
+.setup.ready .clinic-config{margin-bottom:8px}
+.setup.ready .section-destination{margin-top:8px;padding-top:9px}
+.flight-labels{margin:0 0 7px!important}
+.flight-labels span{font-size:9px;color:#cfe2db}
+.flight-buttons{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.flight-bar{padding:13px 15px!important}
+.chapter{max-width:50vw!important}
+.chapter h2{font-size:clamp(20px,3.3vw,30px)!important}
+.balloon-sparkles{position:absolute;z-index:0;left:2%;right:0;top:30%;bottom:2%;pointer-events:none}
+.balloon-sparkles i{position:absolute;left:22%;top:62%;border-radius:50%;width:5px;height:5px;background:#fff5cb;box-shadow:0 0 8px #ffca72,0 0 17px #ffb34b;animation:magicalEmbers 2.9s linear infinite}
+.balloon-sparkles i:nth-child(2){left:10%;top:72%;animation-delay:-.5s;width:3px;height:3px}
+.balloon-sparkles i:nth-child(3){left:37%;top:84%;animation-delay:-1.3s;width:4px;height:4px}
+.balloon-sparkles i:nth-child(4){left:6%;top:50%;animation-delay:-2s;width:2px;height:2px}
+.balloon-sparkles i:nth-child(5){left:43%;top:66%;animation-delay:-2.6s;width:2px;height:2px}
+.balloon-sparkles i:nth-child(6){left:25%;top:45%;animation-delay:-.9s;width:3px;height:3px}
+@keyframes magicalEmbers{0%{opacity:0;transform:translate3d(25px,-4px,0) scale(.55)}18%{opacity:1}85%{opacity:.65}100%{opacity:0;transform:translate3d(-49px,32px,0) scale(.1)}}
+.dust-layer{opacity:.24}
+.dust-layer.fx-off,.balloon.fx-off .balloon-sparkles{opacity:0!important}
+@media(max-width:700px){
+ .setup.ready{max-height:55dvh;top:max(78px,calc(env(safe-area-inset-top) + 60px))}
+ .chapter{top:max(99px,calc(env(safe-area-inset-top) + 74px))!important}
+ .chapter h2{font-size:17px!important}
+ .flight-buttons button{font-size:10px}
+ .flight-labels span{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){.balloon-sparkles i{animation:none}}
+
+/* v5.1: cinema-quality layered SVG envelope and woven wicker foreground.
+   No photorealistic assets are generated or used for Ratón Pérez. */
+.balloon{
+ width:177px;height:248px;aspect-ratio:5/7;
+ filter:drop-shadow(0 17px 14px rgba(14,23,39,.5))
+        drop-shadow(0 0 8px rgba(255,229,169,.18))!important;
+}
+.balloon-base,.balloon-basket-front{
+ image-rendering:auto;
+ backface-visibility:hidden;
+ will-change:transform;
+}
+.balloon .official{
+ left:40%;top:65%;width:23%;height:23%;
+ filter:drop-shadow(0 2px 2px rgba(21,26,38,.45));
+}
+.balloon-flare{opacity:.48}
+.balloon-sparkles i{animation-duration:3.7s}
+@media(max-width:700px){
+ .balloon{width:146px;height:205px;top:44%}
+ .balloon .official{left:40%;top:65%;width:23%;height:23%}
+}
+@media(max-width:400px){
+ .balloon{width:138px;height:193px;top:43%}
+}
+
+/* v5.2 — Atlas del Ratón Pérez. Illustration is an ornamental frame, while
+   Google satellite cartography in the clear central window stays untouched. */
+.atlas-frame{
+ position:absolute;top:max(86px,calc(env(safe-area-inset-top) + 74px));
+ right:clamp(13px,4vw,56px);bottom:max(174px,calc(env(safe-area-inset-bottom) + 170px));
+ left:clamp(13px,4vw,56px);z-index:7;
+ background:transparent url("./assets/mapa-pergamino.svg") center center/100% 100% no-repeat;
+ pointer-events:none;overflow:visible;
+ filter:drop-shadow(0 17px 26px rgba(14,16,25,.38));
+ animation:atlasAppear .55s cubic-bezier(.19,1,.22,1) both;
+}
+.atlas-frame[hidden]{display:none!important}
+.atlas-frame::before{
+ content:"";position:absolute;inset:0;border-radius:14px;
+ box-shadow:inset 0 0 20px rgba(41,27,14,.12);pointer-events:none
+}
+.atlas-light{
+ position:absolute;left:9%;right:9%;top:12%;bottom:11%;
+ border:2px solid rgba(255,232,179,.47);border-radius:17px;
+ box-shadow:0 0 34px rgba(234,185,95,.09),inset 0 0 20px rgba(245,198,119,.11);
+ animation:atlasBreath 4.7s ease-in-out infinite;pointer-events:none
+}
+.atlas-title{
+ position:absolute;top:2.4%;left:19%;right:19%;
+ text-align:center;color:#503723;text-shadow:0 1px #fff1c9;
+ display:grid;gap:0;line-height:1.09;
+}
+.atlas-title span{font-size:clamp(7px,.78vw,11px);font-weight:850;letter-spacing:.27em}
+.atlas-title strong{font-family:Georgia,"Times New Roman",serif;font-size:clamp(15px,2.3vw,30px);font-style:italic;font-weight:700;white-space:nowrap}
+.atlas-footer{
+ position:absolute;bottom:3.5%;left:18%;right:18%;
+ color:#67482b;text-align:center;text-shadow:0 1px #fff6ce;
+ display:flex;align-items:center;justify-content:center;gap:17px;
+ font-size:clamp(7px,.9vw,10px);font-weight:800;letter-spacing:.18em
+}
+.atlas-crown{font-size:15px;color:#ab7840}
+.atlas-compass{
+ position:absolute;left:2.7%;bottom:13%;
+ width:clamp(37px,7vw,83px);aspect-ratio:1;display:grid;place-items:center;
+ border-radius:50%;border:2px solid rgba(126,85,48,.5);color:#80502d;
+ background:radial-gradient(circle,#f7deb0 0%,#e4bf83 67%,#ac7948 100%);
+ box-shadow:inset 0 0 0 3px #f9e6bb,inset 0 0 0 5px #ae7f4b,0 2px 9px #49352044;
+ transform:rotate(-17deg)
+}
+.atlas-compass::before{content:"";position:absolute;inset:11%;border:1px dashed #855d3e;border-radius:50%}
+.atlas-compass span{font-size:clamp(23px,4vw,46px);line-height:1}
+.atlas-compass b{position:absolute;top:5%;font:700 9px Georgia,serif}
+.atlas-corner{position:absolute;font-size:clamp(13px,2.3vw,24px);color:#6f492b;text-shadow:1px 1px #ffecc6}
+.atlas-corner-one{right:4%;top:6%}.atlas-corner-two{right:4%;bottom:7%}
+@keyframes atlasAppear{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes atlasBreath{0%,100%{opacity:.44}50%{opacity:.88}}
+/* Physical, gentle motion: the official Perez PNG stays as its own untouched layer. */
+.balloon{
+ animation:cinemaBalloonFloat 5.8s ease-in-out infinite;
+ transform-origin:50% 57%;
+ filter:drop-shadow(0 11px 17px rgba(21,30,43,.31))
+  drop-shadow(0 0 13px rgba(255,229,185,.11))!important;
+}
+.balloon-base{
+ animation:cinemaEnvelopeSway 7.1s ease-in-out infinite!important;
+ filter:saturate(.85) brightness(.94) drop-shadow(0 5px 7px rgba(16,29,46,.23))!important;
+}
+.balloon-basket-front{animation:cinemaEnvelopeSway 7.1s ease-in-out infinite!important}
+.balloon .official{
+ animation:ratonAsomarse 11.8s ease-in-out infinite!important;
+ transform-origin:53% 86%;
+}
+.balloon-flare{
+ animation:burnerPulse 3.9s ease-in-out infinite!important;
+ opacity:.36;mix-blend-mode:screen
+}
+.balloon-motes{
+ position:absolute;inset:14% -25% -14% -35%;z-index:0;
+ pointer-events:none;overflow:visible;filter:drop-shadow(0 0 8px #efbc7e);
+}
+.balloon-motes i{
+ position:absolute;top:79%;left:54%;width:4px;height:4px;border-radius:50%;
+ border:1px solid rgba(255,248,214,.77);
+ background:radial-gradient(circle at 35% 30%,#fffcee,#f3e5b7 44%,#8bb6a8 92%);
+ box-shadow:0 0 9px #fbe6a0,0 0 19px rgba(239,189,123,.5);
+ opacity:0;animation:magicWake 4.4s linear infinite;will-change:transform,opacity
+}
+.balloon-motes i:nth-child(2){animation-delay:-.35s;--vx:-44px;--vy:23px;--sz:5px}
+.balloon-motes i:nth-child(3){animation-delay:-.7s;--vx:-68px;--vy:-15px;--sz:3px}
+.balloon-motes i:nth-child(4){animation-delay:-1.05s;--vx:-78px;--vy:52px;--sz:5px}
+.balloon-motes i:nth-child(5){animation-delay:-1.4s;--vx:-90px;--vy:12px;--sz:3px}
+.balloon-motes i:nth-child(6){animation-delay:-1.75s;--vx:-55px;--vy:69px;--sz:6px}
+.balloon-motes i:nth-child(7){animation-delay:-2.1s;--vx:-114px;--vy:35px;--sz:3px}
+.balloon-motes i:nth-child(8){animation-delay:-2.45s;--vx:-76px;--vy:-24px;--sz:4px}
+.balloon-motes i:nth-child(9){animation-delay:-2.8s;--vx:-127px;--vy:51px;--sz:2px}
+.balloon-motes i:nth-child(10){animation-delay:-3.15s;--vx:-95px;--vy:70px;--sz:4px}
+.balloon-motes i:nth-child(11){animation-delay:-3.5s;--vx:-142px;--vy:21px;--sz:3px}
+.balloon-motes i:nth-child(12){animation-delay:-3.85s;--vx:-108px;--vy:-4px;--sz:5px}
+.balloon-motes i:first-child{--vx:-37px;--vy:-10px;--sz:4px}
+@keyframes cinemaBalloonFloat{
+ 0%,100%{transform:translate(-50%,-50%) translateY(0) rotate(-.7deg)}
+ 25%{transform:translate(-50%,-50%) translateY(-6px) rotate(.65deg)}
+ 52%{transform:translate(-50%,-50%) translateY(2px) rotate(.95deg)}
+ 78%{transform:translate(-50%,-50%) translateY(-4px) rotate(-.45deg)}
+}
+@keyframes cinemaEnvelopeSway{
+ 0%,100%{transform:rotate(-.35deg) scale(1)}
+ 50%{transform:rotate(.65deg) scale(1.002)}
+}
+@keyframes ratonAsomarse{
+ 0%,22%,41%,75%,100%{transform:translate(0,0) rotate(0)}
+ 26%,33%{transform:translate(-1px,3px) rotate(5deg)}
+ 35%{transform:translate(-1px,2px) rotate(3deg)}
+ 79%,84%{transform:translate(1px,2px) rotate(-3deg)}
+}
+@keyframes burnerPulse{
+ 0%,100%{opacity:.25;transform:scale(.95)}
+ 22%{opacity:.47;transform:scale(1.03)}
+ 37%{opacity:.32;transform:scale(.96)}
+ 55%{opacity:.52;transform:scale(1.05)}
+ 75%{opacity:.3;transform:scale(.94)}
+}
+@keyframes magicWake{
+ 0%{opacity:0;transform:translate3d(0,0,0) scale(.35)}
+ 12%{opacity:.84}
+ 28%{opacity:1}
+ 76%{opacity:.55}
+ 100%{opacity:0;transform:translate3d(var(--vx,-60px),var(--vy,28px),0) scale(var(--sz,4px))}
+}
+.balloon.fx-off .balloon-motes,.balloon.fx-off .balloon-sparkles{opacity:0!important}
+@media(max-width:700px){
+ .atlas-frame{left:4px;right:4px;top:max(83px,calc(env(safe-area-inset-top) + 76px));
+  bottom:max(195px,calc(env(safe-area-inset-bottom) + 180px))}
+ .atlas-title{left:16%;right:16%;top:3.4%}
+ .atlas-title span{font-size:7px;letter-spacing:.12em}
+ .atlas-title strong{font-size:clamp(12px,3.8vw,18px)}
+ .atlas-footer{bottom:4%;left:19%;right:19%;font-size:6px;letter-spacing:.1em}
+ .atlas-crown{display:none}
+ .atlas-compass{width:34px;left:3.2%;bottom:10%}
+ .atlas-compass span{font-size:23px}
+ .atlas-corner{font-size:12px}
+ .balloon-motes{inset:14% -25% -14% -35%}
+}
+@media(prefers-reduced-motion:reduce){
+ .balloon,.balloon-base,.balloon-basket-front,.balloon .official,.balloon-flare,
+ .balloon-motes i,.atlas-light{animation:none!important}
+}
+
+
+/* v5.3 — First-person 360° from inside the basket.
+   The centre of the image is genuinely transparent, retaining native Google 3D.
+   Keep the bottom 42px clear for Google's mandatory map attribution. */
+.pov-scene{position:absolute;inset:0;z-index:9;pointer-events:none;overflow:hidden}
+.pov-drag{position:absolute;inset:0 0 42px;z-index:1;touch-action:none;pointer-events:auto;cursor:grab}
+.pov-drag:active{cursor:grabbing}
+.pov-basket{position:absolute;inset:0 0 42px;width:100%;height:calc(100% - 42px);z-index:2;
+ object-fit:fill;pointer-events:none;user-select:none;-webkit-user-select:none;
+ filter:drop-shadow(0 -3px 14px rgba(21,18,15,.28));
+ animation:povSway 8s ease-in-out infinite}
+.pov-controls{position:absolute;z-index:13;left:50%;transform:translateX(-50%);
+ bottom:max(155px,calc(env(safe-area-inset-bottom) + 135px));width:min(470px,calc(100vw - 24px));
+ display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:auto}
+.pov-caption{display:grid;gap:4px;text-align:center;background:rgba(9,29,42,.72);
+ border:1px solid rgba(252,222,165,.28);border-radius:15px;
+ padding:9px 14px;max-width:100%;backdrop-filter:blur(14px);
+ box-shadow:0 5px 20px rgba(2,17,29,.22)}
+.pov-caption strong{font:italic 600 18px Georgia,serif;color:#ffe7ad;text-shadow:0 1px 4px #20353e}
+.pov-caption span{font-size:11px;color:#f3eedf;line-height:1.35}
+.pov-actions{display:flex;justify-content:center;gap:7px;width:100%}
+.pov-actions button{min-width:0;flex:1;border:1px solid rgba(252,220,158,.52);
+ border-radius:23px;padding:11px 8px;color:#ffefce;font-size:11px;font-weight:750;
+ background:rgba(8,27,40,.87);box-shadow:0 4px 18px rgba(0,0,0,.3);
+ backdrop-filter:blur(15px);touch-action:manipulation}
+.pov-actions button:active{background:rgba(120,87,47,.88)}
+.pov-actions button:focus-visible{outline:3px solid #f4d383;outline-offset:3px}
+.app.pov-active .balloon,.app.pov-active .flight-bar,
+.app.pov-active .chapter,.app.pov-active .overview-tools{display:none!important}
+@keyframes povSway{0%,100%{transform:translateY(0) rotate(-.12deg)}
+ 50%{transform:translateY(2px) rotate(.12deg)}}
+@media(max-width:700px){
+ .pov-controls{bottom:max(157px,calc(env(safe-area-inset-bottom) + 132px));gap:7px}
+ .pov-caption{padding:8px 11px}
+ .pov-caption strong{font-size:16px}.pov-caption span{font-size:10px}
+ .pov-actions{gap:4px}
+ .pov-actions button{padding:10px 5px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.pov-basket{animation:none}}
+
+/* v5.4 — Approved cinematic transparent PNG in the 360° POV.
+   Preserve the original photo's details, clear center and Google's credits. */
+.pov-scene .pov-basket{
+  left:50%;
+  right:auto;
+  top:0;
+  bottom:42px;
+  width:100%;
+  height:calc(100% - 42px);
+  max-width:none;
+  object-fit:fill;
+  object-position:center center;
+  pointer-events:none;
+  image-rendering:auto;
+  mix-blend-mode:normal;
+  filter:drop-shadow(0 -2px 5px rgba(20,22,28,.18));
+  transform:translateX(-50%);
+  transform-origin:center 75%;
+  animation:povBasketPhotoFloat 8.2s ease-in-out infinite;
+}
+@keyframes povBasketPhotoFloat {
+  0%,100% {transform:translateX(-50%) translateY(0)}
+  50% {transform:translateX(-50%) translateY(2px)}
+}
+/* Restrict the portrait foreground to the central viewport on laptops and
+   landscape phones. It must not be stretched across a 16:9 landscape screen. */
+@media(min-width:760px){
+  .pov-scene .pov-basket {width:min(100%, 640px)}
+}
+@media(max-height:500px) and (orientation:landscape){
+  .pov-scene .pov-basket {width:min(100%, 52vh)}
+  .pov-controls {
+    bottom:max(49px,env(safe-area-inset-bottom) + 46px);
+  }
+  .pov-caption{padding:5px 8px}
+}
+/* The POV frame is the only active figure in first-person mode; never
+   superpose the old basket graphic or obscure the legal Google attribution. */
+@media(prefers-reduced-motion:reduce){
+  .pov-scene .pov-basket{animation:none!important;transform:translateX(-50%)}
+}
+
+
+/* Villa Pérez 5.5 — fully alpha-transparent, actual supplied balloon POV.
+   Keep the city / Google 3D visible through the white area removed from JPG.
+   Controls stay over the wickerwork, not in the middle of the streets. */
+.pov-scene[hidden],
+.pov-controls[hidden] {
+  display:none!important;
+}
+.pov-scene .pov-basket {
+  left:50%;
+  right:auto;
+  top:0;
+  bottom:42px;
+  width:100%;
+  height:calc(100% - 42px);
+  object-fit:fill;
+  object-position:center top;
+  mix-blend-mode:normal;
+  filter:drop-shadow(0 3px 6px rgba(37,25,18,.12));
+  transform:translateX(-50%);
+  animation:povBasketPhotoFloat 9.6s ease-in-out infinite;
+}
+.pov-controls {
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:42px; /* Google's legal attribution remains visible below. */
+  transform:none;
+  z-index:13;
+  box-sizing:border-box;
+  padding:16px max(12px,env(safe-area-inset-left)) 10px max(12px,env(safe-area-inset-right));
+  width:100%;
+  max-width:none;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  align-items:center;
+  gap:7px;
+  border:0;
+  background:linear-gradient(180deg,rgba(33,28,24,0) 0%,rgba(29,29,31,.72) 18%,rgba(18,28,34,.91) 100%);
+  box-shadow:0 -8px 21px rgba(21,16,13,.09);
+  pointer-events:auto;
+}
+.pov-caption {
+  display:grid;
+  gap:3px;
+  text-align:center;
+  max-width:100%;
+  padding:0 8px 2px;
+  margin:0;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  backdrop-filter:none;
+}
+.pov-caption strong {
+  font:italic 700 clamp(16px,3.3vw,21px) Georgia,"Times New Roman",serif;
+  color:#fff0cb;
+  text-shadow:0 2px 5px #1b1b21;
+}
+.pov-caption span {
+  color:#f8eee0;
+  font-size:clamp(10px,2.4vw,12px);
+  line-height:1.23;
+  text-shadow:0 2px 3px rgba(0,0,0,.6);
+}
+.pov-actions {
+  width:min(480px,100%);
+  max-width:100%;
+  display:grid;
+  grid-template-columns:1fr 1.12fr .9fr;
+  gap:8px;
+}
+.pov-actions button {
+  display:block;
+  min-width:0;
+  width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  padding:10px 5px;
+  min-height:42px;
+  border-radius:14px;
+  background:rgba(11,36,48,.85);
+  border:1px solid rgba(252,227,180,.5);
+  font-size:clamp(11px,2.7vw,13px);
+  font-weight:700;
+}
+@media(max-width:700px){
+  .pov-scene .pov-basket {
+    /* The ChatGPT in-app Safari header can cover the upper portion.
+       Bring the photographic canopy slightly down into the visible viewport. */
+    top:clamp(54px,9dvh,108px);
+    bottom:42px;
+    width:100%;
+    height:calc(100% - 42px - clamp(54px,9dvh,108px));
+  }
+  .pov-controls{
+    bottom:42px;
+    padding:14px 10px 8px;
+    gap:5px;
+  }
+  .pov-actions{gap:5px}
+  .pov-actions button{padding:9px 3px;font-size:11px;min-height:40px}
+}
+@media(max-height:500px) and (orientation:landscape){
+  .pov-scene .pov-basket {
+    top:0;
+    height:calc(100% - 42px);
+    width:min(100%,64vh);
+  }
+  .pov-controls{
+    bottom:42px;
+    width:100%;
+    padding:4px 8px;
+    gap:2px;
+  }
+  .pov-caption{display:none}
+  .pov-actions{max-width:430px}
+  .pov-actions button{min-height:32px;padding:5px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .pov-scene .pov-basket{animation:none!important;transform:translateX(-50%)}
+}
+
+
+/* Villa Pérez 5.6 · The 42px below the controls was deliberately reserved
+   for attribution in v5.5. In first-person mode, move the native Google
+   attribution UP by shortening the Google map itself, not by hiding its logo.
+   The lower portion becomes a genuine leather/wicker cockpit control console.
+   The 3D map and its legal attribution are never overlaid by the control dock. */
+.app.pov-active {
+  --pov-console-height: clamp(116px, 17dvh, 146px);
+  --pov-credit-clearance: 44px;
+  --pov-credit-radius-x: clamp(154px, 40vw, 168px);
+  --pov-credit-radius-y: 43px;
+}
+/* The map is now a true separate region ending ABOVE the basket console.
+   Google draws its original logo at the base of this reduced map viewport. */
+.app.pov-active .map-host {
+  bottom: var(--pov-console-height);
+}
+.app.pov-active .pov-scene {
+  inset: 0 0 var(--pov-console-height) 0;
+  overflow: hidden;
+}
+.app.pov-active .pov-drag {
+  /* Let users tap Google's information/attribution links at the map bottom. */
+  inset: 0 0 var(--pov-credit-clearance) 0;
+  z-index:1;
+}
+.app.pov-active .pov-scene .pov-basket {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  right: auto;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: fill;
+  object-position: center top;
+  /* v5.9: instead of an oversized transparent wedge, feather the
+     small lower-left area around Google's native, clickable attribution.
+     A fully transparent core leaves the logo and info button unobscured. */
+  clip-path: none;
+  -webkit-mask-image: radial-gradient(
+    ellipse var(--pov-credit-radius-x) var(--pov-credit-radius-y) at 76px calc(100% - 18px),
+    transparent 0%, transparent 60%,
+    rgba(0,0,0,.04) 69%, rgba(0,0,0,.54) 86%, #000 100%
+  );
+  mask-image: radial-gradient(
+    ellipse var(--pov-credit-radius-x) var(--pov-credit-radius-y) at 76px calc(100% - 18px),
+    transparent 0%, transparent 60%,
+    rgba(0,0,0,.04) 69%, rgba(0,0,0,.54) 86%, #000 100%
+  );
+  filter:drop-shadow(0 5px 7px rgba(19,25,29,.15));
+  transform:translateX(-50%);
+}
+.app.pov-active .pov-controls {
+  position:absolute;
+  inset:auto 0 0 0;
+  box-sizing:border-box;
+  z-index:14;
+  transform:none;
+  width:100%;
+  min-height:var(--pov-console-height);
+  height:var(--pov-console-height);
+  max-width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+  gap:5px;
+  padding:19px max(13px,env(safe-area-inset-right))
+    max(12px,env(safe-area-inset-bottom))
+    max(13px,env(safe-area-inset-left));
+  border:0;
+  border-top:2px solid #e2b277;
+  overflow:hidden;
+  isolation:isolate;
+  /* Dense leather + basket weave, visually connects to photo above. */
+  background:
+    radial-gradient(ellipse 65% 120% at 50% 0%,rgba(255,220,150,.24),transparent 78%),
+    linear-gradient(180deg,rgba(49,30,22,.14),rgba(7,19,27,.69)),
+    repeating-linear-gradient(93deg,
+      rgba(223,167,103,.17) 0px,rgba(212,143,80,.1) 3px,
+      rgba(62,35,27,.11) 5px,transparent 8px,transparent 17px),
+    repeating-linear-gradient(3deg,
+      #8c5b38 0px,#a46d42 4px,#623d2e 9px,#4a3026 12px,#91623e 17px),
+    #583a2d;
+  box-shadow:0 -5px 16px rgba(31,20,15,.29),inset 0 11px 14px rgba(27,16,11,.22);
+  pointer-events:auto;
+}
+/* Curved polished upper lip and stitch detail of the basket cockpit. */
+.app.pov-active .pov-controls::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0 0 auto;
+  height:12px;
+  border-bottom:1px solid rgba(255,219,158,.39);
+  background:linear-gradient(to bottom,
+    #f5daa4 0%,#b77c47 20%,#66412c 54%,#241e20 100%);
+  box-shadow:0 2px 7px rgba(0,0,0,.4);
+  pointer-events:none;
+}
+.app.pov-active .pov-controls::after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  top:8px;left:0;right:0;height:2px;
+  background:repeating-linear-gradient(90deg,
+    transparent 0 8px,#e3b67c 8px 12px,transparent 12px 19px);
+  opacity:.6;
+  pointer-events:none;
+}
+.app.pov-active .pov-caption,
+.app.pov-active .pov-actions{
+  z-index:1;
+  position:relative;
+  min-width:0;
+  width:min(100%,490px);
+}
+.app.pov-active .pov-caption{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:baseline;
+  gap:1px 9px;
+  padding:0;
+  margin:0 0 3px;
+  background:none;
+  border:0;
+  box-shadow:none;
+  backdrop-filter:none;
+  text-align:center;
+  overflow:visible;
+}
+.app.pov-active .pov-caption strong{
+  font:italic 700 clamp(16px,3.8vw,20px) Georgia,serif;
+  white-space:nowrap;
+  text-shadow:0 2px 5px rgba(5,10,13,.85);
+}
+.app.pov-active .pov-caption span{
+  flex-basis:100%;
+  font-size:clamp(10px,2.6vw,12px);
+  color:#f7e9ce;
+  line-height:1.3;
+  white-space:normal;
+  overflow-wrap:break-word;
+  text-shadow:0 2px 4px rgba(5,10,13,.88);
+}
+.app.pov-active .pov-actions{
+  display:grid;
+  grid-template-columns:1fr 1.14fr .8fr;
+  gap:7px;
+}
+.app.pov-active .pov-actions button{
+  min-width:0;
+  box-sizing:border-box;
+  min-height:40px;
+  width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:clamp(11px,2.8vw,13px);
+  padding:8px 5px;
+  border-radius:13px;
+  background:linear-gradient(180deg,rgba(24,52,65,.96),rgba(9,29,39,.97));
+  border:1px solid rgba(253,219,160,.68);
+  box-shadow:inset 0 1px rgba(255,255,255,.09),
+    0 3px 9px rgba(15,12,11,.42);
+}
+@media(max-width:700px){
+  .app.pov-active{
+    --pov-console-height:clamp(116px,17dvh,138px);
+    --pov-credit-clearance:44px;
+  }
+  .app.pov-active .pov-scene .pov-basket{
+    top:0;
+    bottom:0;
+    height:100%;
+  }
+  .app.pov-active .pov-controls{
+    bottom:0;
+    padding:18px max(9px,env(safe-area-inset-right))
+      max(8px,env(safe-area-inset-bottom))
+      max(9px,env(safe-area-inset-left));
+    gap:5px;
+  }
+  .app.pov-active .pov-caption strong{font-size:clamp(16px,4.2vw,19px)}
+  .app.pov-active .pov-actions{gap:6px}
+  .app.pov-active .pov-actions button{min-height:38px;font-size:11px;padding:8px 2px}
+}
+@media(max-height:500px) and (orientation:landscape){
+  .app.pov-active{--pov-console-height:58px;--pov-credit-clearance:40px;--pov-credit-radius-x:154px;--pov-credit-radius-y:43px}
+  .app.pov-active .pov-controls{padding:14px 10px 4px}
+  .app.pov-active .pov-caption{display:none}
+  .app.pov-active .pov-actions{max-width:430px}
+  .app.pov-active .pov-actions button{min-height:30px;padding:3px}
+}
+@media(prefers-reduced-motion:reduce){
+  .app.pov-active .pov-scene .pov-basket{animation:none!important;transform:translateX(-50%)}
+}
+
+/* v5.9 responsive attribution clearance: on wide screens, the centred image
+   does not overlap the far-left provider credit. */
+@media(min-width:760px){
+ .app.pov-active .pov-scene .pov-basket{clip-path:none}
+}
+
+
+/* Plan A: nocturnal flight is the DEFAULT. Only Google supplies the city mesh.
+ * Cinematic blue-hour grade fades away BEFORE attribution/copyright overlays;
+ * no filters are applied to Google-owned satellite tiles or Google logo. */
+html.night-active .cinema-grade,
+html.night-css-fallback .cinema-grade{
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 72%,transparent 97%);
+ mask-image:linear-gradient(to bottom,#000 0%,#000 72%,transparent 97%);
+}
+html.night-active .cinema-grade{
+ background:
+  radial-gradient(ellipse 70% 38% at 42% 28%,rgba(34,65,111,.14),transparent 91%),
+  linear-gradient(180deg,rgba(3,13,33,.14),rgba(5,14,39,.18) 40%,rgba(5,13,29,.24));
+}
+html.night-css-fallback .cinema-grade{
+ background:
+  radial-gradient(ellipse 85% 34% at 58% 22%,rgba(41,78,139,.30),transparent 82%),
+  linear-gradient(180deg,rgba(2,12,35,.56),rgba(5,17,41,.52) 55%,rgba(4,10,27,.48))!important;
+}
+.night-cinema{
+ z-index:3;bottom:66px;height:calc(100% - 66px);
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 76%,transparent 99%);
+ mask-image:linear-gradient(to bottom,#000 0%,#000 76%,transparent 99%);
+}
+.overview-tools #nightToggle{
+ background:linear-gradient(125deg,rgba(17,38,63,.95),rgba(59,47,72,.92));
+ border:1.5px solid rgba(245,202,130,.85);
+ color:#ffebba;
+ min-height:37px;
+ padding:8px 12px;
+ font-weight:800;
+ box-shadow:0 4px 16px rgba(2,11,29,.42);
+}
+html.night-active .dust-layer:not(.fx-off){opacity:.41}
+html.night-active .balloon-flare{filter:drop-shadow(0 0 9px rgba(255,198,94,.45))}
+@media(max-width:700px){
+ .overview-tools{top:max(92px,calc(env(safe-area-inset-top) + 72px));gap:5px}
+ .overview-tools #nightToggle{font-size:11px;min-height:33px;padding:7px 11px}
+}
+@media(prefers-reduced-motion:reduce){.night-cinema{display:none!important}}
+
+
+/* Plan A+: warm georeferenced light sources carry the city illumination.
+   This atmospheric grade only adds tonal separation; it never masks credits. */
+html.night-active .cinema-grade{
+ background:
+  radial-gradient(ellipse 52% 36% at 48% 42%,rgba(61,87,139,.09),transparent 94%),
+  linear-gradient(180deg,rgba(2,9,30,.20) 0%,rgba(9,23,44,.09) 35%,rgba(9,20,37,.10) 65%,rgba(5,11,26,.12) 100%);
+}
+html.night-active .night-cinema{opacity:.94!important}
+html.night-active .flight-bar{
+ border-color:rgba(245,203,133,.88);
+ box-shadow:0 13px 35px rgba(3,12,31,.66),inset 0 0 22px rgba(209,159,91,.08);
+}
+html.night-active .flight-bar .bar-track{
+ box-shadow:inset 0 0 7px rgba(238,190,116,.18);
+}
+html.night-active .route-group .cta.gold{
+ box-shadow:0 7px 23px rgba(217,165,89,.20);
+}
+/* Plan A+: nocturnal lighting comes from geographic 3D markers, not fixed 2D 'window dots'. */
+
+
+/* Villa Pérez v8 — night/day separation.
+   Google's photorealistic imagery stays intact. The atmospheric Canvas2D
+   covers only the viewport above the legal attribution strip. */
+html:not(.night-active):not(.night-css-fallback) .cinema-grade{
+ opacity:0!important;
+ background:transparent!important;
+}
+html:not(.night-active) .night-cinema{opacity:0!important}
+html.night-active .night-cinema{
+ opacity:1!important;
+ filter:none!important;
+ pointer-events:none;
+}
+html.night-active .cinema-grade{
+ opacity:1!important;
+ background:
+  radial-gradient(ellipse 68% 48% at 70% 17%,rgba(53,104,176,.08),transparent 93%),
+  linear-gradient(180deg,rgba(2,9,27,.16),rgba(3,12,33,.065) 44%,rgba(2,8,27,.055));
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 72%,transparent 97%);
+ mask-image:linear-gradient(to bottom,#000 0%,#000 72%,transparent 97%);
+}
+html.night-css-fallback .cinema-grade{
+ opacity:1!important;
+ background:
+  radial-gradient(ellipse 74% 48% at 65% 23%,rgba(52,91,159,.12),transparent),
+  linear-gradient(180deg,rgba(2,10,29,.79),rgba(5,15,37,.72) 54%,rgba(3,12,31,.67) 90%)!important;
+}
+
+
+/* === V9: MADRID ENCANTADO ===
+   Night dominates the city up to (but NOT over) Google attribution.
+   The old long gradient made the bottom quarter of the scene daylight.
+   Both the veil and the magic intentionally avoid the Google logo. */
+html.night-active .night-cinema{
+ bottom:58px!important;
+ height:calc(100% - 58px)!important;
+ opacity:1!important;
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 90%,transparent 100%)!important;
+ mask-image:linear-gradient(to bottom,#000 0%,#000 90%,transparent 100%)!important;
+}
+html.night-active .cinema-grade{
+ opacity:1!important;
+ background:
+  radial-gradient(ellipse 60% 38% at 77% 15%,rgba(89,139,213,.095),transparent 100%),
+  linear-gradient(180deg,rgba(1,8,26,.25),rgba(3,12,32,.11) 55%,rgba(1,7,24,.07));
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 84%,transparent 95%)!important;
+ mask-image:linear-gradient(to bottom,#000 0%,#000 84%,transparent 95%)!important;
+}
+html:not(.night-active) .cinema-grade{
+ opacity:0!important;
+}
+html:not(.night-active) .night-cinema{
+ display:none!important;
+}
+html.night-active .dust-layer:not(.fx-off){
+ opacity:.67!important;
+}
+html.night-active .balloon-flare{
+ opacity:.82!important;
+ filter:drop-shadow(0 0 12px rgba(255,200,112,.67));
+}
+/* iPhone WebView / Safari: prevent automatic text enlargement and clipped HUD. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@media(max-width:700px){
+ .app .flight-bar{
+  left:10px!important;
+  right:10px!important;
+  transform:none!important;
+  width:auto!important;
+  max-width:calc(100vw - 20px)!important;
+  padding:11px 12px!important;
+  box-sizing:border-box;
+ }
+ .app .flight-bar .bar-top{max-width:100%;overflow-wrap:anywhere}
+ .app .flight-buttons{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:6px!important;
+ }
+ .app .flight-buttons button{
+  min-width:0!important;
+  white-space:normal!important;
+  font-size:clamp(10px,2.65vw,12px)!important;
+  line-height:1.2;
+  padding:9px 5px!important;
+ }
+ .app .chapter{
+  left:12px!important;
+  max-width:47vw!important;
+  overflow-wrap:anywhere;
+ }
+ .app .overview-tools{
+  right:10px!important;
+  max-width:47vw!important;
+ }
+ .app .overview-tools button{white-space:normal!important;overflow-wrap:anywhere}
+}
+
+
+/* ========== V9.1: VISIBILITY RECOVERY ==========
+   A single Canvas2D night pass preserves Google's roof, street and facade
+   detail. Previous v9 stacked 80–90% navy with an extra vignette, leaving
+   the city unreadable. Do not apply filters or backdrop-blur to the Map3D. */
+html.night-active:not(.night-css-fallback) .cinema-grade{
+ display:none!important;
+ background:transparent!important;
+ opacity:0!important;
+}
+html.night-active:not(.night-css-fallback) .night-cinema{
+ display:block!important;
+ opacity:1!important;
+ filter:none!important;
+ bottom:58px!important;
+ height:calc(100% - 58px)!important;
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 79%,rgba(0,0,0,.92) 84%,transparent 93%)!important;
+ mask-image:linear-gradient(to bottom,#000 0%,#000 79%,rgba(0,0,0,.92) 84%,transparent 93%)!important;
+}
+html:not(.night-active) .cinema-grade,
+html:not(.night-active) .night-cinema{
+ display:none!important;
+}
+html.night-css-fallback .cinema-grade{
+ display:block!important;
+ background:linear-gradient(180deg,rgba(5,17,39,.36) 0%,rgba(7,20,41,.40) 65%,rgba(4,16,34,.22) 100%)!important;
+}
+html.night-css-fallback .night-cinema{display:none!important}
+
+/* Small input fonts cause iOS Safari's focus autozoom to remain in the
+   in-app browser, which can leave the whole flying interface clipped. */
+@media (pointer:coarse){
+ input,textarea,select,.app input,.setup input{
+  font-size:16px!important;
+ }
+}
+html,body,.app{
+ width:100%;
+ max-width:100%;
+ overflow-x:clip;
+}
+@media(max-width:700px){
+ .app .flight-bar{
+  left:10px!important;
+  right:10px!important;
+  width:auto!important;
+  max-width:none!important;
+  min-width:0!important;
+  transform:none!important;
+ }
+ .app .flight-bar .bar-top,
+ .app .flight-bar .travel-label,
+ .app .flight-bar .route-title{
+  max-width:100%!important;
+  overflow-wrap:anywhere!important;
+ }
+ .app .overview-tools{
+  width:min(47vw,190px);
+  min-width:0;
+  max-width:47vw!important;
+ }
+ .app .overview-tools button{max-width:100%;min-width:0;font-size:10px!important}
+ .app .chapter{max-width:46vw!important}
+}
+/* Reduced motion keeps a still night image; it should never hide the city. */
+@media(prefers-reduced-motion:reduce){
+ html.night-active:not(.night-css-fallback) .night-cinema{
+  display:block!important;
+  animation:none!important;
+ }
+}
+
+
+/* Villa Pérez 9.2 — Control de soplido: compacto, accesible y fuera de la vista 360. */
+.blow-strip{
+ display:flex;align-items:center;gap:10px;margin-top:9px;
+ padding-top:9px;border-top:1px solid rgba(255,222,155,.22);
+}
+.blow-strip button{
+ flex:0 0 auto;border:1px solid rgba(255,221,146,.55);border-radius:9px;
+ color:#ffecc2;background:rgba(38,72,74,.62);
+ padding:9px 11px;font-size:11px;font-weight:750;min-height:36px;
+ touch-action:manipulation;
+}
+.blow-strip button[aria-pressed="true"]{background:rgba(75,132,109,.65);border-color:#b4efd3}
+.blow-strip button:disabled{opacity:.65}
+.blow-readout{flex:1;min-width:0;display:grid;gap:5px;color:#f4e7cf;font-size:10px}
+.blow-readout span{white-space:normal;line-height:1.2}
+.blow-meter{height:5px;overflow:hidden;background:rgba(240,230,190,.17);border-radius:99px}
+.blow-meter i{display:block;width:0;height:100%;background:linear-gradient(90deg,#a3e4d1,#fbd180);border-radius:99px;transition:width .13s linear}
+.balloon.blow-fast .balloon-sparkles{filter:brightness(1.5) saturate(1.3)}
+.pov-actions #povBlowToggle[aria-pressed="true"]{background:rgba(53,125,105,.87);border-color:#b2f2d2}
+@media(max-width:700px){
+ .blow-strip{margin-top:6px;padding-top:6px;gap:7px}
+ .blow-strip button{font-size:10px;padding:8px 7px;min-height:34px}
+ .blow-readout{font-size:9px}
+ .app.pov-active .pov-actions{gap:4px}
+ .app.pov-active .pov-actions #povBlowToggle{padding-left:3px;padding-right:3px;font-size:10px}
+}
