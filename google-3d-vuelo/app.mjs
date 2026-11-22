@@ -3,6 +3,7 @@ import {installLook360} from './look360.mjs?v=5.4.0';
 import {CinemaNight} from './night-cinema-v9-1.mjs?v=9.1.0';
 import {StreetNightScene} from './street-night-v7.mjs?v=8.0.0';
 import {EnchantedRoofScene} from './enchanted-roofs-v9.mjs?v=9.0.0';
+import {BlowBoost,MAX_BLOW_SPEED} from './blow-boost.mjs?v=9.2.0';
 /*
  * Villa Pérez Google 3D experiment.
  * Google Maps JavaScript API 3D, photorealistic daytime only.
@@ -53,6 +54,38 @@ const state={
  terrainSamples:[],turnLastTs:0,takeoffMs:0,takeoffDurationMs:2600,overviewSnapshot:null,takeoffBearing:0,
  routeSpark:null,routeSparkTip:null,magicLastAt:0,magicDraws:0,day:false,fireflies:[],streetNight:null,enchantedRoofs:null
 };
+const blowBoost = new BlowBoost();
+let lastBlowUiAt = 0;
+function renderBlowUi(speed=1, message='') {
+ const active=blowBoost.active, pending=blowBoost.pending;
+ const label=message || (pending?'Solicitando permiso al micrófono…'
+  :active?(speed>1.12?'¡Sigue soplando! · ×'+speed.toFixed(1):'Sopla cerca del micrófono para acelerar')
+  :'Micrófono apagado');
+ $('blowStatus').textContent=label;
+ $('blowMeter').style.width=(Math.max(0,Math.min(1,(speed-1)/(MAX_BLOW_SPEED-1)))*100).toFixed(0)+'%';
+ $('blowToggle').textContent=pending?'⌛ Permiso…':active?'🎤 Desactivar soplido':'🎤 Activar soplido';
+ $('povBlowToggle').textContent=active?'🎤 Mic ON':'🌬 Soplar';
+ for(const button of [$('blowToggle'),$('povBlowToggle')]){
+  button.disabled=pending;button.setAttribute('aria-pressed',String(active));
+ }
+ $('balloon').classList.toggle('blow-fast',active&&speed>1.4);
+}
+async function toggleBlow(){
+ if(blowBoost.pending)return;
+ if(blowBoost.active){blowBoost.stop();renderBlowUi();return}
+ if(!state.playing||state.phase==='done'){info('Activa primero el vuelo para soplar.');return}
+ renderBlowUi(1,'Solicitando permiso al micrófono…');
+ try {
+  const started=await blowBoost.start();
+  renderBlowUi();
+  if(started) info('¡Micrófono listo! Sopla hacia él para impulsar el globo.');
+ }catch(e){
+  blowBoost.stop();
+  renderBlowUi(1,'Micrófono no disponible · vuelo normal');
+  info(e?.name==='NotAllowedError'?'Permiso de micrófono denegado. El vuelo sigue sin soplidos.':
+   'No se pudo activar el micrófono. Comprueba HTTPS y los permisos del navegador.');
+ }
+}
 const R=Earth=>Earth*Math.PI/180;
 function distance(a,b){
  const phi1=R(a.lat),phi2=R(b.lat),dphi=R(b.lat-a.lat),dl=R(b.lng-a.lng);
@@ -695,6 +728,7 @@ function finishFlight(){
  explorer.disable(false);
  $('povToggle').hidden=true;
  stopFrame();clearTimeout(state.overviewTimer);state.overviewTimer=0;state.overview=false;
+ blowBoost.stop();renderBlowUi();
  $('atlasFrame').hidden=true;
  state.playing=false;state.paused=false;state.phase='done';
  state.progressMs=state.routeDurationMs;state.orbitElapsedMs=state.orbitDurationMs;
@@ -722,7 +756,12 @@ function renderTick(now){
    state.lastPaint=now;renderTakeoff(state.takeoffMs/state.takeoffDurationMs);
   }
  }else if(state.phase==='route'){
-  state.progressMs=Math.min(state.routeDurationMs,state.progressMs+delta);
+  const speed=blowBoost.active?blowBoost.sample(now):1;
+  // Acelera el avance sobre el mismo itinerario, sin cambiar los puntos.
+  state.progressMs=Math.min(state.routeDurationMs,state.progressMs+delta*speed);
+  if(blowBoost.active&&now-lastBlowUiAt>=170){
+   lastBlowUiAt=now;renderBlowUi(speed);
+  }
   if(state.progressMs>=state.routeDurationMs){
    const end=state.points[state.points.length-1];
    renderRoute(1);
@@ -803,6 +842,7 @@ async function fly(){
 function pause(){
  if(!state.playing||state.overview)return;
  if(!state.paused){
+  blowBoost.stop();renderBlowUi(1,'Micrófono apagado durante la pausa');
   state.paused=true;stopFrame();
   $('pause').textContent='▶ Continuar';status('VUELO EN PAUSA');
  }else{
@@ -813,6 +853,7 @@ function pause(){
  }
 }
 function restart(){
+ blowBoost.stop();renderBlowUi();
  explorer.disable(false);
  $('povToggle').hidden=true;
  stopFrame();clearTimeout(state.overviewTimer);state.overviewTimer=0;state.overview=false;
@@ -851,6 +892,8 @@ const explorer=installLook360({
 $('launch').addEventListener('click',fly);
 $('overviewToggle').addEventListener('click',toggleOverview);
 $('pause').addEventListener('click',pause);
+$('blowToggle').addEventListener('click',toggleBlow);
+$('povBlowToggle').addEventListener('click',toggleBlow);
 $('restart').addEventListener('click',restart);
 $('again').addEventListener('click',restart);
 $('nightToggle').addEventListener('click',()=>{
@@ -878,9 +921,12 @@ $('fxToggle').addEventListener('click',()=>{
 });
 
 document.addEventListener('visibilitychange',()=>{
- if(document.hidden&&state.playing&&!state.paused)pause();
+ if(document.hidden){
+  blowBoost.stop();renderBlowUi();
+  if(state.playing&&!state.paused)pause();
+ }
 });
-window.addEventListener('pagehide',()=>cinema.stop());
+window.addEventListener('pagehide',()=>{blowBoost.stop();cinema.stop()});
 for(let i=0;i<27;i++){
  const el=document.createElement('i');
  el.style.left=(i*37%100)+'%';el.style.top=(i*53%100)+'%';
@@ -888,6 +934,7 @@ for(let i=0;i<27;i++){
  $('dustLayer').append(el);
 }
 setActiveChoice('plaza');
+renderBlowUi();
 try{
  const clinic=JSON.parse(localStorage.getItem('vp_clinic_origin')||'null');
  if(clinic&&typeof clinic.name==='string'&&typeof clinic.address==='string'){
