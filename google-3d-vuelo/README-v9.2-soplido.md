@@ -1,12 +1,12 @@
-# Villa Pérez · Soplido para acelerar el globo (v9.2)
+# Villa Pérez · Soplido para acelerar el globo (v9.5)
 
 ## Qué cambia
 
 - Botón **🎤 Activar soplido** en la barra inferior del vuelo.
 - Botón **🌬 Soplar** también en el modo inmersivo 360º.
 - Se solicita permiso de micrófono después de una pulsación explícita.
-- Un soplido suave acelera y uno intenso alcanza un máximo de **×2,8**.
-- Cuando el niño deja de soplar se reduce progresivamente hasta ×1.
+- Un soplido suave acelera y uno intenso alcanza un máximo de **×10**.
+- Cuando el niño deja de soplar se reduce progresivamente hasta ×1. Se ha corregido la calibración inicial para aceptar un soplido inmediato y el límite temporal de fotogramas de Safari con mapas 3D pesados.
 - Solo se acelera la fase de vuelo por la ruta original, no el despegue ni la órbita final; no cambia el destino ni los últimos metros privados.
 - Al pausar, finalizar, reiniciar o salir de la pestaña se detiene el micrófono y se liberan las pistas.
 - Sin permiso o sin micrófono, la app sigue funcionando con la velocidad habitual.
@@ -24,3 +24,7 @@ Comprobar en iPhone: autorizar/rechazar permisos, soplar suave/fuerte, retorno a
 ## Publicación
 
 Los cambios se preparan en una rama de pruebas **feature/soplido-acelera-globo**; el directorio publicado en `main` no se modifica hasta la revisión.
+
+## URL de prueba (sin modificar la app original)
+
+https://jbustoscasta.github.io/villa-perez-premium/google-3d-vuelo/soplido-preview.html?v=9.5.0
