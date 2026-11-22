@@ -53,6 +53,8 @@ export class BlowBoost {
     let stream;
     let context;
     try {
+      // Crear el AudioContext durante el toque del usuario (Safari iPhone).
+      context = new AudioContextClass();
       stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: false,
@@ -66,7 +68,6 @@ export class BlowBoost {
         stream.getTracks().forEach(track => track.stop());
         return false;
       }
-      context = new AudioContextClass();
       const source = context.createMediaStreamSource(stream);
       const filter = context.createBiquadFilter();
       filter.type = 'highpass';
