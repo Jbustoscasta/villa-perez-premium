@@ -1,5 +1,5 @@
 /*
- * VILLA PÉREZ — El vuelo mágico | v1.0.2
+ * VILLA PÉREZ — El vuelo mágico | v1.1.0
  * Static, local-first editor. No API keys, third-party SDKs or server uploads.
  * The user controls a curved motion path; a chroma-keyed local video or official
  * transparent art follows it.  Video compositing and export happen in the browser.
@@ -11,6 +11,7 @@
   const overlay = $('overlayCanvas'), octx = overlay.getContext('2d');
   const stage = $('stage'), video = $('assetVideo'), sound = $('magicAudio');
   const sprite = new Image(); sprite.src = 'assets/perez-globo-iphone.webp';
+  const DEFAULT_VIDEO = 'assets/raton-perez-vuelo.mp4?v=110';
   const W = () => canvas.width, H = () => canvas.height;
   const CLAMP = (x,a,b) => Math.max(a,Math.min(b,x));
   const lerp = (a,b,t) => a+(b-a)*t;
@@ -289,10 +290,10 @@
     video.src=state.videoUrl;video.load();
     video.onloadeddata=()=>{
       state.loadedVideo=true;try{keyer=makeKeyer();}catch(e){console.error(e);keyer=null;state.loadedVideo=false;toast('Este navegador no permite procesar el chroma. Se usará el arte original.');}
-      $('assetInfo').textContent=state.loadedVideo?'Vídeo animado cargado':'Arte original incluido';$('chromaSection').hidden=!state.loadedVideo;
-      video.pause();drawFrame();if(state.loadedVideo)toast('Vídeo cargado. Fondo verde eliminado automáticamente.');
+      $('assetInfo').textContent=state.loadedVideo?'Vídeo animado · transparente sobre tu foto':'Vídeo en preparación';$('chromaSection').hidden=!state.loadedVideo;
+      video.pause();drawFrame();if(state.loadedVideo && state.videoUrl)toast('Vídeo cargado. Fondo verde eliminado automáticamente.');
     };
-    video.onerror=()=>toast('No se pudo reproducir el vídeo. Convierte a MP4 H.264 y vuelve a intentarlo.');
+    video.onerror=()=>{ $('assetInfo').textContent='Vídeo no disponible; puedes cargar el MP4'; toast('No se pudo abrir el vídeo. Usa «Cargar otro vídeo».'); };
   }
 
   let audioCtx=null,audioSource=null,audioDestination=null;
@@ -401,7 +402,31 @@
   document.addEventListener('keydown',e=>{if(e.key==='Escape')showHelp(false);if(e.code==='Space'&&['INPUT','BUTTON','TEXTAREA'].indexOf(document.activeElement?.tagName)===-1){e.preventDefault();state.playing?pause():play();}});
   window.addEventListener('beforeunload',()=>{if(state.videoUrl)URL.revokeObjectURL(state.videoUrl);if(state.photoUrl)URL.revokeObjectURL(state.photoUrl);});
   sprite.onload=()=>{state.spriteReady=true;drawFrame();};
+  // Load our own first-party MP4 automatically on Safari/Chrome.
+  // The source carries an ordinary green chroma, transformed into alpha by
+  // applyKey() locally: no family photos or video frames leave the device.
+  function loadDefaultVideo(){
+    state.loadedVideo=false;
+    video.crossOrigin='anonymous';
+    video.preload='auto';
+    video.src=DEFAULT_VIDEO;
+    video.onloadeddata=()=>{
+      if(state.videoUrl)return; // user selected another video while downloading
+      try{keyer=makeKeyer();state.loadedVideo=true;}
+      catch(err){console.warn('Cannot initialize chroma video',err);state.loadedVideo=false;}
+      $('assetInfo').textContent=state.loadedVideo?'Vídeo animado integrado · 15 s':'Vídeo no compatible en este navegador';
+      $('chromaSection').hidden=!state.loadedVideo;
+      video.pause();drawFrame();
+    };
+    video.onerror=()=>{
+      if(state.videoUrl)return;
+      $('assetInfo').textContent='Vídeo no disponible; usa «Cargar otro vídeo»';
+      $('chromaSection').hidden=true;
+      console.warn('No se pudo cargar el MP4 integrado');
+    };
+    video.load();
+  }
   restoreSettings();$('sizeControl').value=Math.round(state.size*100);$('sizeValue').textContent=Math.round(state.size*100)+'%';$('durationControl').value=state.duration;$('magicControl').value=Math.round(state.magic*100);$('magicValue').textContent=Math.round(state.magic*100)+'%';
-  buildPath();resizeCanvas(720);setMode('draw');
-  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite'}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.0.2' };
+  buildPath();resizeCanvas(720);setMode('draw');loadDefaultVideo();
+  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite'}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.1.0' };
 })();
