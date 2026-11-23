@@ -190,12 +190,14 @@
   function editingPos(t){
     const p=at(t);
     if(state.playing||state.recording||!state.photo)return p;
-    if(Number.isFinite(p.x)&&p.x>=.20&&p.x<=.77&&p.y>=.20&&p.y<=.72)return p;
+    const safeXMin=.10+state.size*.56, safeXMax=.90-state.size*.56;
+    const safeYMin=.11+state.size*.50, safeYMax=.83-state.size*.50;
+    if(Number.isFinite(p.x)&&p.x>=safeXMin&&p.x<=safeXMax&&p.y>=safeYMin&&p.y<=safeYMax)return p;
     let best=null,bestCost=Infinity;
     for(let i=0;i<=48;i++){
       const candidate=at(state.duration*i/48);
       if(!Number.isFinite(candidate.x)||!Number.isFinite(candidate.y))continue;
-      if(candidate.x<.20||candidate.x>.77||candidate.y<.20||candidate.y>.72)continue;
+      if(candidate.x<safeXMin||candidate.x>safeXMax||candidate.y<safeYMin||candidate.y>safeYMax)continue;
       const score=Math.abs(candidate.x-.50)*1.5+Math.abs(candidate.y-.43)*.65;
       if(score<bestCost){bestCost=score;best=candidate;}
     }
