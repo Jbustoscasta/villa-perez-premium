@@ -1,5 +1,6 @@
 import { chromium, webkit } from 'playwright';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 const origin='http://127.0.0.1:4173/vuelo-magico/';
 const server=spawn('python3',['-m','http.server','4173','--bind','127.0.0.1'],{stdio:'ignore'});
@@ -85,6 +86,11 @@ try{
         await page.locator('#exportBtn').click();
         const download=await downloadPromise;
         assert.match(download.suggestedFilename(),/vuelo-raton-perez-.*\.(webm|mp4)$/);
+        const recording=await readFile(await download.path());
+        assert.ok(recording.length>18000,'exported video contains recorded frames');
+        const codecs=['A_OPUS','A_VORBIS','mp4a'].some(k=>recording.includes(Buffer.from(k)));
+        assert.ok(codecs,'export must include an AUDIO track, not just silent video');
+
         await page.waitForFunction(()=>document.getElementById('exportModal').hidden,{timeout:10000});
         assert.equal(await page.locator('#playBtn').isEnabled(),true,'play button reenabled after export');
         console.log(browserName,'export recorded',download.suggestedFilename());
