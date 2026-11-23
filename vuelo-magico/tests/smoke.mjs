@@ -15,12 +15,15 @@ try{
       page.on('pageerror',error=>errors.push(error.message));
       const response=await page.goto(origin,{waitUntil:'domcontentloaded'});
       assert.equal(response.status(),200);
-      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.4.0');
+      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.5.0');
       assert.equal(await page.locator('#scenePlayer').isVisible(),false);
+      assert.equal(await page.locator('#storyStepPhoto').getAttribute('aria-current'),'step','first experience step');
+      assert.equal(await page.locator('.magic-balloon-orb img').isVisible(),true,'official Pérez visual in magical welcome');
       const photoData=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=330;c.height=590;const x=c.getContext('2d');x.fillStyle='#213049';x.fillRect(0,0,330,590);x.fillStyle='#a88b74';x.fillRect(35,300,265,160);return c.toDataURL('image/png').split(',')[1];});
       await page.locator('#centerPhotoInput').setInputFiles({name:'habitacion.png',mimeType:'image/png',buffer:Buffer.from(photoData,'base64')});
       await page.waitForFunction(()=>window.VillaPerezFlight?.getState().photoLoaded);
       assert.equal(await page.locator('#scenePlayer').isVisible(),true,'play controls visible');
+      assert.equal(await page.locator('#storyStepFlight').getAttribute('aria-current'),'step','photo advances to flight phase');
       assert.equal(await page.locator('#sceneSizePanel').isVisible(),true,'size controls visible');
       assert.equal(await page.locator('#balloonTransform').isVisible(),true,'resize frame visible');
 
@@ -143,6 +146,7 @@ try{
 
         await page.waitForFunction(()=>document.getElementById('exportModal').hidden,{timeout:10000});
         assert.equal(await page.locator('#playBtn').isEnabled(),true,'play button reenabled after export');
+        assert.equal(await page.locator('#storyStepMemory').getAttribute('aria-current'),'step','final reminder step after export');
         console.log(browserName,'export recorded',download.suggestedFilename());
       }
       assert.deepEqual(errors,[],'uncaught JS errors');
