@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a1426">
+  <meta name="description" content="Haz una foto de la mesita, almohada o habitación y dibuja con el dedo el camino de las huellas del Ratón Pérez.">
+  <title>Huellas de Pérez · Modo padres · Ilusiono</title>
+  <link rel="icon" href="../vuelo-magico/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css?v=1">
+  <script defer src="./app.js?v=1"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="header">
+      <a class="brand" href="../vuelo-magico/" aria-label="Volver a Vuelo Mágico">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span><b>ILUSIONO</b><small>VILLA PÉREZ</small></span>
+      </a>
+      <a class="back-link" href="../vuelo-magico/"><span aria-hidden="true">←</span> Modo padres</a>
+    </header>
+    <main>
+      <div class="intro">
+        <span class="eyebrow">✧ UNA NUEVA PISTA DE SU VISITA</span>
+        <h1>Ha dejado <em>huellas.</em></h1>
+        <p>Haz una foto de la mesita de noche, la almohada o cualquier rincón. Dibuja con el dedo por dónde pasó el Ratón Pérez y aparecerán sus diminutos pasos.</p>
+        <div class="steps" aria-label="Tres pasos">
+          <span class="step is-active" id="step1"><b>01</b> Fotografía</span>
+          <span class="step" id="step2"><b>02</b> Dibuja</span>
+          <span class="step" id="step3"><b>03</b> Guarda</span>
+        </div>
+      </div>
+      <div class="workspace">
+        <section class="photo-panel" aria-labelledby="photo-heading">
+          <div class="panel-header">
+            <div><span class="panel-eyebrow">TU FOTO, SU PEQUEÑO SECRETO</span><h2 id="photo-heading">El rastro de Pérez</h2></div>
+            <span class="photo-privacy">◌ <span>Foto privada</span></span>
+          </div>
+          <div class="canvas-area" id="canvasArea">
+            <div class="placeholder" id="placeholder">
+              <div class="placeholder-art" aria-hidden="true">
+                <span class="moon">☾</span><span class="path-dot d1"></span><span class="path-dot d2"></span><span class="path-dot d3"></span><span class="path-dot d4"></span><span class="path-dot d5"></span><span class="path-dot d6"></span>
+              </div>
+              <strong>¿Por dónde habrá pasado?</strong>
+              <span>Empieza con una foto de la mesita, la almohada o el suelo.</span>
+            </div>
+            <canvas id="footprintCanvas" aria-label="Dibuja con el dedo sobre la fotografía el camino que seguirán las huellas" hidden></canvas>
+            <span class="canvas-hint" id="canvasHint" hidden>☝ Dibuja el recorrido con el dedo</span>
+          </div>
+          <div class="photo-toolbar">
+            <label class="button button-primary" for="cameraInput"><span aria-hidden="true">◉</span> Hacer foto</label>
+            <label class="button button-secondary" for="galleryInput"><span aria-hidden="true">▧</span> Elegir de Fotos</label>
+            <input id="cameraInput" class="visually-hidden" type="file" accept="image/*" capture="environment" aria-label="Hacer una fotografía">
+            <input id="galleryInput" class="visually-hidden" type="file" accept="image/*,.heic,.heif" aria-label="Elegir una fotografía guardada">
+          </div>
+          <p class="photo-note" id="photoNote">Consejo: fotografía de cerca una superficie donde unas huellas pequeñas se puedan distinguir. Evita los reflejos.</p>
+        </section>
+        <aside class="editor" id="editor" aria-labelledby="editor-heading">
+          <div class="editor-head"><span class="eyebrow">✦ EL TOQUE MÁGICO</span><h2 id="editor-heading">Sigue sus pasos</h2><p>Traza un camino con el dedo. La aplicación colocará automáticamente huellas alternas, orientadas siguiendo cada curva.</p></div>
+          <div id="emptyInstructions" class="instruction">
+            <span class="instruction-icon" aria-hidden="true">✧</span>
+            <div><b>Primero, la foto</b><span>Al elegirla podrás pintar un recorrido. No necesitas instalar nada.</span></div>
+          </div>
+          <div id="editorTools" hidden>
+            <div class="instruction instruction-ready"><span class="instruction-icon" aria-hidden="true">☝</span><div><b>Dibuja el camino de Pérez</b><span>Desliza el dedo lentamente sobre la foto. Puedes dibujar varios tramos.</span></div></div>
+            <div class="control-group"><h3>Aspecto de las huellas</h3>
+              <div class="palette" role="group" aria-label="Color y acabado de las huellas">
+                <button type="button" data-style="moon" class="palette-option is-selected" aria-pressed="true"><span class="swatch swatch-moon"></span> Polvo claro</button>
+                <button type="button" data-style="shadow" class="palette-option" aria-pressed="false"><span class="swatch swatch-shadow"></span> Sombra</button>
+                <button type="button" data-style="magic" class="palette-option" aria-pressed="false"><span class="swatch swatch-magic"></span> Mágicas</button>
+              </div>
+            </div>
+            <div class="control-group"><label class="range-heading" for="sizeRange">Tamaño de las patitas <output id="sizeValue">Pequeñas</output></label><input id="sizeRange" type="range" min="35" max="115" step="5" value="65"><div class="range-edges"><span>Muy pequeñas</span><span>Más visibles</span></div></div>
+            <div class="control-group"><label class="range-heading" for="opacityRange">Intensidad <output id="opacityValue">75 %</output></label><input id="opacityRange" type="range" min="30" max="100" step="5" value="75"><div class="range-edges"><span>Sutil</span><span>Marcada</span></div></div>
+            <div class="edit-actions"><button type="button" class="button button-quiet" id="undoBtn" disabled>↶ Deshacer tramo</button><button type="button" class="button button-quiet" id="clearBtn" disabled>✕ Borrar huellas</button></div>
+          </div>
+          <div class="export-panel">
+            <span class="export-eyebrow">✦ EL RECUERDO ESTÁ LISTO</span>
+            <p id="exportText">Cuando dibujes las huellas, podrás guardar la fotografía final para enseñarla mañana.</p>
+            <button type="button" class="button button-primary export-button" id="downloadBtn" disabled>↓ Guardar foto con huellas</button>
+            <button type="button" class="button button-secondary export-button" id="shareBtn" disabled>↗ Compartir foto</button>
+            <small>Sin subir la foto a ningún servidor. Solo se guarda si tú lo decides.</small>
+          </div>
+          <div class="status" id="status" role="status" aria-live="polite"></div>
+        </aside>
+      </div>
+      <p class="last-note">La noche deja pistas pequeñas. La magia grande la ponéis vosotros. ✦</p>
+    </main>
+    <footer class="footer">© Ilusiono · Villa Pérez <span>Una experiencia para madres y padres</span></footer>
+  </div>
+</body>
+</html>
