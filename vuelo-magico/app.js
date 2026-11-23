@@ -423,7 +423,7 @@
   overlay.addEventListener('pointercancel',endGesture);
 
 
-  /* CÁMARA MÁGICA: foto tomada en el propio dispositivo, sin uploads.
+  /* ASISTENTE DE FOTO: foto tomada en el propio dispositivo, sin uploads.
      El encuadre 9:16 coincide exactamente con object-fit:cover del visor. */
   const cameraShell=$('magicCamera');
   const cameraVideo=$('cameraStream');
@@ -647,7 +647,7 @@
       $('scenePill').textContent='LISTO PARA VOLAR';setJourneyStep(2);
       $('advancedSettings').open=false;
       $('zoomControl').value=100;$('zoomValue').textContent='100%';
-      drawFrame();toast(options.guided?'¡Foto lista! Pérez tiene un camino sugerido. Pulsa «Ver magia».':'¡Foto lista! Dibuja la ruta o pulsa «Ver magia».');
+      drawFrame();toast(options.guided?'Paso 2. Dibuja la ruta o prueba el recorrido sugerido con «Ver magia».':'Paso 2. Dibuja la ruta o pulsa «Ver magia».');
     };
     img.onload=install;
     img.onerror=()=>{
@@ -760,6 +760,9 @@
         const ext=blob.type.includes('mp4')?'mp4':'webm';const name=`vuelo-raton-perez-${new Date().toISOString().slice(0,10)}.${ext}`;
         state.exportBlob=blob;state.exportName=name;
         $('shareBtn').hidden=false;
+        $('prepareSpyBtn').disabled=false;
+        $('prepareSpyBtn').textContent='Activar Cámara Mágica';
+        $('prepareSpyStatus').hidden=true;
         saveBlob(blob,name);setJourneyStep(3);$('successModal').hidden=false;$('successDownload').focus({preventScroll:true});
         resizeCanvas(720);
       };
@@ -840,7 +843,7 @@
   });
   // Enlace privado padre → cámara del niño. No requiere servicios externos:
   // en esta etapa se almacena en el MISMO Safari/dispositivo mediante IndexedDB.
-  async function saveSpyVideoForMorning(){
+  async function activateChildCamera(){
     if(!state.exportBlob){toast('Primero crea el vídeo mágico.');return;}
     const btn=$('prepareSpyBtn');
     const status=$('prepareSpyStatus');
@@ -881,20 +884,21 @@
         base.videoBlob=null;
         await put(base);
       }
-      try{localStorage.setItem('vp_cam_espia_capture_changed_v1',String(Date.now()));}catch(_){}
+      localStorage.setItem('vp_cam_espia_mission_v1',String(Date.now()));
+      localStorage.setItem('vp_cam_espia_capture_changed_v1',String(Date.now()));
       status.hidden=false;
-      status.textContent='✦ Preparada: el botón «Ver» aparecerá mañana a partir de las 7:00. Solo en este mismo dispositivo y navegador.';
-      btn.textContent='✓ Cámara preparada para mañana';
+      status.textContent='Cámara Mágica activa. Ábrela esta noche para mostrar la misión. Mañana desde las 7:00 aparecerá «Ver» en el mismo navegador y dispositivo.';
+      btn.textContent='✓ Cámara Mágica activa';
       toast('¡Alerta mágica preparada para mañana!');
     }catch(error){
       console.warn('No se pudo preparar la cámara',error);
       status.hidden=false;status.textContent='No se ha guardado. Comprueba el espacio disponible y prueba de nuevo.';
-      btn.textContent='☾ Reintentar preparar Cámara Espía';
+      btn.textContent='Volver a intentar la activación';
       btn.disabled=false;
       toast('No se pudo guardar la grabación en este navegador.');
     }
   }
-  $('prepareSpyBtn').addEventListener('click',saveSpyVideoForMorning);
+  $('prepareSpyBtn').addEventListener('click',activateChildCamera);
   $('successShare').addEventListener('click',()=>{
     if(!state.exportBlob)return;
     $('shareBtn').click();
