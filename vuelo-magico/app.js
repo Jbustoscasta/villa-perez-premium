@@ -267,7 +267,10 @@
   }
   function updateBalloonControls(){
     const visible=!!state.photo&&!state.playing&&!state.recording;
-    transform.hidden=!visible; sizePanel.hidden=!visible;scenePlayer.hidden=!state.photo;
+    transform.hidden=!visible;sizePanel.hidden=!visible;scenePlayer.hidden=!state.photo;
+    $('sceneToolDock').hidden=!visible;$('lightBadge').hidden=!visible;
+    $('sceneQuickActions').hidden=!state.photo||state.recording;
+    $('mobileActionDock').hidden=!state.photo||state.recording;
     if(!visible)return;
     const pos=editingPos(state.time);
     const h=stage.clientHeight*state.size;
@@ -335,7 +338,7 @@
   }
 
   function resizeCanvas(width=720){const height=Math.round(width*16/9);canvas.width=width;canvas.height=height;overlay.width=width;overlay.height=height;drawFrame();}
-  function setMode(mode){state.mode=mode;stage.className=`stage mode-${mode}`;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('selected',b.dataset.mode===mode));const hints={draw:'Arrastra el dedo sobre la fotografía para dibujar el vuelo de Pérez.',target:'Toca la mesita donde está el diente. El globo reducirá su velocidad al acercarse.',pan:'Arrastra la imagen para encuadrar mejor la cama.'};setHint(hints[mode]);}
+  function setMode(mode){$('lightPopover').hidden=true;state.mode=mode;stage.className=`stage mode-${mode}`;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('selected',b.dataset.mode===mode));const hints={draw:'Arrastra el dedo sobre la fotografía para dibujar el vuelo de Pérez.',target:'Toca la mesita donde está el diente. El globo reducirá su velocidad al acercarse.',pan:'Arrastra la imagen para encuadrar mejor la cama.'};setHint(hints[mode]);}
 
   let gesture=null;
   function xy(ev){const r=overlay.getBoundingClientRect();return point(CLAMP((ev.clientX-r.left)/r.width,0,1),CLAMP((ev.clientY-r.top)/r.height,0,1));}
@@ -354,6 +357,7 @@
     }else if(gesture.mode==='pan'){
       state.panX=CLAMP(gesture.panX+(p.x-gesture.start.x),-.9,.9);
       state.panY=CLAMP(gesture.panY+(p.y-gesture.start.y),-.9,.9);
+      ambienceDirty=true;
     }
     gesture.last=p;drawFrame();
   });
@@ -375,9 +379,11 @@
       state.photoUrl=img.src.startsWith('blob:')?url:null;
       if(img.src!==url)URL.revokeObjectURL(url);
       state.photo=img;state.photoZoom=1;state.panX=0;state.panY=0;
+      ambienceDirty=true;lightSmoothed=null;
       status.textContent='Lista';status.classList.add('state-ready');
       $('photoTitle').textContent=(file.name||'Foto seleccionada').length>26?(file.name||'Fotografía').slice(0,24)+'…':(file.name||'Fotografía lista');
       $('emptyOverlay').hidden=true;overlay.classList.add('photo-ready');scenePlayer.hidden=false;updatePlayUi();
+      $('advancedSettings').open=false;
       $('zoomControl').value=100;$('zoomValue').textContent='100%';
       drawFrame();toast('¡Foto cargada! Ahora dibuja el recorrido con el dedo.');
     };
@@ -488,6 +494,7 @@
   const handlePhotoChoice=e=>{const file=e.target.files?.[0];if(file)openPhoto(file);e.target.value='';};
   $('photoInput').addEventListener('change',handlePhotoChoice);
   $('centerPhotoInput').addEventListener('change',handlePhotoChoice);
+  $('replacePhotoInput').addEventListener('change',handlePhotoChoice);
   if(/iPad|iPhone|iPod/.test(navigator.userAgent))$('iphoneInfo').hidden=false;
   $('videoInput').addEventListener('change',e=>openVideo(e.target.files[0]));
   // Native label + visible file input: no programmatic file-picker click on iOS.
@@ -519,11 +526,29 @@
   }
   $('durationControl').addEventListener('input',e=>{state.duration=+e.target.value;$('durationValue').textContent=e.target.value+' s';state.time=CLAMP(state.time,0,state.duration);buildPath();drawFrame();});
   $('magicControl').addEventListener('input',e=>{state.magic=+e.target.value/100;$('magicValue').textContent=e.target.value+'%';drawFrame();saveSettings();});
-  $('zoomControl').addEventListener('input',e=>{state.photoZoom=+e.target.value/100;$('zoomValue').textContent=e.target.value+'%';drawFrame();});
+  $('zoomControl').addEventListener('input',e=>{state.photoZoom=+e.target.value/100;$('zoomValue').textContent=e.target.value+'%';ambienceDirty=true;drawFrame();});
   $('chromaControl').addEventListener('input',e=>{state.chromaStrength=+e.target.value/100;$('chromaValue').textContent=e.target.value+'%';if(keyer)keyer.crop=null;drawFrame();});
   $('soundToggle').addEventListener('change',e=>{state.silent=!e.target.checked;if(state.silent)pauseAudio();else if(state.playing)startAudio();$('soundBtn').textContent=state.silent?'♫̸':'♫';});
   $('soundBtn').addEventListener('click',()=>{const t=$('soundToggle');t.checked=!t.checked;t.dispatchEvent(new Event('change'));});
+  $('lightBadge').addEventListener('click',()=>{$('lightPopover').hidden=!$('lightPopover').hidden;});
+  $('lightCloseBtn').addEventListener('click',()=>{$('lightPopover').hidden=true;});
+  $('lightAutoToggle').addEventListener('change',e=>{
+    state.autoLight=e.target.checked;lightSmoothed=null;drawFrame();saveSettings();
+    toast(state.autoLight?'Luz adaptada automáticamente a la fotografía.':'Ajusta ahora el brillo manualmente.');
+  });
+  $('lightControl').addEventListener('input',e=>{
+    state.lightManual=+e.target.value/100;lightSmoothed=null;
+    $('lightValue').textContent=e.target.value+'%';drawFrame();saveSettings();
+  });
+  $('soundLevel').addEventListener('input',e=>{
+    state.soundLevel=+e.target.value/100;
+    $('soundLevelValue').textContent=e.target.value+'%';
+    if(audioGain)audioGain.gain.setTargetAtTime(state.soundLevel,audioCtx.currentTime,.025);
+    saveSettings();
+  });
   $('exportBtn').addEventListener('click',exportVideo);
+  $('quickExportBtn').addEventListener('click',exportVideo);
+  $('mobileExportBtn').addEventListener('click',exportVideo);
   $('snapshotBtn').addEventListener('click',saveSnapshot);
   $('shareBtn').addEventListener('click',async()=>{
     if(!state.exportBlob)return;
@@ -568,7 +593,14 @@
     };
     video.load();
   }
-  updatePlayUi();restoreSettings();$('sizeControl').value=Math.round(state.size*100);$('sizeValue').textContent=Math.round(state.size*100)+'%';$('durationControl').value=state.duration;$('magicControl').value=Math.round(state.magic*100);$('magicValue').textContent=Math.round(state.magic*100)+'%';
+  updatePlayUi();restoreSettings();
+  $('lightAutoToggle').checked=state.autoLight;
+  $('lightControl').value=Math.round(state.lightManual*100);
+  $('lightValue').textContent=Math.round(state.lightManual*100)+'%';
+  $('soundLevel').value=Math.round(state.soundLevel*100);
+  $('soundLevelValue').textContent=Math.round(state.soundLevel*100)+'%';
+  if(window.matchMedia?.('(min-width:831px)').matches)$('advancedSettings').open=true;
+  $('sizeControl').value=Math.round(state.size*100);$('sizeValue').textContent=Math.round(state.size*100)+'%';$('durationControl').value=state.duration;$('magicControl').value=Math.round(state.magic*100);$('magicValue').textContent=Math.round(state.magic*100)+'%';
   buildPath();resizeCanvas(720);setMode('draw');loadDefaultVideo();
-  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite'}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.2.0' };
+  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite'}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.3.0' };
 })();
