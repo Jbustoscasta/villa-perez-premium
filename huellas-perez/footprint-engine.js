@@ -73,13 +73,13 @@
  }
  function texturedOval(ctx,x,y,rx,ry,angle,index,effect,alpha){
    const material=types[effect];
-   ctx.save();ctx.globalAlpha*=alpha;
+   ctx.save();const inheritedAlpha=ctx.globalAlpha;ctx.globalAlpha=inheritedAlpha*alpha;
    // Base difusa: borde irregular y humedad con sombra suave en la superficie.
    ctx.fillStyle=material.base;shape(ctx,x,y,rx,ry,angle);
-   ctx.fillStyle=material.toe;ctx.globalAlpha*=.35;
+   ctx.fillStyle=material.toe;ctx.globalAlpha=inheritedAlpha*alpha*.35;
    shape(ctx,x-rx*.16,y-ry*.1,rx*.68,ry*.64,angle);
    // Puntos de grano y bordes rotos (semillas constantes para que no parpadeen).
-   ctx.globalAlpha=Math.min(.95,Math.max(.13,alpha*.58));
+   ctx.globalAlpha=clamp(inheritedAlpha*alpha*.58,0,1);
    for(let k=0;k<9;k++){
      const a=rand(index,k+101)*Math.PI*2,r=Math.sqrt(rand(index,k+140))*.96;
      const u=Math.cos(a)*r*rx,v=Math.sin(a)*r*ry;
@@ -101,17 +101,18 @@
    ctx.rotate(angle+(rand(index,1)-.5)*.17);
    ctx.scale(unit,unit);
    ctx.globalAlpha=clamp(opacity*material.alpha*(.75+rand(index,2)*.35)*(isSubtle?.66:1),0,1);
-   if(isGlow){ctx.shadowColor='rgba(255,212,132,.75)';ctx.shadowBlur=.42;ctx.shadowOffsetY=0;}
-   else if(isCold){ctx.shadowColor='rgba(45,66,90,.65)';ctx.shadowBlur=.20;ctx.shadowOffsetY=.09;}
-   else if(isWet){ctx.shadowColor='rgba(32,28,24,.55)';ctx.shadowBlur=.17;ctx.shadowOffsetY=.12;}
-   else{ctx.shadowColor='rgba(15,19,28,.35)';ctx.shadowBlur=.12;ctx.shadowOffsetY=.07;}
+   const inheritedFootAlpha=ctx.globalAlpha;
+   if(isGlow){ctx.shadowColor='rgba(255,212,132,.75)';ctx.shadowBlur=unit*.3;ctx.shadowOffsetY=0;}
+   else if(isCold){ctx.shadowColor='rgba(45,66,90,.65)';ctx.shadowBlur=unit*.12;ctx.shadowOffsetY=unit*.03;}
+   else if(isWet){ctx.shadowColor='rgba(32,28,24,.55)';ctx.shadowBlur=unit*.13;ctx.shadowOffsetY=unit*.03;}
+   else{ctx.shadowColor='rgba(15,19,28,.35)';ctx.shadowBlur=unit*.08;ctx.shadowOffsetY=unit*.02;}
    // Escala al tamaño de una impresión: almohadilla y cuatro o cinco dedos, nunca símbolo emoji.
    if(isCold){
      ctx.fillStyle=material.edge;ctx.globalAlpha*=.5;
-     shape(ctx,0,.14,.32,.37);ctx.globalAlpha=clamp(opacity*.8,0,1);
+     shape(ctx,0,.14,.32,.37);ctx.globalAlpha=inheritedFootAlpha;
    }else if(isWet){
      ctx.fillStyle=material.edge;ctx.globalAlpha*=.26;shape(ctx,.02,.15,.33,.38);
-     ctx.globalAlpha=clamp(opacity*material.alpha,0,1);
+     ctx.globalAlpha=inheritedFootAlpha;
    }
    texturedOval(ctx,0,.16,.22,.27,-.12,index,effect,.93);
    const toes=[[-.24,-.13,.075,.13,-.32],[-.095,-.285,.072,.125,-.12],[.074,-.303,.072,.13,.05],[.232,-.18,.073,.12,.28]];
@@ -127,11 +128,11 @@
    for(let j=0;j<grains;j++){
      const a=rand(index,j+71)*Math.PI*2,r=.28+rand(index,j+83)*(effect==='mud'?.5:.31);
      const gx=Math.cos(a)*r,gy=Math.sin(a)*r;
-     ctx.globalAlpha=clamp(opacity*(isCold?.27:.14)*(1+rand(index,j+23)),0,.6);
+     ctx.globalAlpha=clamp(inheritedFootAlpha*(isCold?.27:.14)*(1+rand(index,j+23)),0,.6);
      shape(ctx,gx,gy,.008+rand(index,j+94)*.023,.008+rand(index,j+108)*.024);
    }
    if(isWet) {
-     ctx.globalAlpha=opacity*.09;ctx.strokeStyle=material.edge;ctx.lineWidth=.027;
+     ctx.globalAlpha=inheritedFootAlpha*.12;ctx.strokeStyle=material.edge;ctx.lineWidth=.027;
      ctx.beginPath();ctx.moveTo(-.22,.24);ctx.quadraticCurveTo(-.17,.53,-.1,.61);ctx.stroke();
    }
    if(isGlow){
