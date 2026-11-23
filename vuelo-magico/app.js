@@ -1,5 +1,5 @@
 /*
- * VILLA PÉREZ — El vuelo mágico | v1.1.0
+ * VILLA PÉREZ — El vuelo mágico | v1.2.0
  * Static, local-first editor. No API keys, third-party SDKs or server uploads.
  * The user controls a curved motion path; a chroma-keyed local video or official
  * transparent art follows it.  Video compositing and export happen in the browser.
@@ -10,6 +10,7 @@
   const canvas = $('sceneCanvas'), ctx = canvas.getContext('2d', { alpha: false });
   const overlay = $('overlayCanvas'), octx = overlay.getContext('2d');
   const stage = $('stage'), video = $('assetVideo'), sound = $('magicAudio');
+  const transform = $('balloonTransform'), sizePanel = $('sceneSizePanel'), scenePlayer = $('scenePlayer');
   const sprite = new Image(); sprite.src = 'assets/perez-globo-iphone.webp';
   const DEFAULT_VIDEO = 'assets/raton-perez-vuelo.mp4?v=110';
   const W = () => canvas.width, H = () => canvas.height;
@@ -33,7 +34,7 @@
   const formatTime = sec=>`00:${String(Math.floor(sec)).padStart(2,'0')}`;
   const setHint = msg=>$('contextHint').innerHTML=`✦ <span>${msg}</span>`;
   const saveSettings = () => {try {localStorage.setItem('villaperez-flight-v1', JSON.stringify({path:state.path,target:state.target,duration:state.duration,size:state.size,magic:state.magic}));} catch {} };
-  function restoreSettings() {try {const a=JSON.parse(localStorage.getItem('villaperez-flight-v1')||'null');if(!a)return;if(Array.isArray(a.path)&&a.path.length>1&&a.path.length<3000)state.path=a.path.filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));if(a.target&&Number.isFinite(a.target.x))state.target=a.target;if(Number.isFinite(a.duration))state.duration=CLAMP(a.duration,8,30);if(Number.isFinite(a.size))state.size=CLAMP(a.size,.1,.43);if(Number.isFinite(a.magic))state.magic=CLAMP(a.magic,0,1);}catch{} }
+  function restoreSettings() {try {const a=JSON.parse(localStorage.getItem('villaperez-flight-v1')||'null');if(!a)return;if(Array.isArray(a.path)&&a.path.length>1&&a.path.length<3000){const safe=a.path.filter(p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y));if(safe.length>=2)state.path=safe;}if(a.target&&Number.isFinite(a.target.x))state.target=a.target;if(Number.isFinite(a.duration))state.duration=CLAMP(a.duration,8,30);if(Number.isFinite(a.size))state.size=CLAMP(a.size,.1,.43);if(Number.isFinite(a.magic))state.magic=CLAMP(a.magic,0,1);}catch{} }
   function setProgressUi() {$('scrub').value=Math.round(state.time/state.duration*1000);$('elapsed').textContent=formatTime(state.time);$('totalTime').textContent=formatTime(state.duration);$('durationValue').textContent=`${state.duration} s`; }
 
   /* Chaikin corner cutting + uniform-distance Catmull-style resampling. */
@@ -183,8 +184,52 @@
       return keyCanvas;
     }catch(err){console.warn('Chroma frame not ready',err);return null;}
   }
+
+  // Edit mode shows a reference balloon inside the photo even when the real
+  // flight route begins outside the frame. Playback/export follow exact path.
+  function editingPos(t){
+    const p=at(t);
+    if(state.playing||state.recording||!state.photo)return p;
+    if(Number.isFinite(p.x)&&p.x>=.20&&p.x<=.77&&p.y>=.20&&p.y<=.72)return p;
+    let best=null,bestCost=Infinity;
+    for(let i=0;i<=48;i++){
+      const candidate=at(state.duration*i/48);
+      if(!Number.isFinite(candidate.x)||!Number.isFinite(candidate.y))continue;
+      if(candidate.x<.20||candidate.x>.77||candidate.y<.20||candidate.y>.72)continue;
+      const score=Math.abs(candidate.x-.50)*1.5+Math.abs(candidate.y-.43)*.65;
+      if(score<bestCost){bestCost=score;best=candidate;}
+    }
+    return best||point(.5,.42);
+  }
+  function updateBalloonControls(){
+    const visible=!!state.photo&&!state.playing&&!state.recording;
+    transform.hidden=!visible; sizePanel.hidden=!visible;scenePlayer.hidden=!state.photo;
+    if(!visible)return;
+    const pos=editingPos(state.time);
+    const h=stage.clientHeight*state.size;
+    const aspect=state.loadedVideo&&keyer?.crop?keyer.crop.w/keyer.crop.h:
+      sprite.naturalHeight?sprite.naturalWidth/sprite.naturalHeight:.59;
+    transform.style.width=Math.max(34,h*aspect)+'px';
+    transform.style.height=h+'px';
+    transform.style.left=pos.x*100+'%';
+    transform.style.top=pos.y*100+'%';
+    transform.style.transform='translate(-50%,-50%)';
+  }
+  function setSize(value){
+    state.size=CLAMP(Number(value)/100,.1,.43);
+    const n=Math.round(state.size*100);
+    $('sizeControl').value=n;$('sizeValue').textContent=n+'%';
+    drawFrame();saveSettings();
+  }
+  function updatePlayUi(){
+    const btn=$('playBtn');
+    btn.textContent=state.playing?'Ⅱ Pausa':'▶ Ver vuelo';
+    btn.setAttribute('aria-label',state.playing?'Pausar vuelo':'Reproducir vuelo');
+    btn.disabled=state.recording||!state.photo;
+  }
+
   function drawBalloon(t) {
-    const pos=at(t);
+    const pos=editingPos(t);
     const bob=.0045*Math.sin(t*2*Math.PI/7.2),swing=Math.sin(t*2*Math.PI/6.1)*.022;
     const x=(pos.x)*W(),y=(pos.y+bob)*H();
     const spriteHeight=H()*state.size;
@@ -201,7 +246,7 @@
   }
   function drawFrame(t=state.time) {
     ctx.save();ctx.clearRect(0,0,W(),H());drawBackdrop();drawParticles(t);drawBalloon(t);ctx.restore();
-    drawOverlay();setProgressUi();
+    drawOverlay();setProgressUi();updateBalloonControls();
   }
   function drawOverlay() {
     const w=overlay.width,h=overlay.height;octx.clearRect(0,0,w,h);
@@ -264,7 +309,7 @@
       state.photo=img;state.photoZoom=1;state.panX=0;state.panY=0;
       status.textContent='Lista';status.classList.add('state-ready');
       $('photoTitle').textContent=(file.name||'Foto seleccionada').length>26?(file.name||'Fotografía').slice(0,24)+'…':(file.name||'Fotografía lista');
-      $('emptyOverlay').hidden=true;overlay.classList.add('photo-ready');
+      $('emptyOverlay').hidden=true;overlay.classList.add('photo-ready');scenePlayer.hidden=false;updatePlayUi();
       $('zoomControl').value=100;$('zoomValue').textContent='100%';
       drawFrame();toast('¡Foto cargada! Ahora dibuja el recorrido con el dedo.');
     };
@@ -306,19 +351,19 @@
   }
   async function startAudio(){if(state.silent)return;try {await initAudio();sound.currentTime=0;await sound.play();}catch(e){console.warn('audio unavailable',e);}}
   function pauseAudio(){sound.pause();video.pause();}
-  function pause(){if(!state.playing)return;state.time=CLAMP((performance.now()-state.startedAt)/1000,0,state.duration);state.playing=false;cancelAnimationFrame(state.frameRequest);pauseAudio();$('playBtn').textContent='▶';$('scenePill').textContent='EDITANDO';drawFrame();}
+  function pause(){if(!state.playing)return;state.time=CLAMP((performance.now()-state.startedAt)/1000,0,state.duration);state.playing=false;cancelAnimationFrame(state.frameRequest);pauseAudio();updatePlayUi();$('scenePill').textContent='EDITANDO';drawFrame();}
   async function play(fromZero=false){
     if(state.recording)return;
     if(fromZero||state.time>=state.duration-.05)state.time=0;
     if(state.playing)return;
     state.playing=true;state.startedAt=performance.now()-state.time*1000;
-    $('playBtn').textContent='Ⅱ';$('scenePill').textContent='REPRODUCIENDO';
+    updatePlayUi();$('scenePill').textContent='REPRODUCIENDO';
     // Safari puede ignorar preload=auto: arrancar el MP4 desde el toque real del padre.
     if(state.loadedVideo||video.src){try{if(state.loadedVideo)video.currentTime=state.time%Math.max(video.duration||15,1);await video.play();}catch(e){console.warn('video play',e);}}
     await startAudio();ticker();
   }
   function ticker(){if(!state.playing)return;state.time=Math.min(state.duration,(performance.now()-state.startedAt)/1000);drawFrame();
-    if(state.time>=state.duration){state.playing=false;pauseAudio();$('playBtn').textContent='▶';$('scenePill').textContent=state.recording?'EXPORTANDO':'EDITANDO';
+    if(state.time>=state.duration){state.playing=false;pauseAudio();updatePlayUi();$('scenePill').textContent=state.recording?'EXPORTANDO':'EDITANDO';
       if(state.recording&&state.recorder?.state==='recording')setTimeout(()=>{if(state.recorder?.state==='recording')state.recorder.stop();},130);
       return;
     }
@@ -356,7 +401,7 @@
         resizeCanvas(720);
       };
       rec.start(250);state.time=0;state.playing=true;state.startedAt=performance.now();
-      $('playBtn').textContent='Ⅱ';$('scenePill').textContent='EXPORTANDO';
+      updatePlayUi();$('scenePill').textContent='EXPORTANDO';
       if(state.loadedVideo||video.src){try{if(state.loadedVideo)video.currentTime=0;await video.play();}catch(e){console.warn('video asset',e);}}
       await startAudio();state.startedAt=performance.now();ticker();
     }catch(err){console.error(err);state.recording=false;$('exportModal').hidden=true;resizeCanvas(720);toast('No se pudo exportar el vídeo. Prueba otro navegador o calidad HD.');}
@@ -378,7 +423,26 @@
   $('playBtn').addEventListener('click',()=>state.playing?pause():play());
   $('restartBtn').addEventListener('click',()=>{if(state.playing)pause();state.time=0;try{video.currentTime=0;}catch{}drawFrame();});
   $('scrub').addEventListener('input',e=>{if(state.playing)pause();state.time=+e.target.value/1000*state.duration;if(state.loadedVideo&&video.readyState>=1){try{video.currentTime=state.time%Math.max(video.duration||15,1)}catch{}}drawFrame();});
-  $('sizeControl').addEventListener('input',e=>{state.size=+e.target.value/100;$('sizeValue').textContent=e.target.value+'%';drawFrame();saveSettings();});
+  $('sizeControl').addEventListener('input',e=>setSize(e.target.value));
+  $('sizeMinus').addEventListener('click',()=>setSize(Math.round(state.size*100)-2));
+  $('sizePlus').addEventListener('click',()=>setSize(Math.round(state.size*100)+2));
+  let resizeGesture=null;
+  const handle=$('resizeHandle');
+  handle.addEventListener('pointerdown',ev=>{
+    if(!state.photo||state.playing||state.recording)return;
+    ev.preventDefault();ev.stopPropagation();
+    handle.setPointerCapture(ev.pointerId);
+    resizeGesture={id:ev.pointerId,startY:ev.clientY,startX:ev.clientX,startSize:state.size};
+  });
+  handle.addEventListener('pointermove',ev=>{
+    if(!resizeGesture||resizeGesture.id!==ev.pointerId)return;
+    ev.preventDefault();ev.stopPropagation();
+    const delta=(ev.clientY-resizeGesture.startY)+(ev.clientX-resizeGesture.startX)*.35;
+    setSize(Math.round(CLAMP(resizeGesture.startSize+delta/Math.max(stage.clientHeight,1),.1,.43)*100));
+  });
+  for(const kind of ['pointerup','pointercancel','lostpointercapture']){
+    handle.addEventListener(kind,ev=>{if(resizeGesture?.id===ev.pointerId){resizeGesture=null;saveSettings();}});
+  }
   $('durationControl').addEventListener('input',e=>{state.duration=+e.target.value;$('durationValue').textContent=e.target.value+' s';state.time=CLAMP(state.time,0,state.duration);buildPath();drawFrame();});
   $('magicControl').addEventListener('input',e=>{state.magic=+e.target.value/100;$('magicValue').textContent=e.target.value+'%';drawFrame();saveSettings();});
   $('zoomControl').addEventListener('input',e=>{state.photoZoom=+e.target.value/100;$('zoomValue').textContent=e.target.value+'%';drawFrame();});
@@ -429,5 +493,5 @@
   }
   restoreSettings();$('sizeControl').value=Math.round(state.size*100);$('sizeValue').textContent=Math.round(state.size*100)+'%';$('durationControl').value=state.duration;$('magicControl').value=Math.round(state.magic*100);$('magicValue').textContent=Math.round(state.magic*100)+'%';
   buildPath();resizeCanvas(720);setMode('draw');loadDefaultVideo();
-  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite'}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.1.0' };
+  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite'}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.2.0' };
 })();
