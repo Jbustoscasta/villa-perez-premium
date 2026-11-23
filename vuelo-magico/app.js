@@ -345,7 +345,20 @@
     if(pts.length>1) {
       octx.save();octx.beginPath();octx.moveTo(pts[0].x*w,pts[0].y*h);
       for(let i=1;i<pts.length;i++)octx.lineTo(pts[i].x*w,pts[i].y*h);
-      octx.lineWidth=Math.max(2,w*.003);octx.setLineDash([w*.012,w*.01]);octx.strokeStyle='#ffe4a4';octx.shadowBlur=10;octx.shadowColor='#dda66a';octx.stroke();octx.setLineDash([]);
+      // Brillos puntuales: una estela de estrellas, no una ruta técnica.
+      const glow=octx.createLinearGradient(0,0,w,h);
+      glow.addColorStop(0,'#c3c6ff');glow.addColorStop(.5,'#ffe2a4');glow.addColorStop(1,'#a6e4dc');
+      octx.lineWidth=Math.max(1.7,w*.0025);
+      octx.lineCap='round';octx.setLineDash([Math.max(1,w*.0022),Math.max(8,w*.014)]);
+      octx.strokeStyle=glow;octx.shadowBlur=13;octx.shadowColor='#f4cf94';
+      octx.stroke();octx.setLineDash([]);
+      const stride=Math.max(1,Math.floor(pts.length/27));
+      octx.shadowBlur=9;octx.fillStyle='#ffe8bb';
+      for(let j=stride;j<pts.length-stride;j+=stride){
+        const p=pts[j];if(p.x<0||p.x>1||p.y<0||p.y>1)continue;
+        const x=p.x*w,y=p.y*h,rad=Math.max(2,w*.002*(1+(j%3)*.3));
+        octx.beginPath();octx.arc(x,y,rad,0,2*Math.PI);octx.fill();
+      }
       for(const [p,label] of [[pts[0],'INICIO'],[pts[pts.length-1],'FIN']]){
         const x=p.x*w,y=p.y*h;if(x<0||x>w||y<0||y>h)continue;
         octx.fillStyle='#f5d49a';octx.beginPath();octx.arc(x,y,w*.009,0,Math.PI*2);octx.fill();
