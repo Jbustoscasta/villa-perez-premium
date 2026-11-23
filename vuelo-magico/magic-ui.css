@@ -506,3 +506,18 @@ body::before{
  top:51%;height:52%;max-width:41%;object-fit:contain;
  transform:translate(-50%,-50%);opacity:.45;
 }
+
+
+/* Remates de usabilidad tras revisar el editor móvil real. */
+.magic-balloon-orb{margin-bottom:15px!important}
+@media(max-width:830px){
+ .toast{
+   bottom:calc(82px + env(safe-area-inset-bottom));
+   max-width:min(90vw,340px);font-size:11px;
+   line-height:1.45;padding:10px 14px;
+   border:1px solid rgba(251,231,194,.8);
+ }
+}
+@media(max-height:645px) and (orientation:portrait){
+ .magic-balloon-orb{margin-bottom:6px!important}
+}
