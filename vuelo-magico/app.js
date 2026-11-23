@@ -12,7 +12,7 @@
   const stage = $('stage'), video = $('assetVideo'), sound = $('magicAudio');
   const transform = $('balloonTransform'), sizePanel = $('sceneSizePanel'), scenePlayer = $('scenePlayer');
   const sprite = new Image(); sprite.src = 'assets/perez-globo-iphone.webp';
-  const DEFAULT_VIDEO = 'assets/raton-perez-vuelo.mp4?v=110';
+  const DEFAULT_VIDEO = 'assets/raton-perez-vuelo.mp4?v=minimax8';
   const W = () => canvas.width, H = () => canvas.height;
   const CLAMP = (x,a,b) => Math.max(a,Math.min(b,x));
   const lerp = (a,b,t) => a+(b-a)*t;
@@ -933,7 +933,7 @@
       if(state.videoUrl)return; // user selected another video while downloading
       try{keyer=makeKeyer();state.loadedVideo=true;}
       catch(err){console.warn('Cannot initialize chroma video',err);state.loadedVideo=false;}
-      $('assetInfo').textContent=state.loadedVideo?'Vídeo animado integrado · 15 s':'Vídeo no compatible en este navegador';
+      $('assetInfo').textContent=state.loadedVideo?'Vídeo animado integrado · 8 s':'Vídeo no compatible en este navegador';
       $('chromaSection').hidden=!state.loadedVideo;
       if(!state.playing&&!state.recording)video.pause();drawFrame();
     };
