@@ -69,4 +69,4 @@ try{
     }
     await browser.close();
   }
-}catch(err){console.error(err);process.exitCode=1;}finally{server.kill('SIGTERM');}
+}catch(err){console.error(err);server.kill('SIGTERM');process.exit(1);}finally{server.kill('SIGTERM');}
