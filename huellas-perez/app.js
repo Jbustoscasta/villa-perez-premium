@@ -57,7 +57,7 @@
       ctx.setLineDash([5,12]);ctx.stroke();ctx.restore();
     }
   }
-  function scheduleRender(){if(!state.frame&&!state.exporting)state.frame=requestAnimationFrame(()=>render(true));}
+  function scheduleRender(){if(!state.frame&&!state.exporting)state.frame=requestAnimationFrame(()=>{state.frame=0;if(!state.exporting)render(true);});}
   function selectGroup(attr,value){
     document.querySelectorAll('[data-'+attr+']').forEach(button=>{
       const active=button.dataset[attr]===value;
