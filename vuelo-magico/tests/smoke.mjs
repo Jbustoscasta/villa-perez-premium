@@ -147,6 +147,12 @@ try{
         await page.waitForFunction(()=>document.getElementById('exportModal').hidden,{timeout:10000});
         assert.equal(await page.locator('#playBtn').isEnabled(),true,'play button reenabled after export');
         assert.equal(await page.locator('#storyStepMemory').getAttribute('aria-current'),'step','final reminder step after export');
+        assert.equal(await page.locator('#successModal').isVisible(),true,'magical completion screen shown');
+        assert.equal(await page.locator('#successShare').isVisible(),true,'sharing accessible without scrolling');
+        assert.equal(await page.locator('#successDownload').isVisible(),true,'explicit download action available');
+        await page.locator('#successClose').click();
+        assert.equal(await page.locator('#successModal').isVisible(),false,'completion screen can be closed');
+
         console.log(browserName,'export recorded',download.suggestedFilename());
       }
       assert.deepEqual(errors,[],'uncaught JS errors');
