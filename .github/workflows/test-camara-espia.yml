@@ -1,0 +1,100 @@
+name: Cámara Espía Pérez — QA móvil
+on:
+  push:
+    paths:
+      - 'camara-espia/**'
+      - '.github/workflows/test-camara-espia.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install --with-deps chromium webkit
+      - name: Comprobar sintaxis
+        run: node --check camara-espia/app.js
+      - name: Probar cámara ficticia y alerta dinámica en móvil
+        run: |
+          node <<'NODE'
+          const {chromium,webkit}=require('playwright');
+          const assert=require('node:assert/strict');
+          const {spawn}=require('child_process');
+          const srv=spawn('python3',['-m','http.server','4177','--bind','127.0.0.1'],{stdio:'ignore'});
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{
+            const base='http://127.0.0.1:4177/camara-espia/';
+            for(let i=0;i<40;i++){try{if((await fetch(base)).ok)break;}catch{}await sleep(250);}
+            for(const [name,engine] of [['Chromium',chromium],['WebKit',webkit]]){
+              const browser=await engine.launch({headless:true,args:name==='Chromium'?['--no-sandbox']:[]});
+              try{
+                for(const dimensions of [{width:375,height:667},{width:390,height:844}]){
+                  const ctx=await browser.newContext({viewport:dimensions,isMobile:true,hasTouch:true,deviceScaleFactor:1});
+                  const page=await ctx.newPage(),errors=[];
+                  page.on('pageerror',err=>errors.push(err.message));
+                  await page.addInitScript(()=>{
+                    Object.defineProperty(navigator,'mediaDevices',{configurable:true,
+                      value:{getUserMedia:async()=>{const e=new Error('Permiso denegado');e.name='NotAllowedError';throw e;}}});
+                  });
+                  const response=await page.goto(base,{waitUntil:'domcontentloaded'});
+                  assert.equal(response.status(),200);
+                  await page.waitForFunction(()=>window.VillaPerezSpy?.version==='1.0.0');
+                  assert.equal(await page.locator('.illustration').evaluate(e=>e.naturalWidth),941);
+                  assert.equal(await page.locator('#alertText').innerText(),'Aquí se almacenará la grabación.');
+                  assert.equal(await page.locator('#viewCapture').isVisible(),false);
+                  assert.equal(await page.locator('#viewCapture').evaluate(e=>getComputedStyle(e).display),'none');
+                  const artWidth=await page.locator('#artboard').evaluate(e=>e.getBoundingClientRect().width);
+                  assert.ok(artWidth<=dimensions.width);
+                  await page.locator('#missionButton').click();
+                  await page.waitForTimeout(1100);
+                  assert.equal(await page.locator('#liveViewport').isVisible(),true);
+                  assert.equal(await page.locator('#hudTimer').innerText()!=='00:00:00',true);
+                  assert.equal(await page.locator('#viewCapture').isVisible(),false);
+                  await page.reload({waitUntil:'domcontentloaded'});
+                  await page.waitForFunction(()=>window.VillaPerezSpy?.version==='1.0.0');
+                  assert.equal((await page.evaluate(()=>window.VillaPerezSpy.getStatus())).missionActive,true);
+                  // Parent saves the real video into private per-browser IndexedDB.
+                  await page.evaluate(async()=>{
+                    const blob=await (await fetch('assets/demo-captura.mp4')).blob();
+                    await window.VillaPerezSpy.publishCapture({videoBlob:blob,availableAt:Date.now()+1000});
+                  });
+                  assert.equal(await page.locator('#viewCapture').isVisible(),false);
+                  await page.waitForTimeout(1150);
+                  await page.evaluate(()=>window.VillaPerezSpy.refreshCapture());
+                  await page.waitForFunction(()=>!document.getElementById('viewCapture').hidden);
+                  assert.equal(await page.locator('#alertText').innerText(),'La cámara ha captado algo...');
+                  assert.equal(await page.locator('#viewCapture').innerText(),'Ver');
+                  await page.locator('#viewCapture').click();
+                  assert.equal(await page.locator('#captureModal').isVisible(),true);
+                  assert.equal(await page.locator('#photoLink').isVisible(),false);
+                  assert.equal(await page.locator('#letterLink').isVisible(),false);
+                  await page.locator('#doneCapture').click();
+                  assert.equal(await page.locator('#captureModal').isVisible(),false);
+                  await page.evaluate(()=>window.VillaPerezSpy.clearCapture());
+                  assert.equal(await page.locator('#viewCapture').isVisible(),false);
+                  assert.deepEqual(errors,[]);
+                  console.log('PASS',name,dimensions,'fake REC, timer, private storage, ready/empty, Ver');
+                  if(name==='Chromium'&&dimensions.width===390){
+                    await page.goto(base+'?demo=ready');
+                    await page.waitForFunction(()=>!document.getElementById('viewCapture').hidden);
+                    console.log('SPY_READY_BEGIN'+(await page.screenshot({type:'jpeg',quality:62})).toString('base64')+'SPY_READY_END');
+                    await page.goto(base+'?demo=empty');
+                    await page.waitForFunction(()=>window.VillaPerezSpy?.version==='1.0.0');
+                    console.log('SPY_EMPTY_BEGIN'+(await page.screenshot({type:'jpeg',quality:62})).toString('base64')+'SPY_EMPTY_END');
+                  }
+                  await ctx.close();
+                }
+              } finally{await browser.close();}
+            }
+          })().then(()=>console.log('ALL_SPY_TESTS_PASSED')).catch(err=>{
+            console.error(err);process.exitCode=1;
+          }).finally(()=>srv.kill('SIGTERM'));
+          NODE
