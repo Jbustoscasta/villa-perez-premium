@@ -537,6 +537,6 @@ body::before{
 #cameraPreview:not([hidden]) + .camera-guide .camera-luminous-thread,
 #cameraPreview:not([hidden]) + .camera-guide .camera-lower-label{display:none}
 #cameraPreview:not([hidden]) + .camera-guide .camera-ghost-balloon{
-  opacity:.38;animation:none;transform:translate(-50%,-50%);
+  opacity:.56;animation:none;transform:translate(-50%,-50%);
   filter:grayscale(.55) brightness(1.25) drop-shadow(0 0 5px #f6d492);
 }

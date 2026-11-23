@@ -1,5 +1,5 @@
 /*
- * VILLA PÉREZ — El vuelo mágico | v1.5.1
+ * VILLA PÉREZ — El vuelo mágico | v1.5.2
  * Static, local-first editor. No API keys, third-party SDKs or server uploads.
  * The user controls a curved motion path; a chroma-keyed local video or official
  * transparent art follows it.  Video compositing and export happen in the browser.
@@ -394,7 +394,7 @@
   }
 
   function drawFrame(t=state.time) {
-    ctx.save();ctx.clearRect(0,0,W(),H());drawBackdrop();if(state.photo){exposureFor(t);drawParticles(t);drawBalloon(t);if(state.recording)drawMagicCameraHud(t);}ctx.restore();
+    ctx.save();ctx.clearRect(0,0,W(),H());drawBackdrop();if(state.photo){exposureFor(t);drawParticles(t);drawBalloon(t);if(state.playing||state.recording)drawMagicCameraHud(t);}ctx.restore();
     drawOverlay();setProgressUi();updateBalloonControls();
   }
   function drawOverlay() {
@@ -645,7 +645,7 @@
       $('cameraGuide').hidden=false;
       $('cameraReviewLabel').hidden=false;
       setCameraStep(2,'Mira cómo ha quedado la foto');
-      $('cameraTip').textContent='Comprueba que el globo de muestra tiene espacio para volar. Si te gusta, úsala.';
+      $('cameraTip').textContent='El globo semitransparente es una guía. No aparecerá duplicado en el vídeo.';
       $('cameraAcceptBtn').focus({preventScroll:true});
     },'image/jpeg',.91);
   }
@@ -1022,5 +1022,5 @@
   if(window.matchMedia?.('(min-width:831px)').matches)$('advancedSettings').open=true;
   $('sizeControl').value=Math.round(state.size*100);$('sizeValue').textContent=Math.round(state.size*100)+'%';$('durationControl').value=state.duration;$('magicControl').value=Math.round(state.magic*100);$('magicValue').textContent=Math.round(state.magic*100)+'%';
   buildPath();resizeCanvas(720);setMode('draw');loadDefaultVideo();
-  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite',exposure:state.appliedExposure,lightMode:state.autoLight?'auto':'manual',soundReady:sound.readyState,soundTime:sound.currentTime}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.5.1' };
+  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite',exposure:state.appliedExposure,lightMode:state.autoLight?'auto':'manual',soundReady:sound.readyState,soundTime:sound.currentTime}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.5.2' };
 })();

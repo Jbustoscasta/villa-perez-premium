@@ -15,7 +15,7 @@ try{
       page.on('pageerror',error=>errors.push(error.message));
       const response=await page.goto(origin,{waitUntil:'domcontentloaded'});
       assert.equal(response.status(),200);
-      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.5.1');
+      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.5.2');
       assert.equal(await page.locator('#scenePlayer').isVisible(),false);
       assert.equal(await page.locator('#storyStepPhoto').getAttribute('aria-current'),'step','first experience step');
       assert.equal(await page.locator('.magic-balloon-orb img').isVisible(),true,'official Pérez visual in magical welcome');
@@ -120,8 +120,14 @@ try{
       await page.mouse.move(stage.x+stage.width*.56,stage.y+stage.height*.47,{steps:12});
       await page.mouse.up();
       assert.equal((await page.evaluate(()=>window.VillaPerezFlight.getState().path)).length>=3,true,'draw touch path');
+      await page.evaluate(()=>{
+        const x=document.getElementById('sceneCanvas').getContext('2d'),original=x.fillText.bind(x);
+        window.__previewHud=[];
+        x.fillText=(label,...args)=>{window.__previewHud.push(String(label));return original(label,...args);};
+      });
       await page.locator('#playBtn').click();
       await page.waitForTimeout(400);
+      assert.ok(await page.evaluate(()=>window.__previewHud.includes('REC')&&window.__previewHud.some(x=>x.startsWith('06:34:'))),'playback previews the same recording HUD');
       assert.equal(await page.locator('#scenePill').innerText(),'REPRODUCIENDO');
       await page.locator('#soundBtn').click();
       assert.equal(await page.locator('#scenePill').innerText(),'REPRODUCIENDO','muting must never pause flight');
