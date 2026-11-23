@@ -7,7 +7,7 @@
   <meta name="description" content="Dibuja el vuelo del Ratón Pérez sobre una fotografía de la habitación y crea un recuerdo mágico. Todo ocurre en tu dispositivo.">
   <title>El vuelo mágico · Ratón Pérez | Ilusiono</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <link rel="stylesheet" href="styles.css?v=120">
+  <link rel="stylesheet" href="styles.css?v=130">
 </head>
 <body>
   <div class="app-shell">
@@ -39,15 +39,11 @@
           <p class="tiny-hint">El vídeo de Pérez se carga automáticamente. Su fondo verde se elimina sobre la foto. Si quieres, puedes sustituirlo por otro MP4.</p>
         </section>
 
+
         <section class="panel-section route-panel">
-          <div class="section-top"><span class="step-number">3</span><h2>Diseña el vuelo</h2></div>
-          <div class="tool-stack" role="group" aria-label="Herramientas de edición">
-            <button id="drawBtn" class="tool-btn selected" data-mode="draw"><span class="tool-icon">〰</span><span><strong>Dibujar recorrido</strong><small>Desliza el dedo sobre la foto</small></span><span class="tool-check">✓</span></button>
-            <button id="targetBtn" class="tool-btn" data-mode="target"><span class="tool-icon">◎</span><span><strong>Marcar dónde está el diente</strong><small>El globo frenará al acercarse</small></span></button>
-            <button id="panBtn" class="tool-btn" data-mode="pan"><span class="tool-icon">✥</span><span><strong>Reencuadrar fotografía</strong><small>Arrastra la imagen con el dedo</small></span></button>
-          </div>
-          <div class="route-utilities"><button class="text-btn" id="suggestBtn">✧ Vuelo sugerido</button><button class="text-btn muted" id="clearBtn">Borrar ruta</button></div>
-          <div class="route-meta"><span id="routeStatus">Ruta sugerida cargada</span><span id="routeLength">15 s</span></div>
+          <div class="section-top"><span class="step-number">3</span><h2>El recorrido</h2></div>
+          <p class="tiny-hint">Utiliza las herramientas dentro de la fotografía: dibuja el vuelo, señala el diente o reencuadra la habitación. Arrastra el marco dorado para cambiar el tamaño del globo.</p>
+          <div class="route-meta"><span id="routeStatus">Vuelo sugerido cargado</span><span id="routeLength">15 s</span></div>
         </section>
       </aside>
 
@@ -59,6 +55,22 @@
             <canvas id="overlayCanvas" width="720" height="1280" aria-label="Dibuja aquí el recorrido" tabindex="0"></canvas>
             <div class="empty-overlay" id="emptyOverlay"><div class="empty-icon">☾</div><strong>La magia empieza aquí</strong><span>Sube una foto de la habitación para dibujar<br>el recorrido del Ratón Pérez.</span><label class="empty-button" id="emptyUploadBtn"><span>Elegir una fotografía</span><input id="centerPhotoInput" type="file" accept="image/*,.heic,.heif" aria-label="Seleccionar fotografía del iPhone"></label></div>
 
+            <div class="scene-tool-dock" id="sceneToolDock" hidden aria-label="Editar el vuelo">
+          <div class="tool-stack scene-tool-stack" role="group" aria-label="Herramientas de edición">
+            <button id="drawBtn" class="tool-btn selected" data-mode="draw"><span class="tool-icon">〰</span><span><strong>Ruta</strong><small>Dibujar</small></span><span class="tool-check">✓</span></button>
+            <button id="targetBtn" class="tool-btn" data-mode="target"><span class="tool-icon">◎</span><span><strong>Diente</strong><small>Señalar</small></span></button>
+            <button id="panBtn" class="tool-btn" data-mode="pan"><span class="tool-icon">✥</span><span><strong>Mover</strong><small>Foto</small></span></button>
+          </div>
+          <div class="route-utilities"><button class="text-btn" id="suggestBtn">✧ Sugerir</button><button class="text-btn muted" id="clearBtn">Borrar</button></div>
+            </div>
+            <button type="button" id="lightBadge" class="scene-light-badge" hidden aria-label="Ajustar la luz nocturna">☾ Luz automática</button>
+            <div class="scene-light-popover" id="lightPopover" hidden role="group" aria-label="Ajustar iluminación del Ratón Pérez">
+              <div class="scene-light-heading"><strong>☾ Luz nocturna</strong><button type="button" id="lightCloseBtn" aria-label="Cerrar ajustes de luz">×</button></div>
+              <label class="auto-light-row" for="lightAutoToggle"><input type="checkbox" id="lightAutoToggle" checked><span>Adaptar a la habitación automáticamente</span></label>
+              <label for="lightControl" class="light-slider-heading">Brillo del globo <output id="lightValue">100%</output></label>
+              <input type="range" id="lightControl" min="30" max="150" step="5" value="100" aria-label="Brillo adicional del globo">
+              <p>La luz se adapta a cada parte de la habitación. Usa este control si lo quieres aún más tenue o luminoso.</p>
+            </div>
             <div class="balloon-transform" id="balloonTransform" hidden aria-label="Marco para ajustar el tamaño del globo">
               <span class="balloon-transform-label">PÉREZ · <output id="sizeValue">22%</output></span>
               <button type="button" id="resizeHandle" class="resize-handle" aria-label="Arrastra esta esquina para cambiar el tamaño del globo" title="Arrastra para hacer el globo más grande o pequeño">⤡</button>
@@ -78,33 +90,49 @@
           </div>
           <div class="stage-outline"></div>
         </div>
-        <p class="preview-foot" id="contextHint">✦ <span>Dibuja una curva sobre la foto. Después pulsa ▶ dentro de la imagen para ver cómo Pérez la sigue.</span></p>
+        <div class="scene-quick-actions" id="sceneQuickActions" hidden>
+          <button type="button" id="quickExportBtn" class="primary-button">✦ Crear vídeo mágico</button>
+          <label class="quick-photo" for="replacePhotoInput">Cambiar foto<input id="replacePhotoInput" type="file" accept="image/*,.heic,.heif" aria-label="Cambiar fotografía de la habitación"></label>
+        </div>
+        <p class="preview-foot" id="contextHint">✦ <span>Traza la ruta con el dedo y pulsa «Ver vuelo» para comprobar el resultado.</span></p>
       </section>
 
       <aside class="sidebar right-sidebar">
         <span class="eyebrow">02 — A TU GUSTO</span>
         <h2 class="right-title">Dirige la magia <span>✧</span></h2>
-        <p class="right-intro">Cambia el tamaño directamente en la imagen. Aquí puedes ajustar la duración, la estela y la exportación.</p>
+        <p class="right-intro">La iluminación se adapta automáticamente a la fotografía. Ajusta el resultado directamente sobre la escena o abre los ajustes opcionales.</p>
         
+
+        <details class="advanced-settings" id="advancedSettings">
+          <summary><span>⚙ Ajustes opcionales</span><small>Duración, magia, sonido, calidad y chroma</small></summary>
+          <div class="advanced-inner">
         <section class="control-section"><div class="slider-heading"><label for="durationControl">Duración del vuelo</label><output id="durationValue">15 s</output></div><input id="durationControl" type="range" min="8" max="30" step="1" value="15"><div class="slider-extents"><span>8 segundos</span><span>30 segundos</span></div></section>
         <section class="control-section"><div class="slider-heading"><label for="magicControl">Estela de magia</label><output id="magicValue">65%</output></div><input id="magicControl" type="range" min="0" max="100" step="5" value="65"><div class="slider-extents"><span>Sutil</span><span>Resplandeciente</span></div></section>
         <section class="control-section"><div class="slider-heading"><label for="zoomControl">Encuadre de la foto</label><output id="zoomValue">100%</output></div><input id="zoomControl" type="range" min="100" max="200" step="5" value="100"><div class="slider-extents"><span>Normal</span><span>Zoom</span></div></section>
         <section class="control-section" id="chromaSection" hidden><div class="slider-heading"><label for="chromaControl">Eliminar fondo verde</label><output id="chromaValue">55%</output></div><input id="chromaControl" type="range" min="15" max="95" step="1" value="55"><div class="slider-extents"><span>Suave</span><span>Intenso</span></div><p class="tiny-hint">Ajusta hasta que desaparezca el verde sin borrar partes del globo.</p></section>
         <section class="control-section"><div class="slider-heading"><label for="qualitySelect">Calidad de exportación</label></div><select id="qualitySelect" class="quality-select"><option value="720">HD · 720 × 1280 (recomendado)</option><option value="1080">Full HD · 1080 × 1920</option></select><p class="tiny-hint">Full HD requiere un móvil más potente.</p></section>
-        <section class="control-section sound-section"><div><strong>Sonidos de la visita</strong><p>Quemador, viento y pequeños destellos.</p></div><label class="switch"><input id="soundToggle" type="checkbox" checked><span></span></label></section>
+        <section class="control-section sound-section"><div><strong>Sonido natural</strong><p>Quemador real y destellos diferentes, sin música.</p></div><label class="switch"><input id="soundToggle" type="checkbox" checked><span></span></label></section>
+        <section class="control-section"><div class="slider-heading"><label for="soundLevel">Volumen</label><output id="soundLevelValue">55%</output></div><input id="soundLevel" type="range" min="0" max="100" step="5" value="55" aria-label="Volumen del sonido de vuelo"></section>
+
+          </div>
+        </details>
         <section class="tip-card"><span class="tip-star">✦</span><strong>Un pequeño secreto mágico</strong><p>Marca el diente en la mesita. Pérez desacelerará con suavidad cuando pase cerca, como si lo estuviera buscando.</p></section>
         <div class="export-block"><button id="exportBtn" class="primary-button">✧ &nbsp; Crear mi vídeo mágico</button><button id="snapshotBtn" class="secondary-button">Guardar fotograma</button><button id="shareBtn" class="secondary-button" hidden>Compartir vídeo creado</button><div class="export-detail"><span>🔒</span> Se procesa en tu dispositivo, sin subir fotos.</div></div>
       </aside>
     </main>
 
+    <div class="mobile-cta" id="mobileActionDock" hidden>
+      <span class="mobile-cta-copy"><strong>Tu vuelo está preparado</strong><small>Foto privada · 15 s</small></span>
+      <button type="button" id="mobileExportBtn">✦ Crear vídeo</button>
+    </div>
     <footer class="footer"><span>© Ilusiono · Villa Pérez</span><span><button id="saveRouteBtn">Guardar recorrido</button> <button id="loadRouteBtn">Cargar recorrido</button><input hidden type="file" accept=".json,application/json" id="routeInput"></span><span>Experiencia privada · No se almacena ninguna foto</span></footer>
   </div>
 
   <video id="assetVideo" playsinline loop muted preload="metadata" hidden></video>
-  <audio id="magicAudio" src="assets/sonido-vuelo-magico-iphone.mp3" preload="auto" loop></audio>
+  <audio id="magicAudio" src="assets/sonido-vuelo-real.mp3?v=130" preload="auto" loop></audio>
   <div class="toast" id="toast" aria-live="polite"></div>
   <div class="modal-backdrop" id="exportModal" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="exportTitle"><div class="modal-symbol">✧</div><h2 id="exportTitle">Creando tu recuerdo mágico…</h2><p id="exportMessage">Pérez está siguiendo el recorrido que has dibujado.</p><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><span id="progressValue">0%</span><button id="cancelExportBtn" class="secondary-button">Cancelar exportación</button></div></div>
   <div class="modal-backdrop" id="helpModal" hidden><div class="modal help-modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><button id="closeHelpBtn" class="modal-close" aria-label="Cerrar">×</button><h2 id="helpTitle">Cómo funciona el vuelo</h2><ol><li>Sube una foto del dormitorio.</li><li>Con <b>Dibujar recorrido</b> activado, arrastra el dedo dibujando la trayectoria.</li><li>Opcionalmente marca el lugar donde está el diente.</li><li>Ajusta el tamaño con el recuadro del globo o el control dentro de la escena y reproduce sin salir de la foto.</li><li>Exporta el vídeo para guardarlo o compartirlo.</li></ol><p>El vídeo animado del globo viene incluido. La aplicación elimina el fondo verde automáticamente sobre la fotografía; también puedes cargar otro MP4.</p><p>Todo se procesa localmente; no enviamos fotos a ningún servidor. En Chrome la exportación habitual es WebM y en Safari puede ser MP4 según el dispositivo.</p><button class="primary-button" id="helpDoneBtn">Entendido</button></div></div>
-  <script src="app.js?v=120" defer></script>
+  <script src="app.js?v=130" defer></script>
 </body>
 </html>
