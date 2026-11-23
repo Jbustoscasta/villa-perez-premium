@@ -167,10 +167,10 @@
   function finish(event,cancelled=false){
     if(event.pointerId!==state.pointerId||!state.draft)return;
     event.preventDefault();
-    try{canvas.releasePointerCapture(event.pointerId);}catch(_){}
     const path=state.draft,coords=pixels(path);
     const traveled=coords.reduce((v,p,i)=>i?v+distance(p,coords[i-1]):0,0);
     state.pointerId=null;state.draft=null;
+    try{canvas.releasePointerCapture(event.pointerId);}catch(_){};
     if(!cancelled&&traveled>=Math.min(canvas.width,canvas.height)*.04){
       state.paths.push({points:path,marks:[]});
       state.history.push({kind:'path'});
