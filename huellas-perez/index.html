@@ -7,8 +7,9 @@
   <meta name="description" content="Haz una foto de la mesita, almohada o habitación y dibuja con el dedo el camino de las huellas del Ratón Pérez.">
   <title>Huellas de Pérez · Modo padres · Ilusiono</title>
   <link rel="icon" href="../vuelo-magico/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=1">
-  <script defer src="./app.js?v=1"></script>
+  <link rel="stylesheet" href="./styles.css?v=2">
+  <script defer src="./footprint-engine.js?v=2"></script>
+  <script defer src="./app.js?v=2"></script>
 </head>
 <body>
   <div class="shell">
@@ -45,7 +46,7 @@
               <span>Empieza con una foto de la mesita, la almohada o el suelo.</span>
             </div>
             <canvas id="footprintCanvas" aria-label="Dibuja con el dedo sobre la fotografía el camino que seguirán las huellas" hidden></canvas>
-            <span class="canvas-hint" id="canvasHint" hidden>☝ Dibuja el recorrido con el dedo</span>
+            <span class="canvas-hint" id="canvasHint" hidden>☝ Dibuja el camino con el dedo</span>
           </div>
           <div class="photo-toolbar">
             <label class="button button-primary" for="cameraInput"><span aria-hidden="true">◉</span> Hacer foto</label>
@@ -56,21 +57,53 @@
           <p class="photo-note" id="photoNote">Consejo: fotografía de cerca una superficie donde unas huellas pequeñas se puedan distinguir. Evita los reflejos.</p>
         </section>
         <aside class="editor" id="editor" aria-labelledby="editor-heading">
-          <div class="editor-head"><span class="eyebrow">✦ EL TOQUE MÁGICO</span><h2 id="editor-heading">Sigue sus pasos</h2><p>Traza un camino con el dedo. La aplicación colocará automáticamente huellas alternas, orientadas siguiendo cada curva.</p></div>
+          <div class="editor-head"><span class="eyebrow">✦ EL TOQUE MÁGICO</span><h2 id="editor-heading">Sigue sus pasos</h2><p>Traza un camino con el dedo. Elige la superficie y el tiempo. Después dibuja el recorrido y añade saltos, giros o paradas.</p></div>
           <div id="emptyInstructions" class="instruction">
             <span class="instruction-icon" aria-hidden="true">✧</span>
             <div><b>Primero, la foto</b><span>Al elegirla podrás pintar un recorrido. No necesitas instalar nada.</span></div>
           </div>
           <div id="editorTools" hidden>
             <div class="instruction instruction-ready"><span class="instruction-icon" aria-hidden="true">☝</span><div><b>Dibuja el camino de Pérez</b><span>Desliza el dedo lentamente sobre la foto. Puedes dibujar varios tramos.</span></div></div>
-            <div class="control-group"><h3>Aspecto de las huellas</h3>
-              <div class="palette" role="group" aria-label="Color y acabado de las huellas">
-                <button type="button" data-style="moon" class="palette-option is-selected" aria-pressed="true"><span class="swatch swatch-moon"></span> Polvo claro</button>
-                <button type="button" data-style="shadow" class="palette-option" aria-pressed="false"><span class="swatch swatch-shadow"></span> Sombra</button>
+            <div class="control-group environment-group">
+              <h3>1 · ¿Por dónde caminó?</h3>
+              <div class="choice-grid surface-grid" role="group" aria-label="Superficie de la fotografía">
+                <button type="button" data-surface="wood" class="choice is-selected" aria-pressed="true"><span aria-hidden="true">▤</span> Madera</button>
+                <button type="button" data-surface="fabric" class="choice" aria-pressed="false"><span aria-hidden="true">▥</span> Tela</button>
+                <button type="button" data-surface="tile" class="choice" aria-pressed="false"><span aria-hidden="true">▦</span> Baldosa</button>
+                <button type="button" data-surface="glass" class="choice" aria-pressed="false"><span aria-hidden="true">◫</span> Cristal</button>
+                <button type="button" data-surface="outside" class="choice" aria-pressed="false"><span aria-hidden="true">♣</span> Exterior</button>
+              </div>
+              <p class="control-help">Elige la superficie que aparece en la foto para ajustar textura y sombras.</p>
+            </div>
+            <div class="control-group environment-group">
+              <h3>2 · ¿Qué tiempo hacía?</h3>
+              <div class="choice-grid weather-grid" role="group" aria-label="Tiempo de la visita">
+                <button type="button" data-weather="dry" class="choice is-selected" aria-pressed="true"><span aria-hidden="true">☾</span> Seco</button>
+                <button type="button" data-weather="rain" class="choice" aria-pressed="false"><span aria-hidden="true">☂</span> Lluvia</button>
+                <button type="button" data-weather="snow" class="choice" aria-pressed="false"><span aria-hidden="true">❄</span> Nieve</button>
+              </div>
+              <div id="weatherSummary" class="effect-summary" aria-live="polite">✧ Polvo fino con sombra suave sobre madera.</div>
+              <p class="control-help">El tiempo lo eliges tú. No usamos geolocalización ni consultamos el tiempo real.</p>
+            </div>
+            <div class="control-group">
+              <h3>3 · ¿Qué hizo Pérez?</h3>
+              <div class="choice-grid gesture-grid" role="group" aria-label="Herramienta de recorrido">
+                <button type="button" data-gesture="draw" class="choice is-selected" aria-pressed="true">〰 Caminar</button>
+                <button type="button" data-gesture="stop" class="choice" aria-pressed="false">Ⅱ Parada</button>
+                <button type="button" data-gesture="jump" class="choice" aria-pressed="false">↗ Salto</button>
+                <button type="button" data-gesture="turn" class="choice" aria-pressed="false">↶ Giro</button>
+              </div>
+              <p id="gestureHelp" class="control-help">Dibuja con el dedo el recorrido. Después marca paradas, saltos o giros tocando las huellas.</p>
+            </div>
+            <div class="control-group"><h3>4 · Acabado final</h3>
+              <div class="palette" role="group" aria-label="Estilo de las huellas">
+                <button type="button" data-style="natural" class="palette-option is-selected" aria-pressed="true"><span class="swatch swatch-natural"></span> Realistas</button>
+                <button type="button" data-style="subtle" class="palette-option" aria-pressed="false"><span class="swatch swatch-shadow"></span> Sutiles</button>
                 <button type="button" data-style="magic" class="palette-option" aria-pressed="false"><span class="swatch swatch-magic"></span> Mágicas</button>
               </div>
             </div>
             <div class="control-group"><label class="range-heading" for="sizeRange">Tamaño de las patitas <output id="sizeValue">Pequeñas</output></label><input id="sizeRange" type="range" min="35" max="115" step="5" value="65"><div class="range-edges"><span>Muy pequeñas</span><span>Más visibles</span></div></div>
+            <div class="control-group"><label class="range-heading" for="perspectiveRange">Profundidad de la foto <output id="perspectiveValue">Natural</output></label><input id="perspectiveRange" type="range" min="0" max="100" step="5" value="25"><div class="range-edges"><span>Sin perspectiva</span><span>Más pequeñas al alejarse</span></div><p class="control-help">Para usar la perspectiva, dibuja el recorrido de cerca hacia el fondo.</p></div>
             <div class="control-group"><label class="range-heading" for="opacityRange">Intensidad <output id="opacityValue">75 %</output></label><input id="opacityRange" type="range" min="30" max="100" step="5" value="75"><div class="range-edges"><span>Sutil</span><span>Marcada</span></div></div>
             <div class="edit-actions"><button type="button" class="button button-quiet" id="undoBtn" disabled>↶ Deshacer tramo</button><button type="button" class="button button-quiet" id="clearBtn" disabled>✕ Borrar huellas</button></div>
           </div>
