@@ -1,5 +1,5 @@
 /*
- * VILLA PÉREZ — El vuelo mágico | v1.2.0
+ * VILLA PÉREZ — El vuelo mágico | v1.3.0
  * Static, local-first editor. No API keys, third-party SDKs or server uploads.
  * The user controls a curved motion path; a chroma-keyed local video or official
  * transparent art follows it.  Video compositing and export happen in the browser.
@@ -25,6 +25,7 @@
     photo:null, photoUrl:null, videoUrl:null, loadedVideo:false,
     mode:'draw', path:suggested.map(p=>({...p})), pathName:'sugerida', smoothPath:[], sampled:[], target:null,
     photoZoom:1, panX:0,panY:0, size:.22, duration:15, magic:.65, chromaStrength:.55,
+    autoLight:true, lightManual:1, appliedExposure:.65, soundLevel:.55,
     playing:false, seeking:false, time:0, startedAt:0, frameRequest:0,
     recording:false, recorder:null, exportCancelled:false, exportBlob:null, exportName:null,
     spriteReady:false, silent:false, hasDrawn:false,
@@ -33,8 +34,8 @@
   function toast(text) { const t=$('toast');t.textContent=text;t.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('visible'),3700); }
   const formatTime = sec=>`00:${String(Math.floor(sec)).padStart(2,'0')}`;
   const setHint = msg=>$('contextHint').innerHTML=`✦ <span>${msg}</span>`;
-  const saveSettings = () => {try {localStorage.setItem('villaperez-flight-v1', JSON.stringify({path:state.path,target:state.target,duration:state.duration,size:state.size,magic:state.magic}));} catch {} };
-  function restoreSettings() {try {const a=JSON.parse(localStorage.getItem('villaperez-flight-v1')||'null');if(!a)return;if(Array.isArray(a.path)&&a.path.length>1&&a.path.length<3000){const safe=a.path.filter(p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y));if(safe.length>=2)state.path=safe;}if(a.target&&Number.isFinite(a.target.x))state.target=a.target;if(Number.isFinite(a.duration))state.duration=CLAMP(a.duration,8,30);if(Number.isFinite(a.size))state.size=CLAMP(a.size,.1,.43);if(Number.isFinite(a.magic))state.magic=CLAMP(a.magic,0,1);}catch{} }
+  const saveSettings = () => {try {localStorage.setItem('villaperez-flight-v1', JSON.stringify({path:state.path,target:state.target,duration:state.duration,size:state.size,magic:state.magic,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel}));} catch {} };
+  function restoreSettings() {try {const a=JSON.parse(localStorage.getItem('villaperez-flight-v1')||'null');if(!a)return;if(Array.isArray(a.path)&&a.path.length>1&&a.path.length<3000){const safe=a.path.filter(p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y));if(safe.length>=2)state.path=safe;}if(a.target&&Number.isFinite(a.target.x))state.target=a.target;if(Number.isFinite(a.duration))state.duration=CLAMP(a.duration,8,30);if(Number.isFinite(a.size))state.size=CLAMP(a.size,.1,.43);if(Number.isFinite(a.magic))state.magic=CLAMP(a.magic,0,1);if(typeof a.autoLight==='boolean')state.autoLight=a.autoLight;if(Number.isFinite(a.lightManual))state.lightManual=CLAMP(a.lightManual,.3,1.5);if(Number.isFinite(a.soundLevel))state.soundLevel=CLAMP(a.soundLevel,0,1);}catch{} }
   function setProgressUi() {$('scrub').value=Math.round(state.time/state.duration*1000);$('elapsed').textContent=formatTime(state.time);$('totalTime').textContent=formatTime(state.duration);$('durationValue').textContent=`${state.duration} s`; }
 
   /* Chaikin corner cutting + uniform-distance Catmull-style resampling. */
@@ -102,6 +103,59 @@
       for(let i=0;i<32;i++){ctx.fillStyle=`rgba(255,229,181,${.10+R(i,1,2)*.25})`;ctx.beginPath();ctx.arc(R(i,2,3)*w,R(i,2,4)*h*.62,1+R(i,2,5)*1.4,0,Math.PI*2);ctx.fill();}
     }
   }
+
+  // Local smart lighting: one tiny photo-only luminance map, not cloud AI.
+  // No photographs or per-pixel data leave the visitor's device.
+  const ambienceCanvas=document.createElement('canvas');
+  ambienceCanvas.width=64;ambienceCanvas.height=114;
+  const ambienceCtx=ambienceCanvas.getContext('2d',{willReadFrequently:true});
+  let ambiencePixels=null,ambienceDirty=true,lightSmoothed=null,lastChip='';
+  function rebuildAmbient(){
+    ambienceDirty=false;ambiencePixels=null;
+    if(!state.photo||!ambienceCtx)return;
+    try{
+      const w=ambienceCanvas.width,h=ambienceCanvas.height,im=state.photo;
+      ambienceCtx.fillStyle='#10131d';ambienceCtx.fillRect(0,0,w,h);
+      const scale=Math.max(w/im.width,h/im.height)*state.photoZoom;
+      const dw=im.width*scale,dh=im.height*scale;
+      ambienceCtx.drawImage(im,(w-dw)/2+state.panX*w,(h-dh)/2+state.panY*h,dw,dh);
+      ambiencePixels=ambienceCtx.getImageData(0,0,w,h).data;
+    }catch(e){console.warn('No se pudo medir luz ambiente',e);}
+  }
+  function localBrightness(pos){
+    if(ambienceDirty)rebuildAmbient();
+    if(!ambiencePixels)return .14;
+    const w=ambienceCanvas.width,h=ambienceCanvas.height;
+    const x=Math.round(CLAMP(pos.x,0,1)*(w-1)),y=Math.round(CLAMP(pos.y,0,1)*(h-1));
+    // Sample local area behind the balloon; ignore one bright bedside light.
+    let sum=0,total=0;
+    for(let dy=-5;dy<=5;dy+=2){
+      for(let dx=-4;dx<=4;dx+=2){
+        const sx=CLAMP(x+dx,0,w-1),sy=CLAMP(y+dy,0,h-1);
+        const i=(sy*w+sx)*4;
+        const r=ambiencePixels[i]/255,g=ambiencePixels[i+1]/255,b=ambiencePixels[i+2]/255;
+        const l=.2126*r*r+.7152*g*g+.0722*b*b;
+        sum+=Math.sqrt(l);total++;
+      }
+    }
+    return total?sum/total:.14;
+  }
+  function exposureFor(t){
+    const p=editingPos(t);
+    const l=localBrightness(p);
+    const automatic=CLAMP(.24+.94*Math.pow(l,.79),.24,1.06);
+    const target=CLAMP((state.autoLight?automatic:1)*state.lightManual,.16,1.48);
+    if(lightSmoothed===null||!state.playing)lightSmoothed=target;
+    else lightSmoothed+=(target-lightSmoothed)*.11;
+    state.appliedExposure=lightSmoothed;
+    const label=state.autoLight?'☾ Auto '+Math.round(lightSmoothed*100)+'%':'☾ Manual '+Math.round(lightSmoothed*100)+'%';
+    if(label!==lastChip){
+      const chip=$('lightBadge');chip.textContent=label;chip.classList.toggle('manual',!state.autoLight);
+      lastChip=label;
+    }
+    return lightSmoothed;
+  }
+
   function glowingStar(x,y,r,alpha) {
     if(alpha<=0)return;
     ctx.save();ctx.globalAlpha=CLAMP(alpha,0,1);ctx.shadowBlur=r*5;ctx.shadowColor='#ffd990';ctx.fillStyle='#ffe5a5';ctx.beginPath();ctx.arc(x,y,Math.max(.7,r*.32),0,Math.PI*2);ctx.fill();
@@ -120,7 +174,7 @@
       const py=(p.y-dy*.1 +dx*off+(R(i,3,9)-.5)*.02+age*.015)*H();
       const a=(1-age/2)*(.4+R(i,4,9)*.5)*state.magic;
       const rad=(.9+R(i,5,9)*2.5)*W()/720;
-      glowingStar(px,py,rad,a);
+      glowingStar(px,py,rad,a*Math.pow(Math.max(.18,state.appliedExposure),.53));
     }
   }
 
@@ -240,6 +294,10 @@
     if(state.loadedVideo&&keyer){source=applyKey();if(source&&keyer.crop){crop=keyer.crop;aspect=crop.w/crop.h;}}
     if(!source&&state.spriteReady){source=sprite;aspect=sprite.naturalWidth/sprite.naturalHeight;}
     if(source) {
+      // Safari/Canvas2D fallback has GPU-independent exposure via canvas filter.
+      if(!state.loadedVideo){
+        ctx.filter='brightness('+state.appliedExposure.toFixed(3)+') saturate('+Math.min(1,state.appliedExposure*.85+.12).toFixed(3)+')';
+      }
       const h=spriteHeight, w=h*aspect;
       if(crop)ctx.drawImage(source,crop.x,crop.y,crop.w,crop.h,-w/2,-h/2,w,h);
       else ctx.drawImage(source,-w/2,-h/2,w,h);
@@ -247,7 +305,7 @@
     ctx.restore();
   }
   function drawFrame(t=state.time) {
-    ctx.save();ctx.clearRect(0,0,W(),H());drawBackdrop();drawParticles(t);drawBalloon(t);ctx.restore();
+    ctx.save();ctx.clearRect(0,0,W(),H());drawBackdrop();exposureFor(t);drawParticles(t);drawBalloon(t);ctx.restore();
     drawOverlay();setProgressUi();updateBalloonControls();
   }
   function drawOverlay() {
