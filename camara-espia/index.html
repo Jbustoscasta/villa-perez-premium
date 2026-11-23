@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#061327" />
+  <meta name="description" content="Cámara Espía de Pérez: convierte tu móvil en una cámara mágica para descubrir las sorpresas del Ratón Pérez." />
+  <title>Cámara Espía de Pérez · Villa Pérez</title>
+  <link rel="icon" href="../vuelo-magico/assets/favicon.svg" />
+  <link rel="stylesheet" href="styles.css?v=1.0.0" />
+  <script src="app.js?v=1.0.0" defer></script>
+</head>
+<body>
+  <div class="page">
+    <main class="artboard" id="artboard" aria-label="Cámara Espía de Pérez">
+      <!-- Almost the entire interface is a single high-quality image, from the approved original artwork. -->
+      <img class="illustration" src="assets/poster.webp" alt="Cámara Espía de Pérez. Castillo nocturno, globo, cámara de vigilancia verde, un ratón explorador, un gran botón rojo de misión nocturna y un cofre de alerta mágica." draggable="false" />
+
+      <!-- ONLY live camera, counter and status are interactive: no recreation of the illustrations. -->
+      <section id="liveViewport" class="live-viewport" hidden aria-label="Visor de cámara mágica">
+        <img id="cameraFallback" class="camera-fallback" src="assets/habitacion-original.webp" alt="Vista nocturna ilustrada de una habitación infantil" draggable="false" />
+        <video id="cameraFeed" autoplay muted playsinline webkit-playsinline hidden aria-label="Vista en directo de la cámara del móvil"></video>
+        <div class="scanlines" aria-hidden="true"></div>
+        <div class="scanning-beam" aria-hidden="true"></div>
+        <div class="camera-hud" aria-hidden="true">
+          <span class="hud-rec"><i></i> REC</span>
+          <span class="hud-timer" id="hudTimer">00:00:00</span>
+          <span class="hud-battery">☷ <span id="hudBattery">CAM</span></span>
+          <span class="hud-corner top-left"></span><span class="hud-corner top-right"></span>
+          <span class="hud-corner bottom-left"></span><span class="hud-corner bottom-right"></span>
+          <span class="hud-crosshair"><i></i></span>
+          <span class="hud-night">☾ Visión nocturna</span>
+          <span class="hud-signal">▂▄▆</span>
+        </div>
+        <span class="mission-hint" id="missionHint" hidden>La misión continúa…</span>
+      </section>
+
+      <div class="radar-glow" aria-hidden="true"></div>
+      <div class="motion-glow" aria-hidden="true"></div>
+      <div class="tracks-glow" aria-hidden="true"></div>
+
+      <!-- Invisible touch target on the exact original illustrated button. -->
+      <button type="button" id="missionButton" class="mission-button" aria-label="Comenzar misión nocturna" aria-pressed="false">
+        <span class="mission-button-active" aria-hidden="true">✦ Misión activada ✦</span>
+      </button>
+
+      <!-- Original gold alert frame and chest remain baked into the poster. -->
+      <p id="alertText" class="alert-text" aria-live="polite">Aquí se almacenará la grabación.</p>
+      <button type="button" id="viewCapture" class="view-capture" hidden>Ver</button>
+    </main>
+
+    <footer class="quiet-footer">
+      <button id="adultInfo" type="button" aria-expanded="false" aria-controls="adultNote">Información para adultos <span aria-hidden="true">ⓘ</span></button>
+      <p id="adultNote" hidden>Esta cámara es una <strong>simulación mágica</strong>: no graba ni almacena vídeo durante la noche. La imagen del visor puede ser en directo si se concede acceso a la cámara. El vídeo de Pérez lo prepara el adulto y solo aparece en «Alerta mágica» cuando está disponible. No dejes el móvil cubierto ni debajo de la almohada; evita mantenerlo cargando sobre la cama.</p>
+    </footer>
+  </div>
+
+  <!-- Only appears AFTER the parent has prepared the magical recording. -->
+  <div class="modal-backdrop" id="captureModal" hidden>
+    <section class="capture-modal" role="dialog" aria-modal="true" aria-labelledby="captureTitle">
+      <button type="button" class="modal-close" id="closeCapture" aria-label="Cerrar">×</button>
+      <p class="modal-kicker">✦ ALERTA MÁGICA ✦</p>
+      <h1 id="captureTitle">¡La cámara ha captado algo!</h1>
+      <p class="modal-subtitle">Parece que Pérez ha pasado esta noche por aquí…</p>
+      <div id="demoNotice" class="demo-notice" hidden>Vista de demostración</div>
+      <div class="capture-video-wrap" id="videoWrap">
+        <video id="savedVideo" controls playsinline preload="metadata"></video>
+      </div>
+      <div class="extras" id="extras" hidden>
+        <a id="photoLink" class="extra-item" href="#" target="_blank" rel="noopener" hidden>✧ Tu fotografía</a>
+        <a id="letterLink" class="extra-item" href="#" target="_blank" rel="noopener" hidden>✉ La carta de Pérez</a>
+      </div>
+      <button class="modal-done" id="doneCapture" type="button">Cerrar el cofre</button>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>
