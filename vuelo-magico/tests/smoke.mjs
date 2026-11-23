@@ -58,7 +58,7 @@ try{
         const downloadPromise=page.waitForEvent('download',{timeout:30000});
         await page.locator('#exportBtn').click();
         const download=await downloadPromise;
-        assert.match(download.suggestedFilename(),/vuelo-raton-perez-.*\\.(webm|mp4)$/);
+        assert.match(download.suggestedFilename(),/vuelo-raton-perez-.*\.(webm|mp4)$/);
         await page.waitForFunction(()=>document.getElementById('exportModal').hidden,{timeout:10000});
         assert.equal(await page.locator('#playBtn').isEnabled(),true,'play button reenabled after export');
         console.log(browserName,'export recorded',download.suggestedFilename());
