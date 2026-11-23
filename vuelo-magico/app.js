@@ -1,5 +1,5 @@
 /*
- * VILLA PÉREZ — El vuelo mágico | v1.3.1
+ * VILLA PÉREZ — El vuelo mágico | v1.4.0
  * Static, local-first editor. No API keys, third-party SDKs or server uploads.
  * The user controls a curved motion path; a chroma-keyed local video or official
  * transparent art follows it.  Video compositing and export happen in the browser.
@@ -390,7 +390,206 @@
   overlay.addEventListener('pointerup',endGesture);
   overlay.addEventListener('pointercancel',endGesture);
 
-  async function openPhoto(file){
+
+  /* CÁMARA MÁGICA: foto tomada en el propio dispositivo, sin uploads.
+     El encuadre 9:16 coincide exactamente con object-fit:cover del visor. */
+  const cameraShell=$('magicCamera');
+  const cameraVideo=$('cameraStream');
+  const cameraPhoto=$('cameraPreview');
+  let cameraMedia=null,cameraCapturedBlob=null,cameraPreviewURL=null,cameraScanTimer=null;
+  let cameraAttempt=0,cameraPreviousFocus=null;
+  const cameraCheckCanvas=document.createElement('canvas');
+  cameraCheckCanvas.width=48;cameraCheckCanvas.height=84;
+  const cameraCheckCtx=cameraCheckCanvas.getContext('2d',{willReadFrequently:true});
+
+  function stopCameraFeed(){
+    if(cameraScanTimer){clearInterval(cameraScanTimer);cameraScanTimer=null;}
+    if(cameraMedia){
+      for(const track of cameraMedia.getTracks())track.stop();
+      cameraMedia=null;
+    }
+    cameraVideo.pause();
+    cameraVideo.srcObject=null;
+    $('cameraShutter').disabled=true;
+  }
+  function clearCameraPreview(){
+    cameraCapturedBlob=null;
+    if(cameraPreviewURL){URL.revokeObjectURL(cameraPreviewURL);cameraPreviewURL=null;}
+    cameraPhoto.removeAttribute('src');
+    cameraPhoto.hidden=true;
+    $('cameraReviewLabel').hidden=true;
+  }
+  function closeMagicCamera(){
+    ++cameraAttempt;stopCameraFeed();clearCameraPreview();
+    cameraShell.hidden=true;
+    document.documentElement.classList.remove('camera-active');
+    document.body.classList.remove('camera-active');
+    $('cameraError').hidden=true;
+    const f=cameraPreviousFocus;cameraPreviousFocus=null;
+    if(f&&document.contains(f))try{f.focus({preventScroll:true});}catch{}
+  }
+  function cameraFailure(text){
+    $('cameraError').textContent=text;
+    $('cameraError').hidden=false;
+    $('cameraRetryBtn').hidden=false;
+    $('cameraTip').textContent='Puedes reintentarlo o usar una foto de la galería.';
+    $('cameraShutter').disabled=true;
+  }
+  function checkCameraIllumination(){
+    if(!cameraMedia||cameraVideo.readyState<2||cameraPhoto.hidden===false||!cameraCheckCtx)return;
+    try{
+      cameraCheckCtx.drawImage(cameraVideo,0,0,48,84);
+      const img=cameraCheckCtx.getImageData(0,0,48,84).data;
+      let luminance=0,n=0;
+      // Measure the lower part where the child and bed will be.
+      for(let y=39;y<81;y+=3)for(let x=3;x<45;x+=3){
+        const i=(y*48+x)*4;
+        luminance+=.2126*img[i]+.7152*img[i+1]+.0722*img[i+2];n++;
+      }
+      $('cameraDarkWarning').hidden=!(n>0&&luminance/n<38);
+    }catch(err){console.warn('Camera light preview unavailable',err);}
+  }
+  async function startCameraFeed(){
+    const id=++cameraAttempt;
+    stopCameraFeed();clearCameraPreview();
+    $('cameraError').hidden=true;
+    $('cameraRetryBtn').hidden=true;
+    $('cameraDarkWarning').hidden=true;
+    $('cameraLiveActions').hidden=false;
+    $('cameraReviewActions').hidden=true;
+    cameraVideo.hidden=false;
+    $('cameraGuide').hidden=false;
+    $('cameraTip').textContent='Coloca la cama abajo y deja el recuadro superior libre para Pérez.';
+    if(!window.isSecureContext){
+      cameraFailure('La cámara necesita una conexión HTTPS. Abre esta página desde Safari o elige una foto de la galería.');
+      return;
+    }
+    if(!navigator.mediaDevices||typeof navigator.mediaDevices.getUserMedia!=='function'){
+      cameraFailure('Este navegador no permite abrir la cámara aquí. Puedes elegir una fotografía de la galería.');
+      return;
+    }
+    let stream;
+    try{
+      // Prefer the rear camera. "ideal" still permits older iPhones to choose any camera.
+      stream=await navigator.mediaDevices.getUserMedia({
+        audio:false,
+        video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}
+      });
+      if(id!==cameraAttempt||cameraShell.hidden){
+        stream.getTracks().forEach(t=>t.stop());return;
+      }
+      cameraMedia=stream;
+      cameraVideo.srcObject=stream;
+      cameraVideo.muted=true;
+      cameraVideo.setAttribute('playsinline','');
+      cameraVideo.setAttribute('webkit-playsinline','');
+      try{await cameraVideo.play();}catch(err){console.warn('Camera autoplay',err);}
+      if(id!==cameraAttempt||cameraShell.hidden)return;
+      $('cameraShutter').disabled=false;
+      // The user may shoot even when the picture is dark: this is guidance, not a gate.
+      checkCameraIllumination();
+      cameraScanTimer=setInterval(checkCameraIllumination,1050);
+    }catch(err){
+      if(stream&&stream!==cameraMedia)stream.getTracks().forEach(t=>t.stop());
+      if(id!==cameraAttempt||cameraShell.hidden)return;
+      const name=err&&err.name||'';
+      if(name==='NotAllowedError'||name==='PermissionDeniedError'){
+        cameraFailure('Para hacer la foto, permite el acceso a la cámara en Safari. También puedes elegirla desde Fotos.');
+      }else if(name==='NotFoundError'||name==='DevicesNotFoundError'){
+        cameraFailure('No se ha encontrado una cámara disponible. Selecciona una fotografía existente.');
+      }else{
+        cameraFailure('No hemos podido activar la cámara. Reinténtalo o elige una foto de la galería.');
+      }
+      console.warn('Camera unavailable',err);
+    }
+  }
+  function openMagicCamera(){
+    if(state.recording)return;
+    if(state.playing)pause();
+    if(!cameraShell.hidden)return;
+    cameraPreviousFocus=document.activeElement;
+    cameraShell.hidden=false;
+    document.documentElement.classList.add('camera-active');
+    document.body.classList.add('camera-active');
+    $('cameraCloseBtn').focus({preventScroll:true});
+    startCameraFeed();
+  }
+  function captureMagicPhoto(){
+    if(!cameraMedia||cameraVideo.readyState<2||!cameraVideo.videoWidth||!cameraVideo.videoHeight){
+      cameraFailure('La cámara todavía se está preparando. Inténtalo de nuevo.');return;
+    }
+    if(window.matchMedia?.('(pointer:coarse) and (orientation:landscape)').matches){
+      $('cameraTip').textContent='Gira el iPhone en vertical antes de hacer la foto.';
+      return;
+    }
+    const vw=cameraVideo.videoWidth,vh=cameraVideo.videoHeight,aspect=9/16;
+    let cropW=vw,cropH=vh;
+    if(vw/vh>aspect)cropW=vh*aspect;
+    else cropH=vw/aspect;
+    const sx=(vw-cropW)/2,sy=(vh-cropH)/2;
+    const width=Math.max(360,Math.min(1080,Math.round(cropW)));
+    const height=Math.round(width/aspect);
+    const c=document.createElement('canvas');c.width=width;c.height=height;
+    const x=c.getContext('2d',{alpha:false});
+    if(!x){cameraFailure('La fotografía no se ha podido preparar. Prueba a elegir una imagen de la galería.');return;}
+    try{x.drawImage(cameraVideo,sx,sy,cropW,cropH,0,0,width,height);}
+    catch(err){cameraFailure('La cámara no ha conseguido capturar la imagen. Intenta repetirla.');return;}
+    $('cameraShutter').disabled=true;
+    c.toBlob(blob=>{
+      if(cameraShell.hidden)return;
+      if(!blob){cameraFailure('La fotografía no se ha podido guardar. Prueba de nuevo.');return;}
+      clearCameraPreview();
+      cameraCapturedBlob=blob;
+      cameraPreviewURL=URL.createObjectURL(blob);
+      cameraPhoto.src=cameraPreviewURL;
+      cameraPhoto.hidden=false;
+      cameraVideo.hidden=true;
+      stopCameraFeed();
+      $('cameraDarkWarning').hidden=true;
+      $('cameraLiveActions').hidden=true;
+      $('cameraReviewActions').hidden=false;
+      $('cameraReviewLabel').hidden=false;
+      $('cameraTip').textContent='¿Te gusta el encuadre? Ya hemos reservado espacio para el vuelo.';
+      $('cameraAcceptBtn').focus({preventScroll:true});
+    },'image/jpeg',.91);
+  }
+  const guidedPath=[
+    point(-.20,.20),point(.05,.20),point(.25,.16),point(.42,.23),
+    point(.66,.19),point(.84,.29),point(1.12,.25)
+  ];
+  function acceptMagicPhoto(){
+    if(!cameraCapturedBlob)return;
+    const blob=cameraCapturedBlob;
+    // Suggested flight remains in the upper clear 40% of the guided image.
+    state.path=guidedPath.map(p=>({...p}));
+    state.pathName='sugerida';state.target=null;state.time=0;
+    buildPath();setMode('draw');
+    closeMagicCamera();
+    openPhoto(new File([blob],'cámara-mágica-villa-pérez.jpg',{type:'image/jpeg'}),{guided:true});
+  }
+  $('openCameraSidebar').addEventListener('click',openMagicCamera);
+  $('openCameraMain').addEventListener('click',openMagicCamera);
+  $('openCameraAgain').addEventListener('click',openMagicCamera);
+  $('cameraCloseBtn').addEventListener('click',closeMagicCamera);
+  $('cameraRetryBtn').addEventListener('click',startCameraFeed);
+  $('cameraShutter').addEventListener('click',captureMagicPhoto);
+  $('cameraRetakeBtn').addEventListener('click',startCameraFeed);
+  $('cameraAcceptBtn').addEventListener('click',acceptMagicPhoto);
+  $('cameraGalleryInput').addEventListener('change',event=>{
+    const file=event.target.files?.[0];
+    event.target.value='';
+    if(!file)return;
+    closeMagicCamera();
+    openPhoto(file);
+  });
+  window.addEventListener('pagehide',()=>{
+    ++cameraAttempt;stopCameraFeed();
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&!cameraShell.hidden){e.preventDefault();closeMagicCamera();}
+  });
+
+  async function openPhoto(file,options={}){
     if(!file)return;
     if(file.type&&!file.type.startsWith('image/')&&!/\.(jpe?g|png|webp|heic|heif|avif|gif)$/i.test(file.name||'')){
       toast('Elige una fotografía JPG, PNG o HEIC.');return;
@@ -410,7 +609,7 @@
       $('emptyOverlay').hidden=true;overlay.classList.add('photo-ready');scenePlayer.hidden=false;updatePlayUi();
       $('advancedSettings').open=false;
       $('zoomControl').value=100;$('zoomValue').textContent='100%';
-      drawFrame();toast('¡Foto cargada! Ahora dibuja el recorrido con el dedo.');
+      drawFrame();toast(options.guided?'¡Foto preparada! Pérez ya tiene una ruta sugerida. Prueba «Ver vuelo» o dibuja la tuya.':'¡Foto cargada! Ahora dibuja el recorrido con el dedo.');
     };
     img.onload=install;
     img.onerror=()=>{
@@ -649,5 +848,5 @@
   if(window.matchMedia?.('(min-width:831px)').matches)$('advancedSettings').open=true;
   $('sizeControl').value=Math.round(state.size*100);$('sizeValue').textContent=Math.round(state.size*100)+'%';$('durationControl').value=state.duration;$('magicControl').value=Math.round(state.magic*100);$('magicValue').textContent=Math.round(state.magic*100)+'%';
   buildPath();resizeCanvas(720);setMode('draw');loadDefaultVideo();
-  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite',exposure:state.appliedExposure,lightMode:state.autoLight?'auto':'manual',soundReady:sound.readyState,soundTime:sound.currentTime}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.3.1' };
+  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite',exposure:state.appliedExposure,lightMode:state.autoLight?'auto':'manual',soundReady:sound.readyState,soundTime:sound.currentTime}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.4.0' };
 })();
