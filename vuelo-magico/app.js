@@ -1,5 +1,5 @@
 /*
- * VILLA PÉREZ — El vuelo mágico | v1.4.0
+ * VILLA PÉREZ — El vuelo mágico | v1.5.0
  * Static, local-first editor. No API keys, third-party SDKs or server uploads.
  * The user controls a curved motion path; a chroma-keyed local video or official
  * transparent art follows it.  Video compositing and export happen in the browser.
@@ -32,11 +32,30 @@
   };
   let toastTimer;
   function toast(text) { const t=$('toast');t.textContent=text;t.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('visible'),3700); }
+
+  /* Milestones narrativos en vez de un panel de edición convencional. */
+  function setJourneyStep(step){
+    for(const [index,id] of [[1,'storyStepPhoto'],[2,'storyStepFlight'],[3,'storyStepMemory']]){
+      const el=$(id);if(!el)continue;
+      el.classList.toggle('is-active',index===step);
+      el.classList.toggle('is-done',index<step);
+      if(index===step)el.setAttribute('aria-current','step');
+      else el.removeAttribute('aria-current');
+    }
+  }
+  function setCameraStep(index,title){
+    const el=$('cameraStepIndicator');if(!el)return;
+    const number=el.querySelector('.camera-step-index');
+    const label=el.querySelector('strong');
+    if(number)number.textContent=String(index).padStart(2,'0')+' / 03';
+    if(label)label.textContent=title;
+  }
+
   const formatTime = sec=>`00:${String(Math.floor(sec)).padStart(2,'0')}`;
   const setHint = msg=>$('contextHint').innerHTML=`✦ <span>${msg}</span>`;
   const saveSettings = () => {try {localStorage.setItem('villaperez-flight-v1', JSON.stringify({path:state.path,target:state.target,duration:state.duration,size:state.size,magic:state.magic,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel}));} catch {} };
   function restoreSettings() {try {const a=JSON.parse(localStorage.getItem('villaperez-flight-v1')||'null');if(!a)return;if(Array.isArray(a.path)&&a.path.length>1&&a.path.length<3000){const safe=a.path.filter(p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y));if(safe.length>=2)state.path=safe;}if(a.target&&Number.isFinite(a.target.x)&&Number.isFinite(a.target.y))state.target=a.target;if(Number.isFinite(a.duration))state.duration=CLAMP(a.duration,8,30);if(Number.isFinite(a.size))state.size=CLAMP(a.size,.1,.43);if(Number.isFinite(a.magic))state.magic=CLAMP(a.magic,0,1);if(typeof a.autoLight==='boolean')state.autoLight=a.autoLight;if(Number.isFinite(a.lightManual))state.lightManual=CLAMP(a.lightManual,.3,1.5);if(Number.isFinite(a.soundLevel))state.soundLevel=CLAMP(a.soundLevel,0,1);}catch{} }
-  function setProgressUi() {$('scrub').value=Math.round(state.time/state.duration*1000);$('elapsed').textContent=formatTime(state.time);$('totalTime').textContent=formatTime(state.duration);$('durationValue').textContent=`${state.duration} s`;$('mobileDuration').textContent=`Foto privada · ${state.duration} s`; }
+  function setProgressUi() {$('scrub').value=Math.round(state.time/state.duration*1000);$('elapsed').textContent=formatTime(state.time);$('totalTime').textContent=formatTime(state.duration);$('durationValue').textContent=`${state.duration} s`;$('mobileDuration').textContent=`Solo en tu móvil · ${state.duration} s`; }
 
   /* Chaikin corner cutting + uniform-distance Catmull-style resampling. */
   function smoothed(points) {
@@ -290,7 +309,7 @@
   }
   function updatePlayUi(){
     const btn=$('playBtn');
-    btn.textContent=state.playing?'Ⅱ Pausa':'▶ Ver vuelo';
+    btn.textContent=state.playing?'Ⅱ Pausa':'▶ Ver magia';
     btn.setAttribute('aria-label',state.playing?'Pausar vuelo':'Reproducir vuelo');
     btn.disabled=state.recording||!state.photo;
   }
@@ -418,6 +437,7 @@
     cameraPhoto.removeAttribute('src');
     cameraPhoto.hidden=true;
     $('cameraReviewLabel').hidden=true;
+    $('cameraGuide').hidden=false;
   }
   function closeMagicCamera(){
     ++cameraAttempt;stopCameraFeed();clearCameraPreview();
@@ -432,7 +452,7 @@
     $('cameraError').textContent=text;
     $('cameraError').hidden=false;
     $('cameraRetryBtn').hidden=false;
-    $('cameraTip').textContent='Puedes reintentarlo o usar una foto de la galería.';
+    $('cameraTip').textContent='También puedes elegir una foto de tu galería.';
     $('cameraShutter').disabled=true;
   }
   function checkCameraIllumination(){
@@ -457,9 +477,10 @@
     $('cameraDarkWarning').hidden=true;
     $('cameraLiveActions').hidden=false;
     $('cameraReviewActions').hidden=true;
+    setCameraStep(1,'Busca un poco de cielo para Pérez');
     cameraVideo.hidden=false;
     $('cameraGuide').hidden=false;
-    $('cameraTip').textContent='Coloca la cama abajo y deja el recuadro superior libre para Pérez.';
+    $('cameraTip').textContent='La cama abajo; el cielo de Pérez, arriba.';
     if(!window.isSecureContext){
       cameraFailure('La cámara necesita una conexión HTTPS. Abre esta página desde Safari o elige una foto de la galería.');
       return;
@@ -548,8 +569,10 @@
       $('cameraDarkWarning').hidden=true;
       $('cameraLiveActions').hidden=true;
       $('cameraReviewActions').hidden=false;
+      $('cameraGuide').hidden=true;
       $('cameraReviewLabel').hidden=false;
-      $('cameraTip').textContent='¿Te gusta el encuadre? Ya hemos reservado espacio para el vuelo.';
+      setCameraStep(2,'Mira cómo ha quedado la foto');
+      $('cameraTip').textContent='Comprueba que hay espacio arriba. Si te gusta, úsala.';
       $('cameraAcceptBtn').focus({preventScroll:true});
     },'image/jpeg',.91);
   }
@@ -560,6 +583,7 @@
   function acceptMagicPhoto(){
     if(!cameraCapturedBlob)return;
     const blob=cameraCapturedBlob;
+    setCameraStep(3,'Pérez ya tiene un camino');
     // Suggested flight remains in the upper clear 40% of the guided image.
     state.path=guidedPath.map(p=>({...p}));
     state.pathName='sugerida';state.target=null;state.time=0;
@@ -607,9 +631,10 @@
       status.textContent='Lista';status.classList.add('state-ready');
       $('photoTitle').textContent=(file.name||'Foto seleccionada').length>26?(file.name||'Fotografía').slice(0,24)+'…':(file.name||'Fotografía lista');
       $('emptyOverlay').hidden=true;overlay.classList.add('photo-ready');scenePlayer.hidden=false;updatePlayUi();
+      $('scenePill').textContent='LISTO PARA VOLAR';setJourneyStep(2);
       $('advancedSettings').open=false;
       $('zoomControl').value=100;$('zoomValue').textContent='100%';
-      drawFrame();toast(options.guided?'¡Foto preparada! Pérez ya tiene una ruta sugerida. Prueba «Ver vuelo» o dibuja la tuya.':'¡Foto cargada! Ahora dibuja el recorrido con el dedo.');
+      drawFrame();toast(options.guided?'¡Foto lista! Pérez tiene un camino sugerido. Pulsa «Ver magia».':'¡Foto lista! Dibuja la ruta o pulsa «Ver magia».');
     };
     img.onload=install;
     img.onerror=()=>{
@@ -722,7 +747,7 @@
         const ext=blob.type.includes('mp4')?'mp4':'webm';const name=`vuelo-raton-perez-${new Date().toISOString().slice(0,10)}.${ext}`;
         state.exportBlob=blob;state.exportName=name;
         $('shareBtn').hidden=false;
-        saveBlob(blob,name);toast('¡Vídeo terminado! Se ha guardado en tu dispositivo.');
+        saveBlob(blob,name);setJourneyStep(3);toast('¡Recuerdo creado! Ya puedes guardarlo y compartirlo.');
         resizeCanvas(720);
       };
       rec.start(250);state.time=0;state.playing=true;state.startedAt=performance.now();
@@ -839,7 +864,7 @@
     };
     video.load();
   }
-  updatePlayUi();restoreSettings();
+  setJourneyStep(1);updatePlayUi();restoreSettings();
   $('lightAutoToggle').checked=state.autoLight;
   $('lightControl').value=Math.round(state.lightManual*100);
   $('lightValue').textContent=Math.round(state.lightManual*100)+'%';
@@ -848,5 +873,5 @@
   if(window.matchMedia?.('(min-width:831px)').matches)$('advancedSettings').open=true;
   $('sizeControl').value=Math.round(state.size*100);$('sizeValue').textContent=Math.round(state.size*100)+'%';$('durationControl').value=state.duration;$('magicControl').value=Math.round(state.magic*100);$('magicValue').textContent=Math.round(state.magic*100)+'%';
   buildPath();resizeCanvas(720);setMode('draw');loadDefaultVideo();
-  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite',exposure:state.appliedExposure,lightMode:state.autoLight?'auto':'manual',soundReady:sound.readyState,soundTime:sound.currentTime}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.4.0' };
+  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite',exposure:state.appliedExposure,lightMode:state.autoLight?'auto':'manual',soundReady:sound.readyState,soundTime:sound.currentTime}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.5.0' };
 })();
