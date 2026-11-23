@@ -1,8 +1,19 @@
-# Villa Pérez — Vuelo mágico v1.4
+# Villa Pérez — Cámara Mágica v1.5
 
-URL: https://jbustoscasta.github.io/villa-perez-premium/vuelo-magico/?v=130
+URL: https://jbustoscasta.github.io/villa-perez-premium/vuelo-magico/?v=150
 
 Editor de vuelo privado y móvil: foto local de la habitación, ruta dibujada, diente, globo animado de Wan 3.0 Prime con chroma, contraste adaptativo nocturno y grabación en el propio navegador.
+
+## Experiencia premium «Una noche en Villa Pérez» — v1.5
+
+- **Una sola acción principal**: «Abrir Cámara Mágica», dentro de la escena; alternativa «Ya tengo una fotografía».
+- **Onboarding narrativo de tres momentos**: ① La foto → ② El vuelo → ③ El recuerdo. La interfaz cambia de paso cuando carga una foto o exporta el vídeo.
+- **Identidad visual de cuento nocturno**, cálida y menos técnica. Fondo azul medianoche, estrellas discretas, detalles dorados, globo oficial de Pérez y animación sutil que respeta `prefers-reduced-motion`.
+- **Visor fotográfico mágico**: marco dorado, recuadro superior para dejar espacio al globo, silueta original semitransparente, texto sencillo y disparador destacado.
+- **Revisión sin obstáculos**: las guías se esconden al disparar para comprobar la fotografía real; reaparecen al repetir. No se afirma que el encuadre sea correcto de forma automática, porque la app solo guía visualmente.
+- **Edición simplificada**: «Ruta / Diente / Mover» sobre la imagen, «Ver magia» visible y opciones técnicas agrupadas como personalización.
+- CSS de identidad en `magic-ui.css`, separado del motor de vídeo, para ajustar estilos sin alterar el compositor.
+- **Privacidad**: la fotografía no sale del dispositivo; el visor puede requerir permiso de cámara y conexión HTTPS. No se utiliza reconocimiento de rostros ni análisis automático de personas.
 
 ## Cámara Mágica guiada (v1.4)
 
