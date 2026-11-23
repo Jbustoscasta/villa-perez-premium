@@ -51,6 +51,18 @@ try{
       await page.locator('#playBtn').click();
       assert.equal(await page.locator('#balloonTransform').isVisible(),true);
       assert.equal(await page.locator('#scenePill').innerText(),'EDITANDO');
+      // End-to-end recording: one Chromium mobile run checks file generation,
+      // recorder cleanup and return to enabled playback controls.
+      if(browserName==='Chromium'&&dims.width===390){
+        await page.evaluate(()=>{const e=document.getElementById('durationControl');e.value='8';e.dispatchEvent(new Event('input',{bubbles:true}));});
+        const downloadPromise=page.waitForEvent('download',{timeout:30000});
+        await page.locator('#exportBtn').click();
+        const download=await downloadPromise;
+        assert.match(download.suggestedFilename(),/vuelo-raton-perez-.*\\.(webm|mp4)$/);
+        await page.waitForFunction(()=>document.getElementById('exportModal').hidden,{timeout:10000});
+        assert.equal(await page.locator('#playBtn').isEnabled(),true,'play button reenabled after export');
+        console.log(browserName,'export recorded',download.suggestedFilename());
+      }
       assert.deepEqual(errors,[],'uncaught JS errors');
       console.log(browserName,JSON.stringify(dims),'PASS play_bottom',Math.round(btn.y+btn.height),'viewport',dims.height,'size',old,'dragged',after);
       await context.close();
