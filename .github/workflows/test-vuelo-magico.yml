@@ -1,0 +1,26 @@
+name: Vuelo Mágico — pruebas de interfaz
+on:
+  push:
+    paths:
+      - 'vuelo-magico/**'
+      - '.github/workflows/test-vuelo-magico.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright y navegadores
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install --with-deps chromium webkit
+      - name: Verificar sintaxis JavaScript
+        run: node --check vuelo-magico/app.js
+      - name: Probar iPhone y escritorio (Chromium y WebKit)
+        run: node vuelo-magico/tests/smoke.mjs
