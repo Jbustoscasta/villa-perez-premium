@@ -335,12 +335,12 @@
     ctx.restore();
   }
   function drawFrame(t=state.time) {
-    ctx.save();ctx.clearRect(0,0,W(),H());drawBackdrop();exposureFor(t);drawParticles(t);drawBalloon(t);ctx.restore();
+    ctx.save();ctx.clearRect(0,0,W(),H());drawBackdrop();if(state.photo){exposureFor(t);drawParticles(t);drawBalloon(t);}ctx.restore();
     drawOverlay();setProgressUi();updateBalloonControls();
   }
   function drawOverlay() {
     const w=overlay.width,h=overlay.height;octx.clearRect(0,0,w,h);
-    if(state.playing||state.recording)return;
+    if(state.playing||state.recording||!state.photo)return;
     const pts=state.smoothPath;
     if(pts.length>1) {
       octx.save();octx.beginPath();octx.moveTo(pts[0].x*w,pts[0].y*h);
