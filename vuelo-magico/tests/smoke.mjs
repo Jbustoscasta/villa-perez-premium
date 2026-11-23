@@ -22,6 +22,28 @@ try{
       assert.equal(await page.locator('#scenePlayer').isVisible(),true,'play controls visible');
       assert.equal(await page.locator('#sceneSizePanel').isVisible(),true,'size controls visible');
       assert.equal(await page.locator('#balloonTransform').isVisible(),true,'resize frame visible');
+      assert.equal(await page.locator('#sceneToolDock').isVisible(),true,'edit tools accessible within photo');
+      assert.equal(await page.locator('#lightBadge').isVisible(),true,'night exposure control visible');
+      if(dims.width<500)assert.equal(await page.locator('#mobileActionDock').isVisible(),true,'sticky export button visible');
+      assert.equal(await page.evaluate(()=>window.VillaPerezFlight.getState().autoLight),true);
+      const initialExposure=await page.evaluate(()=>window.VillaPerezFlight.getDebug().exposure);
+      assert.ok(initialExposure<.90&&initialExposure>.17,'dark bedroom must reduce exposure: '+initialExposure);
+      await page.locator('#lightBadge').click();
+      assert.equal(await page.locator('#lightPopover').isVisible(),true);
+      await page.locator('#lightAutoToggle').uncheck();
+      await page.locator('#lightControl').fill('45');
+      const manualExposure=await page.evaluate(()=>window.VillaPerezFlight.getDebug().exposure);
+      assert.ok(manualExposure>.42&&manualExposure<.48,'manual exposure should be 45%, got '+manualExposure);
+      await page.locator('#lightAutoToggle').check();
+      await page.locator('#lightControl').fill('100');
+      await page.locator('#lightCloseBtn').click();
+      assert.equal(await page.locator('#lightPopover').isVisible(),false);
+      const soundAsset=await page.evaluate(()=>document.getElementById('magicAudio').getAttribute('src'));
+      assert.ok(soundAsset.includes('sonido-vuelo-real.mp3'),'real burner sound asset in use');
+      await page.locator('#targetBtn').click();
+      assert.equal(await page.locator('#targetBtn').getAttribute('aria-pressed'),'true');
+      await page.locator('#drawBtn').click();
+
       const btn=await page.locator('#playBtn').boundingBox();
       assert.ok(btn, 'play button has visible bounds');
       if(dims.width<500)assert.ok(btn.y+btn.height<dims.height-8,'play must fit on small iPhone screen; bottom '+(btn.y+btn.height)+' vs viewport '+dims.height);
@@ -47,6 +69,10 @@ try{
       await page.locator('#playBtn').click();
       await page.waitForTimeout(400);
       assert.equal(await page.locator('#scenePill').innerText(),'REPRODUCIENDO');
+      await page.locator('#soundBtn').click();
+      assert.equal(await page.locator('#scenePill').innerText(),'REPRODUCIENDO','muting must never pause flight');
+      await page.locator('#soundBtn').click();
+
       assert.equal(await page.locator('#balloonTransform').isVisible(),false);
       await page.locator('#playBtn').click();
       assert.equal(await page.locator('#balloonTransform').isVisible(),true);
