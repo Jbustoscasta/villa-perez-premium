@@ -15,7 +15,7 @@ try{
       page.on('pageerror',error=>errors.push(error.message));
       const response=await page.goto(origin,{waitUntil:'domcontentloaded'});
       assert.equal(response.status(),200);
-      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.5.0');
+      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.5.1');
       assert.equal(await page.locator('#scenePlayer').isVisible(),false);
       assert.equal(await page.locator('#storyStepPhoto').getAttribute('aria-current'),'step','first experience step');
       assert.equal(await page.locator('.magic-balloon-orb img').isVisible(),true,'official Pérez visual in magical welcome');
@@ -139,12 +139,31 @@ try{
       // recorder cleanup and return to enabled playback controls.
       if(browserName==='Chromium'&&dims.width===390){
         await page.evaluate(()=>{const e=document.getElementById('durationControl');e.value='8';e.dispatchEvent(new Event('input',{bubbles:true}));});
+        // Track drawing on the very canvas captured by MediaRecorder.
+        await page.evaluate(()=>{
+          const c=document.getElementById('sceneCanvas'),x=c.getContext('2d');
+          const originalText=x.fillText.bind(x),originalArc=x.arc.bind(x);
+          window.__recordedHud={labels:[],pulse:[],captured:false,firstFrame:false};
+          const originalCapture=c.captureStream.bind(c);
+          c.captureStream=(...args)=>{
+            window.__recordedHud.firstFrame=window.__recordedHud.labels.includes('06:34:00');
+            window.__recordedHud.captured=true;
+            return originalCapture(...args);
+          };
+          x.fillText=(label,...args)=>{window.__recordedHud.labels.push(String(label));return originalText(label,...args);};
+          x.arc=(...args)=>{if(x.fillStyle==='#ff414f')window.__recordedHud.pulse.push(x.globalAlpha);return originalArc(...args);};
+        });
         const downloadPromise=page.waitForEvent('download',{timeout:30000});
         await page.locator('#exportBtn').click();
         const download=await downloadPromise;
         assert.match(download.suggestedFilename(),/vuelo-raton-perez-.*\.(webm|mp4)$/);
         const recording=await readFile(await download.path());
         assert.ok(recording.length>18000,'exported video contains recorded frames');
+        const hud=await page.evaluate(()=>window.__recordedHud);
+        assert.ok(hud.captured&&hud.firstFrame,'recorded canvas contains the HUD before capture starts');
+        for(const label of ['REC','06:34:00','CAM','☾ Visión nocturna'])assert.ok(hud.labels.includes(label),'HUD label: '+label);
+        assert.ok(hud.labels.includes('06:34:03'),'capture timestamp advances from 06:34');
+        assert.ok(Math.min(...hud.pulse)<.45&&Math.max(...hud.pulse)>.85,'REC pulses during recording');
         const codecs=['A_OPUS','A_VORBIS','mp4a'].some(k=>recording.includes(Buffer.from(k)));
         assert.ok(codecs,'export must include an AUDIO track, not just silent video');
 

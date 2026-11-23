@@ -48,7 +48,7 @@ try{
       });
       const response=await page.goto(origin,{waitUntil:'domcontentloaded'});
       assert.equal(response.status(),200);
-      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.5.0');
+      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.5.1');
       assert.equal(await page.locator('#openCameraMain').isVisible(),true,'camera is main CTA');
       assert.equal(await page.locator('#emptyUploadBtn').isVisible(),true,'gallery remains available');
       await page.locator('#openCameraMain').click();
@@ -64,7 +64,10 @@ try{
       await page.locator('#cameraShutter').click();
       await page.waitForFunction(()=>!document.getElementById('cameraReviewActions').hidden,{timeout:18000});
       assert.equal(await page.locator('#cameraPreview').isVisible(),true,'captured photo preview visible');
-      assert.equal(await page.locator('#cameraGuide').isVisible(),false,'guides disappear for honest photo review');
+      assert.equal(await page.locator('#cameraGuide').isVisible(),true,'ghost guide remains during photo review');
+      assert.equal(await page.locator('.camera-ghost-balloon').isVisible(),true,'reference balloon remains over the captured photo');
+      assert.equal(await page.locator('.camera-air-title').isVisible(),false,'framing instructions do not clutter the review');
+      assert.ok(Number(await page.locator('.camera-ghost-balloon').evaluate(el=>getComputedStyle(el).opacity))<.6,'reference is translucent');
       assert.match(await page.locator('#cameraStepIndicator').innerText(),/02 \/ 03/,'review step visible');
       const capturedSize=await page.locator('#cameraPreview').evaluate(img=>new Promise(resolve=>{
         if(img.complete&&img.naturalWidth)return resolve({w:img.naturalWidth,h:img.naturalHeight});

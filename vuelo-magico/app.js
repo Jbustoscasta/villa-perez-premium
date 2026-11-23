@@ -1,5 +1,5 @@
 /*
- * VILLA PÉREZ — El vuelo mágico | v1.5.0
+ * VILLA PÉREZ — El vuelo mágico | v1.5.1
  * Static, local-first editor. No API keys, third-party SDKs or server uploads.
  * The user controls a curved motion path; a chroma-keyed local video or official
  * transparent art follows it.  Video compositing and export happen in the browser.
@@ -334,8 +334,67 @@
     }
     ctx.restore();
   }
+
+  // The child's magic-camera HUD is painted into the exported video itself.
+  // It uses the same green night-vision graphics as camara-espia, scaled to 9:16.
+  function drawMagicCameraHud(t){
+    const w=W(),h=H(),u=w/720;
+    const green='#adffcc',edge='#80ffaf';
+    const top=h*.052,bottom=h*.948,pad=w*.055;
+    const font=(size,weight=700)=>{ctx.font=weight+' '+(size*u)+'px ui-monospace, SFMono-Regular, Consolas, monospace';};
+    const line=(x1,y1,x2,y2)=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();};
+    const plate=(x,y,width,height)=>{
+      ctx.save();ctx.fillStyle='rgba(0,22,17,.70)';ctx.shadowBlur=0;
+      ctx.beginPath();
+      if(typeof ctx.roundRect==='function')ctx.roundRect(x,y,width,height,8*u);
+      else ctx.rect(x,y,width,height);
+      ctx.fill();ctx.restore();
+    };
+    ctx.save();
+    // Fine scanlines add a camera texture without obscuring the room or Pérez.
+    ctx.fillStyle='rgba(7,31,27,.075)';
+    for(let y=0;y<h;y+=8*u)ctx.fillRect(0,y,w,1*u);
+    ctx.textBaseline='middle';ctx.fillStyle=green;ctx.strokeStyle=edge;
+    ctx.lineWidth=2.4*u;ctx.lineCap='round';
+    ctx.shadowColor='rgba(103,255,179,.55)';ctx.shadowBlur=5*u;
+    // Four green viewfinder corner brackets.
+    const mx=w*.027,my=h*.023,l=38*u;
+    for(const [x,y,sx,sy] of [[mx,my,1,1],[w-mx,my,-1,1],[mx,h-my,1,-1],[w-mx,h-my,-1,-1]]){
+      ctx.beginPath();ctx.moveTo(x+sx*l,y);ctx.lineTo(x,y);ctx.lineTo(x,y+sy*l);ctx.stroke();
+    }
+    // REC stays legible while its red indicator pulses every 1.2 seconds.
+    plate(pad,top-21*u,116*u,42*u);
+    ctx.save();ctx.fillStyle='#ff414f';ctx.shadowColor='#ff213c';ctx.shadowBlur=9*u;
+    ctx.globalAlpha=.23+.77*(.5+.5*Math.cos(2*Math.PI*t/1.2));
+    ctx.beginPath();ctx.arc(pad+19*u,top,8*u,0,2*Math.PI);ctx.fill();ctx.restore();
+    font(25,900);ctx.textAlign='left';ctx.fillStyle='#ff646a';ctx.fillText('REC',pad+35*u,top);
+    // Fictional capture time: starts at 06:34:00, independent of the real clock.
+    const seconds=String(Math.floor(Math.max(0,t))).padStart(2,'0');
+    plate(w/2-100*u,top-21*u,200*u,42*u);
+    ctx.fillStyle=green;ctx.textAlign='center';font(27,800);ctx.fillText('06:34:'+seconds,w/2,top);
+    // Battery/CAM indicator (drawn geometrically for identical rendering on iOS).
+    const bx=w-pad-113*u;
+    plate(bx,top-18*u,113*u,36*u);
+    ctx.strokeStyle=green;ctx.lineWidth=2*u;ctx.strokeRect(bx+10*u,top-8*u,28*u,16*u);
+    ctx.fillRect(bx+39*u,top-3*u,3*u,6*u);ctx.fillRect(bx+14*u,top-4*u,20*u,8*u);
+    font(20,700);ctx.textAlign='left';ctx.fillText('CAM',bx+48*u,top);
+    // Central focus reticle, deliberately discreet.
+    ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=edge;ctx.lineWidth=1.8*u;
+    ctx.setLineDash([5*u,5*u]);ctx.strokeRect(w/2-39*u,h/2-39*u,78*u,78*u);
+    ctx.setLineDash([]);line(w/2-13*u,h/2,w/2+13*u,h/2);line(w/2,h/2-13*u,w/2,h/2+13*u);ctx.restore();
+    plate(pad,bottom-19*u,240*u,38*u);
+    font(21,700);ctx.fillStyle=green;ctx.textAlign='left';ctx.fillText('☾ Visión nocturna',pad+10*u,bottom);
+    // Coverage bars, matching the child's ▂▄▆ signal.
+    const right=w-pad,barW=9*u,gap=5*u;
+    for(let i=0;i<3;i++){
+      const bh=(9+i*9)*u;
+      ctx.fillRect(right-(3-i)*(barW+gap),bottom+12*u-bh,barW,bh);
+    }
+    ctx.restore();
+  }
+
   function drawFrame(t=state.time) {
-    ctx.save();ctx.clearRect(0,0,W(),H());drawBackdrop();if(state.photo){exposureFor(t);drawParticles(t);drawBalloon(t);}ctx.restore();
+    ctx.save();ctx.clearRect(0,0,W(),H());drawBackdrop();if(state.photo){exposureFor(t);drawParticles(t);drawBalloon(t);if(state.recording)drawMagicCameraHud(t);}ctx.restore();
     drawOverlay();setProgressUi();updateBalloonControls();
   }
   function drawOverlay() {
@@ -582,10 +641,11 @@
       $('cameraDarkWarning').hidden=true;
       $('cameraLiveActions').hidden=true;
       $('cameraReviewActions').hidden=false;
-      $('cameraGuide').hidden=true;
+      // Keep the translucent framing reference on screen, never in the captured JPEG.
+      $('cameraGuide').hidden=false;
       $('cameraReviewLabel').hidden=false;
       setCameraStep(2,'Mira cómo ha quedado la foto');
-      $('cameraTip').textContent='Comprueba que hay espacio arriba. Si te gusta, úsala.';
+      $('cameraTip').textContent='Comprueba que el globo de muestra tiene espacio para volar. Si te gusta, úsala.';
       $('cameraAcceptBtn').focus({preventScroll:true});
     },'image/jpeg',.91);
   }
@@ -746,6 +806,8 @@
     state.recording=true;state.exportCancelled=false;state.exportBlob=null;
     $('exportModal').hidden=false;$('progressFill').style.width='0%';$('progressValue').textContent='0%';$('exportMessage').textContent='Pérez está siguiendo el recorrido que has dibujado.';
     try{
+      // Prime the recorded canvas so the very first frame already contains the HUD.
+      state.time=0;drawFrame(0);
       const stream=canvas.captureStream(30);
       if(!state.silent){const audioStream=await initAudio();if(audioStream)for(const track of audioStream.stream.getAudioTracks())stream.addTrack(track);}
       const rec=new MediaRecorder(stream,mime?{mimeType:mime,videoBitsPerSecond:exportWidth>=1080?9000000:5000000}:undefined);
@@ -960,5 +1022,5 @@
   if(window.matchMedia?.('(min-width:831px)').matches)$('advancedSettings').open=true;
   $('sizeControl').value=Math.round(state.size*100);$('sizeValue').textContent=Math.round(state.size*100)+'%';$('durationControl').value=state.duration;$('magicControl').value=Math.round(state.magic*100);$('magicValue').textContent=Math.round(state.magic*100)+'%';
   buildPath();resizeCanvas(720);setMode('draw');loadDefaultVideo();
-  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite',exposure:state.appliedExposure,lightMode:state.autoLight?'auto':'manual',soundReady:sound.readyState,soundTime:sound.currentTime}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.5.0' };
+  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite',exposure:state.appliedExposure,lightMode:state.autoLight?'auto':'manual',soundReady:sound.readyState,soundTime:sound.currentTime}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.5.1' };
 })();

@@ -527,3 +527,16 @@ body::before{
 .spy-parent-link{display:block;color:#f5dda8;text-decoration:underline;text-underline-offset:3px;font-size:12px;padding:8px}
 #prepareSpyBtn{background:rgba(20,40,63,.95);border:1px solid rgba(246,215,167,.55);color:#fbe3b7}
 #prepareSpyBtn:disabled{opacity:.78}
+
+/* Photo review: keep just the ghost balloon over the unmodified still. */
+#cameraPreview:not([hidden]) + .camera-guide .camera-air-space{
+  border-color:transparent;background:none;box-shadow:none;
+}
+#cameraPreview:not([hidden]) + .camera-guide .camera-air-title,
+#cameraPreview:not([hidden]) + .camera-guide .camera-sky-stars,
+#cameraPreview:not([hidden]) + .camera-guide .camera-luminous-thread,
+#cameraPreview:not([hidden]) + .camera-guide .camera-lower-label{display:none}
+#cameraPreview:not([hidden]) + .camera-guide .camera-ghost-balloon{
+  opacity:.38;animation:none;transform:translate(-50%,-50%);
+  filter:grayscale(.55) brightness(1.25) drop-shadow(0 0 5px #f6d492);
+}
