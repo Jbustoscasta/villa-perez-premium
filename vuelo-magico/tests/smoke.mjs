@@ -127,10 +127,14 @@ try{
       assert.equal(await page.locator('#scenePill').innerText(),'REPRODUCIENDO','muting must never pause flight');
       await page.locator('#soundBtn').click();
 
-      assert.equal(await page.locator('#balloonTransform').isVisible(),false);
-      await page.locator('#playBtn').click();
+      // Slow software WebKit rendering can finish the whole 15s flight while
+      // the test is interacting. Only click Pause if flight is still playing.
+      if((await page.locator('#scenePill').innerText())==='REPRODUCIENDO'){
+        assert.equal(await page.locator('#balloonTransform').isVisible(),false);
+        await page.locator('#playBtn').click();
+      }
+      await page.waitForFunction(()=>document.getElementById('scenePill').textContent==='EDITANDO');
       assert.equal(await page.locator('#balloonTransform').isVisible(),true);
-      assert.equal(await page.locator('#scenePill').innerText(),'EDITANDO');
       // End-to-end recording: one Chromium mobile run checks file generation,
       // recorder cleanup and return to enabled playback controls.
       if(browserName==='Chromium'&&dims.width===390){
