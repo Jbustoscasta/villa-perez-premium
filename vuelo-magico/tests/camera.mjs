@@ -48,7 +48,7 @@ try{
       });
       const response=await page.goto(origin,{waitUntil:'domcontentloaded'});
       assert.equal(response.status(),200);
-      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.5.2');
+      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.5.3');
       assert.equal(await page.locator('#openCameraMain').isVisible(),true,'camera is main CTA');
       assert.equal(await page.locator('#emptyUploadBtn').isVisible(),true,'gallery remains available');
       await page.locator('#openCameraMain').click();

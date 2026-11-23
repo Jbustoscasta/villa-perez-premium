@@ -15,7 +15,14 @@ try{
       page.on('pageerror',error=>errors.push(error.message));
       const response=await page.goto(origin,{waitUntil:'domcontentloaded'});
       assert.equal(response.status(),200);
-      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.5.2');
+      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.5.3');
+      const signal=await page.evaluate(()=>{
+        const at=window.VillaPerezFlight.signalInterferenceAt;
+        return [at(0,8),at(.4,8),at(1,8),at(4,8),at(7,8),at(7.6,8),at(8,8)];
+      });
+      assert.ok(signal[0]>.8&&signal[1]>0&&signal[1]<signal[0],'opening interference fades out');
+      assert.deepEqual(signal.slice(2,5),[0,0,0],'middle of flight is clean');
+      assert.ok(signal[5]>0&&signal[6]===1,'closing interference builds up');
       assert.equal(await page.locator('#scenePlayer').isVisible(),false);
       assert.equal(await page.locator('#storyStepPhoto').getAttribute('aria-current'),'step','first experience step');
       assert.equal(await page.locator('.magic-balloon-orb img').isVisible(),true,'official Pérez visual in magical welcome');
@@ -149,7 +156,9 @@ try{
         await page.evaluate(()=>{
           const c=document.getElementById('sceneCanvas'),x=c.getContext('2d');
           const originalText=x.fillText.bind(x),originalArc=x.arc.bind(x);
-          window.__recordedHud={labels:[],pulse:[],captured:false,firstFrame:false};
+          window.__recordedHud={labels:[],pulse:[],captured:false,firstFrame:false,glitch:[]};
+          const originalImage=x.drawImage.bind(x);
+          x.drawImage=(source,...args)=>{if(source.id==='signalGlitchBuffer')window.__recordedHud.glitch.push(window.__recordedHud.labels.filter(s=>s.startsWith('06:34:')).at(-1));return originalImage(source,...args);};
           const originalCapture=c.captureStream.bind(c);
           c.captureStream=(...args)=>{
             window.__recordedHud.firstFrame=window.__recordedHud.labels.includes('06:34:00');
@@ -169,6 +178,9 @@ try{
         assert.ok(hud.captured&&hud.firstFrame,'recorded canvas contains the HUD before capture starts');
         for(const label of ['REC','06:34:00','CAM','☾ Visión nocturna'])assert.ok(hud.labels.includes(label),'HUD label: '+label);
         assert.ok(hud.labels.includes('06:34:03'),'capture timestamp advances from 06:34');
+        assert.ok(hud.glitch.includes('06:34:00'),'opening signal interference is painted into exported frames');
+        assert.ok(hud.glitch.some(t=>t==='06:34:07'||t==='06:34:08'),'closing signal interference is painted into exported frames');
+        assert.ok(!hud.glitch.includes('06:34:03'),'no interference in the middle of the exported flight');
         assert.ok(Math.min(...hud.pulse)<.45&&Math.max(...hud.pulse)>.85,'REC pulses during recording');
         const codecs=['A_OPUS','A_VORBIS','mp4a'].some(k=>recording.includes(Buffer.from(k)));
         assert.ok(codecs,'export must include an AUDIO track, not just silent video');

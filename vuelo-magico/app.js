@@ -1,5 +1,5 @@
 /*
- * VILLA PÉREZ — El vuelo mágico | v1.5.2
+ * VILLA PÉREZ — El vuelo mágico | v1.5.3
  * Static, local-first editor. No API keys, third-party SDKs or server uploads.
  * The user controls a curved motion path; a chroma-keyed local video or official
  * transparent art follows it.  Video compositing and export happen in the browser.
@@ -393,8 +393,71 @@
     ctx.restore();
   }
 
+
+  // Brief analog/digital signal interference at the edges of the recording.
+  // No readback, extra full-resolution allocation per frame or external asset.
+  const signalBuffer=document.createElement('canvas');
+  signalBuffer.id='signalGlitchBuffer';
+  const signalCtx=signalBuffer.getContext('2d',{alpha:false});
+  function signalInterferenceAt(t,duration=state.duration){
+    const smooth=x=>{x=CLAMP(x,0,1);return x*x*(3-2*x);};
+    const arrival=.88*(1-smooth(t/.72));
+    const departure=smooth((t-(duration-.95))/.95);
+    return Math.max(arrival,departure);
+  }
+  function drawSignalInterference(t){
+    const strength=signalInterferenceAt(t);
+    if(strength<.012||!signalCtx)return;
+    const w=W(),h=H(),u=w/720,step=Math.floor(t*24);
+    if(signalBuffer.width!==w||signalBuffer.height!==h){
+      signalBuffer.width=w;signalBuffer.height=h;
+    }
+    // Copy the final composition, including REC, so the entire signal glitches.
+    signalCtx.drawImage(canvas,0,0);
+    ctx.save();
+    ctx.shadowBlur=0;
+    // Horizontal tearing, localized to thin bands; no full-screen flashes.
+    const bands=3+Math.round(strength*9);
+    for(let i=0;i<bands;i++){
+      const y=Math.floor(R(step,i,71)*h);
+      const bh=Math.min(h-y,Math.max(1,Math.floor((3+R(step,i,72)*25)*u*strength)));
+      const offset=Math.round((R(step,i,73)-.5)*w*.105*strength);
+      if(!offset)continue;
+      ctx.drawImage(signalBuffer,0,y,w,bh,offset,y,w,bh);
+      ctx.fillStyle='rgba(4,20,19,'+(.5*strength)+')';
+      if(offset>0)ctx.fillRect(0,y,offset,bh);
+      else ctx.fillRect(w+offset,y,-offset,bh);
+    }
+    // Thin static grains in muted green, blue and pale gray; CCTV texture.
+    for(let i=0;i<Math.round(220*strength);i++){
+      const x=R(step,i,81)*w,y=R(step,i,82)*h;
+      const a=(.08+R(step,i,83)*.26)*strength;
+      ctx.fillStyle=i%3===0?'rgba(161,255,210,'+a+')':
+        i%3===1?'rgba(190,210,230,'+a+')':'rgba(5,12,16,'+a+')';
+      ctx.fillRect(x,y,(1+R(step,i,84)*19)*u,(1+R(step,i,85)*2)*u);
+    }
+    // Subtle rolling loss of sync; avoid sudden luminance changes.
+    const center=R(step,91,1)*h;
+    const gradient=ctx.createLinearGradient(0,Math.max(0,center-24*u),0,Math.min(h,center+24*u));
+    gradient.addColorStop(0,'rgba(0,14,15,0)');
+    gradient.addColorStop(.5,'rgba(10,28,29,'+(.32*strength)+')');
+    gradient.addColorStop(1,'rgba(0,14,15,0)');
+    ctx.fillStyle=gradient;ctx.fillRect(0,Math.max(0,center-24*u),w,48*u);
+    // The last frame ends in a brief muted loss of signal, not a white flash.
+    const loss=CLAMP((t-(state.duration-.22))/.22,0,1);
+    if(loss>0){
+      ctx.fillStyle='rgba(5,17,20,'+(.55*loss)+')';ctx.fillRect(0,0,w,h);
+      ctx.fillStyle='rgba(143,232,190,'+(.33*loss)+')';
+      for(let i=0;i<9;i++){
+        const yy=R(step,i,97)*h;
+        ctx.fillRect(R(step,i,98)*w*.3,yy,w*(.15+R(step,i,99)*.5),1.5*u);
+      }
+    }
+    ctx.restore();
+  }
+
   function drawFrame(t=state.time) {
-    ctx.save();ctx.clearRect(0,0,W(),H());drawBackdrop();if(state.photo){exposureFor(t);drawParticles(t);drawBalloon(t);if(state.playing||state.recording)drawMagicCameraHud(t);}ctx.restore();
+    ctx.save();ctx.clearRect(0,0,W(),H());drawBackdrop();if(state.photo){exposureFor(t);drawParticles(t);drawBalloon(t);if(state.playing||state.recording){drawMagicCameraHud(t);drawSignalInterference(t);}}ctx.restore();
     drawOverlay();setProgressUi();updateBalloonControls();
   }
   function drawOverlay() {
@@ -1022,5 +1085,5 @@
   if(window.matchMedia?.('(min-width:831px)').matches)$('advancedSettings').open=true;
   $('sizeControl').value=Math.round(state.size*100);$('sizeValue').textContent=Math.round(state.size*100)+'%';$('durationControl').value=state.duration;$('magicControl').value=Math.round(state.magic*100);$('magicValue').textContent=Math.round(state.magic*100)+'%';
   buildPath();resizeCanvas(720);setMode('draw');loadDefaultVideo();
-  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite',exposure:state.appliedExposure,lightMode:state.autoLight?'auto':'manual',soundReady:sound.readyState,soundTime:sound.currentTime}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.5.2' };
+  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite',exposure:state.appliedExposure,lightMode:state.autoLight?'auto':'manual',soundReady:sound.readyState,soundTime:sound.currentTime}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), signalInterferenceAt:(t,duration)=>signalInterferenceAt(t,duration), version:'1.5.3' };
 })();
