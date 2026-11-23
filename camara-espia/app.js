@@ -55,6 +55,7 @@
     feed.srcObject = null;
     feed.hidden = true;
     posterFallback.hidden = false;
+    $('liveViewport').classList.remove('has-feed');
   }
   async function beginPreview() {
     stopFeed();
@@ -74,6 +75,7 @@
       feed.srcObject = stream;
       feed.hidden = false;
       posterFallback.hidden = true;
+      $('liveViewport').classList.add('has-feed');
       try { await feed.play(); } catch (err) {
         console.info('Vista en directo no reproducible; se usa la ilustración.', err);
         stopFeed();
