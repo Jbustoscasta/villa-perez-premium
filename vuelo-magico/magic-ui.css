@@ -521,3 +521,9 @@ body::before{
 @media(max-height:645px) and (orientation:portrait){
  .magic-balloon-orb{margin-bottom:6px!important}
 }
+
+/* La Cámara Espía se activa exclusivamente desde el resultado del padre. */
+.spy-parent-status{font-size:11px;line-height:1.5;color:#f5dda8;margin:4px 0 0}
+.spy-parent-link{display:block;color:#f5dda8;text-decoration:underline;text-underline-offset:3px;font-size:12px;padding:8px}
+#prepareSpyBtn{background:rgba(20,40,63,.95);border:1px solid rgba(246,215,167,.55);color:#fbe3b7}
+#prepareSpyBtn:disabled{opacity:.78}
