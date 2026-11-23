@@ -420,3 +420,64 @@ body::before{
  .topbar .brand-icon{flex:0 0 33px}
  .topbar .top-right{margin-left:auto}
 }
+
+
+/* El momento final, como una pequeña postal de Pérez. */
+.success-backdrop{
+ background:radial-gradient(circle at 50% 42%,rgba(62,51,95,.54),rgba(5,12,26,.94));
+ -webkit-backdrop-filter:blur(11px);backdrop-filter:blur(11px);
+}
+.success-modal{
+ max-width:390px;padding:28px 23px 24px;overflow:hidden;text-align:center;
+ border:1px solid #dcbb85;border-radius:23px;
+ background:
+ radial-gradient(circle at 50% 14%,rgba(133,96,171,.31),transparent 44%),
+ linear-gradient(180deg,#222c50,#111c37 92%);
+ box-shadow:0 0 0 5px rgba(229,191,136,.05),0 30px 85px #000c;
+}
+.success-modal::before{
+ content:"";position:absolute;inset:12px;border:1px solid rgba(245,213,163,.19);
+ border-radius:17px;pointer-events:none;
+}
+.success-sparkles{
+ position:absolute;inset:18px 16px auto;display:flex;justify-content:space-between;
+ color:#f4d497;font-size:17px;letter-spacing:.16em;pointer-events:none;
+}
+.success-sparkles span{font-size:10px;align-self:center}
+.success-seal{
+ display:grid;place-items:center;margin:4px auto 17px;
+ width:76px;height:76px;border:1px solid #edc98b;border-radius:50%;
+ background:radial-gradient(circle at 37% 34%,#70513d,#352e47 77%);
+ box-shadow:0 0 0 7px rgba(238,202,145,.08),0 0 32px rgba(235,204,155,.20);
+ color:#f4d594;font-size:49px;font-family:Georgia,serif;
+}
+.success-kicker{
+ font-size:10px;letter-spacing:.14em;font-weight:800;color:#f1d5a6;
+}
+.success-modal h2{
+ font-family:Georgia,serif;font-size:26px;font-weight:normal;
+ line-height:1.17;max-width:320px;margin:13px auto 13px;color:#fff0dc;
+}
+.success-modal p{
+ font-size:13px;line-height:1.55;max-width:315px;margin:0 auto 20px;
+ color:#d5d9e3;
+}
+.success-actions{display:grid;gap:8px;margin:0 auto;max-width:300px}
+.success-actions button{min-height:44px;border-radius:12px;padding:10px 13px;font-size:12px}
+.success-actions .secondary-button{
+ margin:0;border-color:rgba(255,231,188,.42);
+ background:rgba(255,255,255,.07);color:#f9e7c7;
+}
+.success-back{
+ border:none;background:transparent;color:#c3cee0;
+ font-size:12px;text-decoration:underline;text-underline-offset:3px;
+ cursor:pointer;
+}
+.success-private{display:block;margin:15px 0 0;color:#a8b8cc;font-size:10px}
+@media(max-height:650px){
+ .success-modal{padding:20px}
+ .success-seal{width:58px;height:58px;font-size:39px;margin-bottom:12px}
+ .success-modal h2{font-size:22px;margin:10px auto}
+ .success-modal p{font-size:11px;margin-bottom:11px}
+ .success-actions button{min-height:38px}
+}
