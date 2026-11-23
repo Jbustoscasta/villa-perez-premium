@@ -185,7 +185,7 @@
     const gl=keyCanvas.getContext('webgl',{alpha:true,premultipliedAlpha:false,preserveDrawingBuffer:true,antialias:false});
     if(!gl)return {keyCanvas,cpuCtx:keyCanvas.getContext('2d',{willReadFrequently:true}),crop:null};
     const vs='attribute vec2 pos;varying vec2 uv;void main(){uv=(pos+1.0)*0.5;gl_Position=vec4(pos,0.0,1.0);}';
-    const fs='precision mediump float;varying vec2 uv;uniform sampler2D tex;uniform float threshold;void main(){vec4 c=texture2D(tex,uv);float dom=c.g-max(c.r,c.b);float green=smoothstep(threshold-.095,threshold+.095,dom);float a=1.0-green;float leak=max(0.0,c.g-max(c.r,c.b));c.g-=leak*.60*green;gl_FragColor=vec4(c.rgb,a);}';
+    const fs='precision mediump float;varying vec2 uv;uniform sampler2D tex;uniform float threshold;uniform float exposure;void main(){vec4 c=texture2D(tex,uv);float dom=c.g-max(c.r,c.b);float green=smoothstep(threshold-.095,threshold+.095,dom);float a=1.0-green;float leak=max(0.0,c.g-max(c.r,c.b));c.g-=leak*.60*green;float gray=dot(c.rgb,vec3(.2126,.7152,.0722));vec3 col=mix(vec3(gray),c.rgb,clamp(.69+.30*exposure,.65,1.0));col*=exposure;col.b*=.96;gl_FragColor=vec4(col,a);}';
     const compile=(type,src)=>{const sh=gl.createShader(type);gl.shaderSource(sh,src);gl.compileShader(sh);if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(sh));return sh;};
     const program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,vs));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fs));gl.linkProgram(program);
     if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
@@ -196,7 +196,7 @@
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
     gl.uniform1i(gl.getUniformLocation(program,'tex'),0);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
-    return {gl,keyCanvas,threshold:gl.getUniformLocation(program,'threshold'),crop:null,frameReady:false};
+    return {gl,keyCanvas,threshold:gl.getUniformLocation(program,'threshold'),exposure:gl.getUniformLocation(program,'exposure'),crop:null,frameReady:false};
   }
   function applyKey() {
     if(!state.loadedVideo||!keyer||video.readyState<2)return null;
@@ -218,11 +218,19 @@
           const ch=u*u*(3-2*u);
           pix[i+3]=Math.round(255*(1-ch));
           pix[i+1]=Math.round(255*Math.max(0,green-Math.max(0,dominance)*.60*ch));
+          // Apply image-matched lighting AFTER identifying the green pixels.
+          const luminosity=.2126*pix[i]+.7152*pix[i+1]+.0722*pix[i+2];
+          const sat=CLAMP(.69+.30*state.appliedExposure,.65,1);
+          const brightness=state.appliedExposure;
+          pix[i]=Math.round(CLAMP((luminosity+(pix[i]-luminosity)*sat)*brightness,0,255));
+          pix[i+1]=Math.round(CLAMP((luminosity+(pix[i+1]-luminosity)*sat)*brightness,0,255));
+          pix[i+2]=Math.round(CLAMP((luminosity+(pix[i+2]-luminosity)*sat)*brightness*.96,0,255));
         }
         kc.putImageData(imageData,0,0);
       } else {
         const gl=keyer.gl;gl.viewport(0,0,keyCanvas.width,keyCanvas.height);
         gl.uniform1f(keyer.threshold,threshold);
+        gl.uniform1f(keyer.exposure,state.appliedExposure);
         gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,video);
         gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
       }
