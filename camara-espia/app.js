@@ -175,7 +175,16 @@
       tx.onabort = () => { db.close(); reject(tx.error || new Error('Operación cancelada')); };
     });
   }
-  const readCapture = () => withStore('readonly', store => store.get(assetKey));
+  async function readCapture(){
+    const data=await withStore('readonly', store=>store.get(assetKey));
+    if(data?.videoBytes && !data.videoBlob)
+      data.videoBlob=new Blob([data.videoBytes],{type:data.videoMime||'video/mp4'});
+    if(data?.photoBytes && !data.photoBlob)
+      data.photoBlob=new Blob([data.photoBytes],{type:data.photoMime||'image/jpeg'});
+    if(data?.letterBytes && !data.letterBlob)
+      data.letterBlob=new Blob([data.letterBytes],{type:data.letterMime||'application/pdf'});
+    return data;
+  }
   const markChanged = () => {
     try { localStorage.setItem(signalKey, String(Date.now())); } catch (_) {}
   };
@@ -193,7 +202,27 @@
       letterBlob:input.letterBlob instanceof Blob?input.letterBlob:null,
       letterUrl:typeof input.letterUrl==='string'?input.letterUrl:null
     };
-    await withStore('readwrite',store=>store.put(data));
+    try {
+      await withStore('readwrite',store=>store.put(data));
+    } catch (error) {
+      // Safari/WebKit may reject structured-cloning Blob objects into IndexedDB.
+      // Store byte arrays instead; IndexedDB supports Uint8Array reliably.
+      if (!videoBlob) throw error;
+      data.videoBytes = new Uint8Array(await videoBlob.arrayBuffer());
+      data.videoMime = videoBlob.type || 'video/mp4';
+      data.videoBlob = null;
+      if(data.photoBlob){
+        data.photoBytes=new Uint8Array(await data.photoBlob.arrayBuffer());
+        data.photoMime=data.photoBlob.type||'image/jpeg';
+        data.photoBlob=null;
+      }
+      if(data.letterBlob){
+        data.letterBytes=new Uint8Array(await data.letterBlob.arrayBuffer());
+        data.letterMime=data.letterBlob.type||'application/pdf';
+        data.letterBlob=null;
+      }
+      await withStore('readwrite',store=>store.put(data));
+    }
     markChanged();
     await refreshCapture();
     return {ready:true,availableAt:data.availableAt};
