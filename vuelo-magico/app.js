@@ -747,7 +747,7 @@
         const ext=blob.type.includes('mp4')?'mp4':'webm';const name=`vuelo-raton-perez-${new Date().toISOString().slice(0,10)}.${ext}`;
         state.exportBlob=blob;state.exportName=name;
         $('shareBtn').hidden=false;
-        saveBlob(blob,name);setJourneyStep(3);toast('¡Recuerdo creado! Ya puedes guardarlo y compartirlo.');
+        saveBlob(blob,name);setJourneyStep(3);$('successModal').hidden=false;$('successDownload').focus({preventScroll:true});
         resizeCanvas(720);
       };
       rec.start(250);state.time=0;state.playing=true;state.startedAt=performance.now();
@@ -821,6 +821,19 @@
   $('quickExportBtn').addEventListener('click',exportVideo);
   $('mobileExportBtn').addEventListener('click',exportVideo);
   $('snapshotBtn').addEventListener('click',saveSnapshot);
+  $('successDownload').addEventListener('click',()=>{
+    if(state.exportBlob)saveBlob(state.exportBlob,state.exportName||'vuelo-magico-perez.mp4');
+    else toast('Todavía no hay ningún vídeo para guardar.');
+  });
+  $('successShare').addEventListener('click',()=>{
+    if(!state.exportBlob)return;
+    $('shareBtn').click();
+  });
+  $('successClose').addEventListener('click',()=>{
+    $('successModal').hidden=true;
+    $('playBtn').focus({preventScroll:true});
+  });
+
   $('shareBtn').addEventListener('click',async()=>{
     if(!state.exportBlob)return;
     const f=new File([state.exportBlob],state.exportName,{type:state.exportBlob.type});
@@ -834,7 +847,7 @@
   function showHelp(on){$('helpModal').hidden=!on;}
   $('helpBtn').addEventListener('click',()=>showHelp(true));$('closeHelpBtn').addEventListener('click',()=>showHelp(false));$('helpDoneBtn').addEventListener('click',()=>showHelp(false));
   $('helpModal').addEventListener('click',e=>{if(e.target.id==='helpModal')showHelp(false);});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')showHelp(false);if(e.code==='Space'&&['INPUT','BUTTON','TEXTAREA'].indexOf(document.activeElement?.tagName)===-1){e.preventDefault();state.playing?pause():play();}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('successModal').hidden=true;showHelp(false);}if(e.code==='Space'&&['INPUT','BUTTON','TEXTAREA'].indexOf(document.activeElement?.tagName)===-1){e.preventDefault();state.playing?pause():play();}});
   window.addEventListener('beforeunload',()=>{if(state.videoUrl)URL.revokeObjectURL(state.videoUrl);if(state.photoUrl)URL.revokeObjectURL(state.photoUrl);});
   window.addEventListener('resize',()=>{if(state.photo)updateBalloonControls();});
   sprite.onload=()=>{state.spriteReady=true;drawFrame();};
