@@ -838,6 +838,63 @@
     if(state.exportBlob)saveBlob(state.exportBlob,state.exportName||'vuelo-magico-perez.mp4');
     else toast('Todavía no hay ningún vídeo para guardar.');
   });
+  // Enlace privado padre → cámara del niño. No requiere servicios externos:
+  // en esta etapa se almacena en el MISMO Safari/dispositivo mediante IndexedDB.
+  async function saveSpyVideoForMorning(){
+    if(!state.exportBlob){toast('Primero crea el vídeo mágico.');return;}
+    const btn=$('prepareSpyBtn');
+    const status=$('prepareSpyStatus');
+    btn.disabled=true;btn.textContent='☾ Guardando la grabación…';
+    try{
+      const tomorrow=new Date();
+      tomorrow.setDate(tomorrow.getDate()+1);
+      tomorrow.setHours(7,0,0,0);
+      const base={
+        id:'captura-magica',createdAt:Date.now(),availableAt:tomorrow.getTime(),
+        videoBlob:state.exportBlob,videoUrl:null,
+        photoBlob:null,photoUrl:null,letterBlob:null,letterUrl:null
+      };
+      async function put(record){
+        const db=await new Promise((resolve,reject)=>{
+          const req=indexedDB.open('villa-perez-sorpresas-v1',1);
+          req.onupgradeneeded=()=>{
+            if(!req.result.objectStoreNames.contains('items'))
+              req.result.createObjectStore('items',{keyPath:'id'});
+          };
+          req.onsuccess=()=>resolve(req.result);
+          req.onerror=()=>reject(req.error||new Error('No se puede abrir la biblioteca'));
+        });
+        try{
+          await new Promise((resolve,reject)=>{
+            const tx=db.transaction('items','readwrite');
+            tx.objectStore('items').put(record);
+            tx.oncomplete=resolve;
+            tx.onerror=()=>reject(tx.error||new Error('Guardado no disponible'));
+            tx.onabort=()=>reject(tx.error||new Error('Guardado cancelado'));
+          });
+        }finally{db.close();}
+      }
+      try{await put(base);}
+      catch(error){
+        base.videoBytes=new Uint8Array(await state.exportBlob.arrayBuffer());
+        base.videoMime=state.exportBlob.type||'video/mp4';
+        base.videoBlob=null;
+        await put(base);
+      }
+      try{localStorage.setItem('vp_cam_espia_capture_changed_v1',String(Date.now()));}catch(_){}
+      status.hidden=false;
+      status.textContent='✦ Preparada: el botón «Ver» aparecerá mañana a partir de las 7:00. Solo en este mismo dispositivo y navegador.';
+      btn.textContent='✓ Cámara preparada para mañana';
+      toast('¡Alerta mágica preparada para mañana!');
+    }catch(error){
+      console.warn('No se pudo preparar la cámara',error);
+      status.hidden=false;status.textContent='No se ha guardado. Comprueba el espacio disponible y prueba de nuevo.';
+      btn.textContent='☾ Reintentar preparar Cámara Espía';
+      btn.disabled=false;
+      toast('No se pudo guardar la grabación en este navegador.');
+    }
+  }
+  $('prepareSpyBtn').addEventListener('click',saveSpyVideoForMorning);
   $('successShare').addEventListener('click',()=>{
     if(!state.exportBlob)return;
     $('shareBtn').click();
