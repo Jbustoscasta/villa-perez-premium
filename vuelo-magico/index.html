@@ -206,6 +206,21 @@
   <audio id="magicAudio" src="assets/sonido-vuelo-real.mp3?v=131" preload="auto" loop></audio>
   <div class="toast" id="toast" aria-live="polite"></div>
   <div class="modal-backdrop" id="exportModal" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="exportTitle"><div class="modal-symbol">✧</div><h2 id="exportTitle">Guardando un poquito de magia…</h2><p id="exportMessage">Pérez está siguiendo el recorrido que has dibujado.</p><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><span id="progressValue">0%</span><button id="cancelExportBtn" class="secondary-button">Cancelar exportación</button></div></div>
+  <div class="modal-backdrop success-backdrop" id="successModal" hidden>
+    <div class="modal success-modal" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+      <div class="success-sparkles" aria-hidden="true">✦ <span>✧</span> ✦</div>
+      <div class="success-seal" aria-hidden="true">☾</div>
+      <span class="success-kicker">✦ MISIÓN MÁGICA CUMPLIDA ✦</span>
+      <h2 id="successTitle">¡Pérez ya ha sobrevolado su habitación!</h2>
+      <p>Este pequeño recuerdo es solo vuestro. Puedes descargarlo, compartirlo o seguir poniendo magia.</p>
+      <div class="success-actions">
+        <button type="button" id="successDownload" class="primary-button">↓ Guardar mi vídeo</button>
+        <button type="button" id="successShare" class="secondary-button">✧ Compartir recuerdo</button>
+        <button type="button" id="successClose" class="success-back">Volver al vuelo</button>
+      </div>
+      <span class="success-private">🔒 La foto y el vídeo se han creado en tu dispositivo</span>
+    </div>
+  </div>
   <div class="modal-backdrop" id="helpModal" hidden><div class="modal help-modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><button id="closeHelpBtn" class="modal-close" aria-label="Cerrar">×</button><h2 id="helpTitle">Cómo funciona el vuelo</h2><ol><li>Para hacer la foto, pulsa <b>Hacer foto mágica</b>: coloca la cama en la mitad inferior y deja el recuadro superior libre para el globo. Puedes repetir antes de aceptar, o elegir una foto existente.</li><li>Con <b>Dibujar recorrido</b> activado, arrastra el dedo dibujando la trayectoria.</li><li>Opcionalmente marca el lugar donde está el diente.</li><li>Ajusta el tamaño con el recuadro del globo o el control dentro de la escena y reproduce sin salir de la foto.</li><li>Exporta el vídeo para guardarlo o compartirlo.</li></ol><p>Para usar la cámara integrada necesitas abrir la web por HTTPS en Safari y aceptar el permiso. No usamos flash ni enviamos fotos al servidor. El vídeo animado del globo viene incluido. La aplicación elimina el fondo verde automáticamente sobre la fotografía; también puedes cargar otro MP4.</p><p>Todo se procesa localmente; no enviamos fotos a ningún servidor. En Chrome la exportación habitual es WebM y en Safari puede ser MP4 según el dispositivo.</p><button class="primary-button" id="helpDoneBtn">Entendido</button></div></div>
   <script src="app.js?v=150" defer></script>
 </body>
