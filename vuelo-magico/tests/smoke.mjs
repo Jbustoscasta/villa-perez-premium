@@ -15,10 +15,10 @@ try{
       page.on('pageerror',error=>errors.push(error.message));
       const response=await page.goto(origin,{waitUntil:'domcontentloaded'});
       assert.equal(response.status(),200);
-      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.5.3');
+      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.5.4');
       const signal=await page.evaluate(()=>{
         const at=window.VillaPerezFlight.signalInterferenceAt;
-        return [at(0,8),at(.4,8),at(1,8),at(4,8),at(7,8),at(7.6,8),at(8,8)];
+        return [at(0,8),at(.8,8),at(1.7,8),at(4,8),at(5.8,8),at(6.5,8),at(8,8)];
       });
       assert.ok(signal[0]>.8&&signal[1]>0&&signal[1]<signal[0],'opening interference fades out');
       assert.deepEqual(signal.slice(2,5),[0,0,0],'middle of flight is clean');
@@ -156,9 +156,9 @@ try{
         await page.evaluate(()=>{
           const c=document.getElementById('sceneCanvas'),x=c.getContext('2d');
           const originalText=x.fillText.bind(x),originalArc=x.arc.bind(x);
-          window.__recordedHud={labels:[],pulse:[],captured:false,firstFrame:false,glitch:[]};
+          window.__recordedHud={labels:[],pulse:[],captured:false,firstFrame:false,glitch:[],snow:[]};
           const originalImage=x.drawImage.bind(x);
-          x.drawImage=(source,...args)=>{if(source.id==='signalGlitchBuffer')window.__recordedHud.glitch.push(window.__recordedHud.labels.filter(s=>s.startsWith('06:34:')).at(-1));return originalImage(source,...args);};
+          x.drawImage=(source,...args)=>{if(source.id==='signalGlitchBuffer'||source.id==='signalNoiseBuffer'){const last=window.__recordedHud.labels.filter(s=>s.startsWith('06:34:')).at(-1);window.__recordedHud[source.id==='signalNoiseBuffer'?'snow':'glitch'].push(last);}return originalImage(source,...args);};
           const originalCapture=c.captureStream.bind(c);
           c.captureStream=(...args)=>{
             window.__recordedHud.firstFrame=window.__recordedHud.labels.includes('06:34:00');
@@ -181,6 +181,9 @@ try{
         assert.ok(hud.glitch.includes('06:34:00'),'opening signal interference is painted into exported frames');
         assert.ok(hud.glitch.some(t=>t==='06:34:07'||t==='06:34:08'),'closing signal interference is painted into exported frames');
         assert.ok(!hud.glitch.includes('06:34:03'),'no interference in the middle of the exported flight');
+        assert.ok(hud.snow.includes('06:34:00')&&hud.snow.some(t=>t==='06:34:07'||t==='06:34:08'),'TV snow is part of both ends of the export');
+        assert.ok(hud.labels.includes('SIN SEÑAL'),'final recording contains signal loss');
+        assert.ok(hud.labels.includes('SEÑAL INESTABLE'),'initial recording contains signal lock');
         assert.ok(Math.min(...hud.pulse)<.45&&Math.max(...hud.pulse)>.85,'REC pulses during recording');
         const codecs=['A_OPUS','A_VORBIS','mp4a'].some(k=>recording.includes(Buffer.from(k)));
         assert.ok(codecs,'export must include an AUDIO track, not just silent video');
