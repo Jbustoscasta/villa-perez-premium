@@ -359,8 +359,14 @@
     state.playing=true;state.startedAt=performance.now()-state.time*1000;
     updatePlayUi();$('scenePill').textContent='REPRODUCIENDO';
     // Safari puede ignorar preload=auto: arrancar el MP4 desde el toque real del padre.
-    if(state.loadedVideo||video.src){try{if(state.loadedVideo)video.currentTime=state.time%Math.max(video.duration||15,1);await video.play();}catch(e){console.warn('video play',e);}}
-    await startAudio();ticker();
+    if(state.loadedVideo||video.src){
+      try{
+        if(state.loadedVideo&&video.readyState>=1)video.currentTime=state.time%Math.max(video.duration||15,1);
+        const promise=video.play();
+        if(promise?.catch)promise.catch(e=>console.warn('video play',e));
+      }catch(e){console.warn('video play',e);}
+    }
+    startAudio().catch(e=>console.warn('audio start',e));ticker();
   }
   function ticker(){if(!state.playing)return;state.time=Math.min(state.duration,(performance.now()-state.startedAt)/1000);drawFrame();
     if(state.time>=state.duration){state.playing=false;pauseAudio();updatePlayUi();$('scenePill').textContent=state.recording?'EXPORTANDO':'EDITANDO';
@@ -379,7 +385,7 @@
     const mp4=['video/mp4;codecs="avc1.42E01E,mp4a.40.2"','video/mp4'];
     const webm=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
     const support=safari?[...mp4,...webm]:[...webm,...mp4];
-    const mime=support.find(m=>MediaRecorder.isTypeSupported(m))||'';
+    const mime=support.find(m=>typeof MediaRecorder.isTypeSupported==='function'&&MediaRecorder.isTypeSupported(m))||'';
     state.recording=true;state.exportCancelled=false;state.exportBlob=null;
     $('exportModal').hidden=false;$('progressFill').style.width='0%';$('progressValue').textContent='0%';$('exportMessage').textContent='Pérez está siguiendo el recorrido que has dibujado.';
     try{
@@ -390,7 +396,7 @@
       rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
       rec.onerror=e=>{console.error('record',e);toast('Ha fallado la exportación. Prueba calidad HD.');};
       rec.onstop=()=>{
-        stream.getTracks().forEach(t=>t.stop());state.recording=false;
+        stream.getTracks().forEach(t=>t.stop());state.recording=false;updatePlayUi();
         $('exportModal').hidden=true;$('scenePill').textContent='EDITANDO';
         if(state.exportCancelled||!chunks.length){resizeCanvas(720);return;}
         const blob=new Blob(chunks,{type:rec.mimeType||mime||'video/webm'});
@@ -404,7 +410,7 @@
       updatePlayUi();$('scenePill').textContent='EXPORTANDO';
       if(state.loadedVideo||video.src){try{if(state.loadedVideo)video.currentTime=0;await video.play();}catch(e){console.warn('video asset',e);}}
       await startAudio();state.startedAt=performance.now();ticker();
-    }catch(err){console.error(err);state.recording=false;$('exportModal').hidden=true;resizeCanvas(720);toast('No se pudo exportar el vídeo. Prueba otro navegador o calidad HD.');}
+    }catch(err){console.error(err);state.recording=false;state.playing=false;pauseAudio();updatePlayUi();$('exportModal').hidden=true;resizeCanvas(720);toast('No se pudo exportar el vídeo. Prueba otro navegador o calidad HD.');}
   }
   function saveBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),45000);}
   function saveSnapshot(){if(!state.photo){toast('Sube una fotografía antes de guardar el fotograma.');return;}canvas.toBlob(b=>{if(b)saveBlob(b,'foto-vuelo-perez.png');else toast('No se pudo guardar la imagen.');},'image/png',.95);}
@@ -457,7 +463,7 @@
     try{if(navigator.share&&navigator.canShare?.({files:[f]})){await navigator.share({files:[f],title:'La visita del Ratón Pérez'});}else{saveBlob(state.exportBlob,state.exportName);toast('Vídeo guardado. Puedes compartirlo desde tus archivos.');}}
     catch(e){if(e.name!=='AbortError')toast('No se pudo compartir. Prueba descargándolo.');}
   });
-  $('cancelExportBtn').addEventListener('click',()=>{state.exportCancelled=true;state.playing=false;cancelAnimationFrame(state.frameRequest);pauseAudio();if(state.recorder&&state.recorder.state==='recording')state.recorder.stop();else{state.recording=false;$('exportModal').hidden=true;}resizeCanvas(720);toast('Exportación cancelada.');});
+  $('cancelExportBtn').addEventListener('click',()=>{state.exportCancelled=true;state.playing=false;cancelAnimationFrame(state.frameRequest);pauseAudio();if(state.recorder&&state.recorder.state==='recording')state.recorder.stop();else{state.recording=false;$('exportModal').hidden=true;}updatePlayUi();resizeCanvas(720);toast('Exportación cancelada.');});
   $('saveRouteBtn').addEventListener('click',saveRoute);
   $('loadRouteBtn').addEventListener('click',()=>$('routeInput').click());
   $('routeInput').addEventListener('change',e=>loadRoute(e.target.files[0]));
@@ -466,6 +472,7 @@
   $('helpModal').addEventListener('click',e=>{if(e.target.id==='helpModal')showHelp(false);});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')showHelp(false);if(e.code==='Space'&&['INPUT','BUTTON','TEXTAREA'].indexOf(document.activeElement?.tagName)===-1){e.preventDefault();state.playing?pause():play();}});
   window.addEventListener('beforeunload',()=>{if(state.videoUrl)URL.revokeObjectURL(state.videoUrl);if(state.photoUrl)URL.revokeObjectURL(state.photoUrl);});
+  window.addEventListener('resize',()=>{if(state.photo)updateBalloonControls();});
   sprite.onload=()=>{state.spriteReady=true;drawFrame();};
   // Load our own first-party MP4 automatically on Safari/Chrome.
   // The source carries an ordinary green chroma, transformed into alpha by
@@ -475,7 +482,7 @@
     video.crossOrigin='anonymous';
     video.preload='auto';
     video.src=DEFAULT_VIDEO;
-    video.onloadeddata=()=>{
+    const onDefaultVideoReady=()=>{
       if(state.videoUrl)return; // user selected another video while downloading
       try{keyer=makeKeyer();state.loadedVideo=true;}
       catch(err){console.warn('Cannot initialize chroma video',err);state.loadedVideo=false;}
@@ -483,6 +490,8 @@
       $('chromaSection').hidden=!state.loadedVideo;
       if(!state.playing&&!state.recording)video.pause();drawFrame();
     };
+    video.onloadedmetadata=onDefaultVideoReady;
+    video.onloadeddata=onDefaultVideoReady;
     video.onerror=()=>{
       if(state.videoUrl)return;
       $('assetInfo').textContent='Vídeo no disponible; usa «Cargar otro vídeo»';
@@ -491,7 +500,7 @@
     };
     video.load();
   }
-  restoreSettings();$('sizeControl').value=Math.round(state.size*100);$('sizeValue').textContent=Math.round(state.size*100)+'%';$('durationControl').value=state.duration;$('magicControl').value=Math.round(state.magic*100);$('magicValue').textContent=Math.round(state.magic*100)+'%';
+  updatePlayUi();restoreSettings();$('sizeControl').value=Math.round(state.size*100);$('sizeValue').textContent=Math.round(state.size*100)+'%';$('durationControl').value=state.duration;$('magicControl').value=Math.round(state.magic*100);$('magicValue').textContent=Math.round(state.magic*100)+'%';
   buildPath();resizeCanvas(720);setMode('draw');loadDefaultVideo();
   window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite'}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.2.0' };
 })();
