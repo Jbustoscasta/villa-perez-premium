@@ -237,3 +237,175 @@
   -webkit-user-select:auto;
   user-select:auto;
 }
+
+
+/* v1.4 · Cámara Mágica: captura vertical, guía de vuelo y revisión de foto. */
+.camera-entry-sidebar{
+  display:flex;align-items:center;gap:11px;width:100%;padding:14px 13px;
+  border:1px solid #f6d59b;border-radius:12px;background:#e9c78f;
+  color:#1b283b;text-align:left;cursor:pointer;margin:2px 0 10px;
+  box-shadow:0 8px 20px #050e2235;touch-action:manipulation;
+}
+.camera-entry-sidebar>span:first-child{font-size:22px}
+.camera-entry-sidebar>span:nth-child(2){display:flex;flex:1;flex-direction:column;gap:3px}
+.camera-entry-sidebar strong{font-size:13px;font-weight:800}
+.camera-entry-sidebar small{font-size:10px;color:#4d453c;line-height:1.3}
+.camera-entry-sidebar>span:last-child{font-size:22px}
+.camera-primary-button{
+  pointer-events:auto;display:flex;align-items:center;justify-content:center;gap:9px;
+  min-height:48px;width:100%;max-width:255px;padding:10px 15px;margin-top:21px;
+  border-radius:12px;background:linear-gradient(130deg,#f7deb0,#dcaa69);
+  color:#202d3e;font-size:13px;font-weight:850;cursor:pointer;
+  border:1px solid #ffebb9;box-shadow:0 5px 20px #0005;
+  touch-action:manipulation;
+}
+.empty-overlay .camera-primary-button span{font-size:19px;color:inherit}
+.empty-overlay .camera-gallery-button{
+  width:auto;max-width:100%;margin-top:10px;background:rgba(24,36,52,.78);
+  border:1px solid #778093;color:#e3d6c2;border-radius:10px;
+  padding:9px 15px;font-size:11px;min-height:39px;font-weight:650;
+}
+.empty-overlay .camera-gallery-button span{color:#f0e4d1}
+.camera-new-photo{min-width:0}
+@media(max-width:430px){
+  .empty-overlay .empty-icon{font-size:50px;margin-bottom:9px}
+  .empty-overlay{padding:14px}
+  .empty-overlay strong{font-size:20px;margin-bottom:5px}
+  .empty-overlay .camera-primary-button{min-height:45px;margin-top:15px}
+}
+.magic-camera{
+  position:fixed;inset:0;width:100%;height:100vh;height:100dvh;
+  z-index:250;background:#0b1422;color:#f6ebdd;
+  overflow:hidden;overscroll-behavior:none;touch-action:manipulation;
+}
+.magic-camera[hidden]{display:none!important}
+html.camera-active,body.camera-active{
+  overflow:hidden!important;overscroll-behavior:none!important;
+  height:100%;touch-action:none;
+}
+.camera-layout{
+  width:100%;max-width:700px;height:100%;min-height:0;margin:auto;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  gap:7px;padding: max(8px,env(safe-area-inset-top)) 12px max(9px,env(safe-area-inset-bottom));
+}
+.camera-header{
+  width:100%;max-width:440px;min-height:47px;display:flex;
+  align-items:center;justify-content:space-between;gap:10px;flex:0 0 auto;
+}
+.camera-back{width:40px;height:40px;display:grid;place-items:center;
+  border:1px solid #46516a;border-radius:50%;background:#1b2a3c;
+  color:#ead9c0;font-size:20px;cursor:pointer;touch-action:manipulation}
+.camera-heading{display:flex;align-items:center;flex-direction:column;gap:2px}
+.camera-heading span{font-size:9px;letter-spacing:.19em;color:#d3b88d;font-weight:800}
+.camera-heading strong{font-family:Georgia,serif;font-size:18px;font-weight:normal}
+.camera-format{font-size:10px;letter-spacing:.08em;color:#e6ceaa;font-weight:800}
+.camera-format span{font-size:18px;vertical-align:middle}
+.camera-viewport{
+  position:relative;flex:0 1 auto;height:min(70dvh,calc(100dvh - 209px),705px);
+  aspect-ratio:9/16;max-width:calc(100vw - 26px);min-height:180px;
+  overflow:hidden;background:radial-gradient(circle at 50% 40%,#2d3d58,#0d1421);
+  border:1px solid #9e7d59;border-radius:12px;box-shadow:0 15px 45px #0008;
+  touch-action:none;-webkit-user-select:none;user-select:none;
+}
+.camera-viewport video,.camera-viewport>img{
+  width:100%;height:100%;position:absolute;inset:0;object-fit:cover;display:block;
+}
+.camera-viewport video{background:#18233a}
+.camera-viewport img[hidden]{display:none!important}
+.camera-guide{position:absolute;inset:0;z-index:2;pointer-events:none;}
+.camera-air-space{
+  position:absolute;left:5%;right:5%;top:2.5%;height:39%;
+  border:1.6px dashed rgba(249,225,174,.93);
+  border-radius:13px;background:linear-gradient(180deg,rgba(22,44,55,.18),rgba(13,43,51,.10));
+  display:flex;flex-direction:column;align-items:center;
+  box-shadow:0 0 0 1px #111c2b40;
+}
+.camera-air-title{
+  position:absolute;top:7%;left:50%;transform:translateX(-50%);
+  color:#ffe8b6;background:#172739dd;border:1px solid #d6b77d88;
+  border-radius:20px;white-space:nowrap;font-size:clamp(9px,2.9vw,11px);
+  padding:6px 9px;font-weight:800;letter-spacing:.06em;
+}
+.camera-ghost-balloon{
+  position:absolute;left:50%;top:52%;height:63%;width:auto;max-width:47%;
+  object-fit:contain;transform:translate(-50%,-38%);
+  opacity:.42;filter:grayscale(.5) brightness(1.18) drop-shadow(0 0 7px #e8c78a);
+}
+.camera-sky-stars{position:absolute;bottom:7%;color:#eddaa9;font-size:18px;letter-spacing:1.8em;opacity:.9}
+.camera-lower-label{
+  position:absolute;left:5%;right:5%;top:44%;display:block;
+  text-align:center;padding:8px 4px;background:#12273bd1;
+  color:#ffe6b3;border-radius:18px;font-size:11px;font-weight:700;
+  text-shadow:0 1px 3px #000b;
+}
+.camera-dark-warning{
+  position:absolute;left:8%;right:8%;bottom:8%;z-index:4;
+  padding:9px 12px;border-radius:12px;border:1px solid #e0bb78;
+  background:#142135e8;color:#ffe7b9;font-size:11px;line-height:1.4;
+  text-align:center;box-shadow:0 5px 15px #0008;
+}
+.camera-photo-review-label{
+  position:absolute;z-index:5;left:7%;right:7%;bottom:5%;
+  background:#152b33e8;color:#e9e8bf;border:1px solid #bad0aa;
+  border-radius:16px;padding:10px 8px;text-align:center;font-size:12px;font-weight:750;
+}
+.camera-bottom{
+  flex:0 0 auto;width:100%;max-width:440px;min-height:122px;
+  display:flex;flex-direction:column;align-items:center;gap:5px;justify-content:center;
+}
+.camera-tip{font-size:11px;line-height:1.38;max-width:330px;text-align:center;
+  color:#d9c7ad;margin:1px auto 4px}
+.camera-error{font-size:11px;line-height:1.4;padding:7px 10px;text-align:center;
+  color:#ffe6b5;background:#482d2c;border:1px solid #bd8777;border-radius:8px;
+  max-width:100%;margin:0}
+.camera-live-actions{display:grid;grid-template-columns:1fr 80px 1fr;align-items:center;
+  gap:8px;width:100%;max-width:370px}
+.camera-library{
+  justify-self:start;min-height:40px;padding:9px 12px;min-width:75px;
+  position:relative;display:grid;place-items:center;overflow:hidden;
+  border:1px solid #65758a;border-radius:10px;background:#213047;
+  color:#e7d7bc;font-weight:700;font-size:11px;cursor:pointer;
+}
+.camera-library input[type=file]{
+  position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;
+  font-size:16px;
+}
+.camera-shutter{
+  justify-self:center;width:69px;height:69px;border:3px solid #f8e5c1;
+  border-radius:50%;background:transparent;padding:5px;
+  display:grid;place-items:center;cursor:pointer;touch-action:manipulation;
+  box-shadow:0 0 0 5px #ffffff0d;
+}
+.camera-shutter span{width:100%;height:100%;border-radius:50%;background:#f2d19d}
+.camera-shutter:disabled{opacity:.4;cursor:not-allowed}
+.camera-retry{justify-self:end;color:#d3b887;background:none;font-size:11px;
+  font-weight:700;text-decoration:underline;touch-action:manipulation}
+.camera-review-actions{display:grid;grid-template-columns:1fr 1.2fr;gap:10px;width:100%}
+.camera-review-actions button{min-height:47px;border:1px solid #6d7c93;
+  border-radius:11px;padding:10px 8px;background:#28364c;color:#ebdfcd;
+  font-size:12px;font-weight:750;touch-action:manipulation}
+.camera-review-actions #cameraAcceptBtn{background:#e7c58d;color:#223047;border-color:#ffdf9d}
+.camera-privacy{font-size:9px;color:#aab9ca;text-align:center;margin:4px 0 0}
+.camera-landscape-hint{display:none}
+@media (orientation:landscape) and (pointer:coarse){
+  .camera-landscape-hint{
+    position:absolute;z-index:20;inset:0;background:#0b1725f2;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;
+    padding:25px;text-align:center;
+  }
+  .camera-landscape-hint>span{font-size:58px;color:#e9c38a}
+  .camera-landscape-hint strong{font-size:18px}
+  .camera-landscape-hint small{font-size:12px;color:#cfbdad}
+}
+@media(max-height:580px) and (orientation:portrait){
+  .camera-layout{gap:3px}
+  .camera-viewport{height:min(60dvh,calc(100dvh - 186px))}
+  .camera-bottom{min-height:106px}
+  .camera-shutter{width:58px;height:58px}
+  .camera-live-actions{grid-template-columns:1fr 65px 1fr}
+  .camera-tip{font-size:10px}
+}
+@media(min-width:831px){
+  .camera-layout{max-width:660px}
+  .camera-viewport{height:min(72dvh,705px)}
+}
