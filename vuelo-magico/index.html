@@ -69,8 +69,8 @@
               <input id="sizeControl" type="range" min="10" max="43" step="1" value="22" aria-label="Tamaño del globo">
               <button type="button" id="sizePlus" aria-label="Hacer el globo más grande">+</button>
             </div>
-            <div class="player player-in-scene">
-          <button id="playBtn" class="play-btn" title="Reproducir o pausar" aria-label="Reproducir o pausar">▶</button>
+            <div class="player player-in-scene" id="scenePlayer" hidden>
+          <button id="playBtn" class="play-btn" title="Reproducir o pausar" aria-label="Reproducir el vuelo">▶ Ver vuelo</button>
           <div class="play-timeline"><input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Avance de la animación"><div class="play-times"><span id="elapsed">00:00</span><span id="totalTime">00:15</span></div></div>
           <button id="restartBtn" class="player-round" title="Volver al principio" aria-label="Volver al principio">↺</button>
           <button id="soundBtn" class="player-round" title="Activar o desactivar sonido" aria-label="Activar o desactivar sonido">♫</button>
