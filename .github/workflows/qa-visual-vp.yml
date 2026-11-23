@@ -1,4 +1,5 @@
 name: QA visual Cámara Mágica (temporal)
+# Segunda captura tras corregir el onboarding y la marca móvil
 on:
   push:
     paths:
