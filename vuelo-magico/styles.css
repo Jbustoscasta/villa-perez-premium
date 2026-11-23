@@ -98,3 +98,114 @@
   @media(max-width:830px){.stage-wrap{width:min(100%,390px,calc(56.25vh - 90px))}}
   @media(max-width:430px){.stage-wrap{width:min(100%,360px,calc(56.25vh - 92px))}}
 }
+
+
+/* v1.3 | Mobile first: direct manipulation, progressive disclosure, accessible controls */
+.scene-tool-dock{
+  position:absolute;z-index:9;bottom:59px;left:7px;right:7px;
+  display:flex;gap:4px;align-items:center;padding:5px;
+  border:1px solid rgba(224,189,128,.4);border-radius:13px;
+  background:rgba(11,21,36,.88);-webkit-backdrop-filter:blur(15px);backdrop-filter:blur(15px);
+  box-shadow:0 7px 30px #0008;
+}
+.scene-tool-dock .scene-tool-stack{
+  flex:1;min-width:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:3px;padding:0;margin:0;border:0;
+}
+.scene-tool-dock .tool-btn{
+  padding:5px 2px;margin:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:2px;min-height:42px;min-width:0;border:1px solid transparent;
+  border-radius:9px;background:transparent;line-height:1.05;
+}
+.scene-tool-dock .tool-btn.selected{background:rgba(235,197,138,.2);border-color:rgba(255,220,166,.6)}
+.scene-tool-dock .tool-btn .tool-icon{font-size:17px;line-height:18px}
+.scene-tool-dock .tool-btn strong{font-size:10px}
+.scene-tool-dock .tool-btn small,.scene-tool-dock .tool-check{display:none}
+.scene-tool-dock .tool-btn>span:nth-child(2){display:flex;flex-direction:column;align-items:center}
+.scene-tool-dock .route-utilities{
+  flex:0 0 auto;display:flex;gap:1px;border-left:1px solid #60708866;
+  padding:0 0 0 5px;margin:0;align-items:center;
+}
+.scene-tool-dock .route-utilities .text-btn{
+  font-size:9px;line-height:1.2;white-space:normal;
+  border:0;background:none;min-width:32px;padding:3px;
+  color:#ffdfb0;text-align:center;min-height:40px;
+}
+.scene-light-badge{
+  position:absolute;right:8px;top:60px;z-index:8;
+  padding:7px 9px;border-radius:20px;background:rgba(16,32,48,.85);
+  border:1px solid rgba(255,217,148,.52);font-size:11px;font-weight:700;
+  color:#ffe2ae;-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px);
+  box-shadow:0 5px 16px #0006;touch-action:manipulation;
+}
+.scene-light-badge.manual{color:#fff1d8;border-color:#f7d49a}
+.scene-light-popover{
+  position:absolute;right:8px;top:96px;width:min(300px,calc(100% - 16px));z-index:14;
+  background:rgba(15,28,45,.97);border:1px solid #99836a;border-radius:13px;
+  box-shadow:0 18px 50px #000b;padding:13px; color:#e9e4dd;
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+}
+.scene-light-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.scene-light-heading strong{color:#f3d5a5;font-size:13px}
+.scene-light-heading button{width:30px;height:30px;background:none;color:#e8dbcb;font-size:24px}
+.auto-light-row{display:flex;align-items:center;gap:9px;font-size:11px;line-height:1.4;margin:6px 0 14px;cursor:pointer}
+.auto-light-row input{width:17px;height:17px;accent-color:#edbf7d;flex:0 0 auto}
+.light-slider-heading{display:flex;justify-content:space-between;font-size:11px;font-weight:650;margin-bottom:6px}
+.scene-light-popover input[type=range]{height:25px;width:100%;accent-color:#f5c98e}
+.scene-light-popover p{font-size:10px;line-height:1.5;color:#b2c0d1;margin:7px 0 0}
+.scene-quick-actions{
+  display:flex;gap:8px;align-items:center;width:100%;max-width:360px;margin-top:11px
+}
+.scene-quick-actions .primary-button{flex:1;min-height:42px;font-size:12px;padding:8px 10px}
+.scene-quick-actions .quick-photo{
+  position:relative;display:grid;place-items:center;cursor:pointer;min-height:42px;
+  border:1px solid #6c7890;background:#243049;color:#eadac4;border-radius:10px;
+  padding:6px 12px;font-weight:650;font-size:11px;overflow:hidden
+}
+.scene-quick-actions .quick-photo input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.advanced-settings{border:1px solid #40516a;border-radius:12px;overflow:hidden;background:#1b2738;margin-bottom:16px}
+.advanced-settings summary{padding:13px;cursor:pointer;list-style:none;display:flex;flex-direction:column;gap:2px}
+.advanced-settings summary::-webkit-details-marker{display:none}
+.advanced-settings summary>span{font-size:13px;font-weight:750;color:#f5d8ae}
+.advanced-settings summary small{font-size:10px;color:#a2b3c7}
+.advanced-settings[open] summary{border-bottom:1px solid #3b4a60}
+.advanced-inner{padding:0 13px 13px}
+.advanced-inner .control-section{padding:13px 0}
+.mobile-cta{display:none}
+@media(max-width:830px){
+  .topbar{height:56px;padding:0 15px}
+  .brand-icon{height:33px;width:33px;border-radius:9px;font-size:20px}
+  .center-column{padding-top:9px}
+  .preview-bar{margin-bottom:7px}
+  .stage-wrap{width:min(100%,390px,calc(56.25dvh - 92px))}
+  .scene-quick-actions{margin-top:8px}
+  .scene-quick-actions #quickExportBtn{display:none}
+  .scene-quick-actions .quick-photo{width:100%;min-height:36px}
+  .preview-foot{margin:7px 2px 3px}
+  .sidebar-heading{padding-bottom:0}
+  .right-sidebar{padding-bottom:130px}
+  .mobile-cta{
+    position:fixed;z-index:70;bottom:0;left:0;right:0;display:flex;align-items:center;
+    gap:10px;justify-content:space-between;padding:9px 13px calc(9px + env(safe-area-inset-bottom));
+    background:rgba(12,23,39,.97);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+    border-top:1px solid #7d674f;box-shadow:0 -6px 25px #0009;
+  }
+  .mobile-cta-copy{display:flex;flex-direction:column;min-width:0}
+  .mobile-cta-copy strong{font-size:12px;color:#f6e5cc}
+  .mobile-cta-copy small{font-size:10px;color:#a7b7c9}
+  .mobile-cta button{background:var(--gold);border-radius:10px;color:#172136;white-space:nowrap;
+    padding:11px 15px;font-size:12px;font-weight:800;min-height:42px}
+}
+@media(max-width:430px){
+  .stage-wrap{width:min(100%,360px,calc(56.25dvh - 92px))}
+  .scene-tool-dock{bottom:55px;left:5px;right:5px;padding:4px}
+  .scene-tool-dock .tool-btn{min-height:36px}
+  .scene-tool-dock .tool-btn .tool-icon{font-size:15px}
+  .scene-tool-dock .tool-btn strong{font-size:9px}
+  .scene-tool-dock .route-utilities{padding-left:3px}
+  .scene-tool-dock .route-utilities .text-btn{font-size:8px;padding:2px}
+  .scene-light-badge{font-size:10px;padding:6px 8px;top:56px}
+  .scene-light-popover{top:88px}
+  .stage .player-in-scene{gap:5px;padding:9px 6px 6px}
+  .stage .player-in-scene .play-btn{min-width:76px}
+}
