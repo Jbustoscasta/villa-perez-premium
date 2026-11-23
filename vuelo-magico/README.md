@@ -1,23 +1,29 @@
-# Villa Pérez — El vuelo mágico v1.1.0
+# Villa Pérez — Vuelo mágico v1.3
 
-Aplicación publicada en https://jbustoscasta.github.io/villa-perez-premium/vuelo-magico/ y adaptada para Safari de iPhone.
+URL: https://jbustoscasta.github.io/villa-perez-premium/vuelo-magico/?v=130
 
-## Vídeo del globo integrado
+Editor de vuelo privado y móvil: foto local de la habitación, ruta dibujada, diente, globo animado de Wan 3.0 Prime con chroma, contraste adaptativo nocturno y grabación en el propio navegador.
 
-La aplicación carga automáticamente `assets/raton-perez-vuelo.mp4` (15 s, H.264 optimizado, 480 píxeles de ancho). Es el vídeo de Wan 3.0 Prime generado previamente en Magnific. El vídeo **no tiene transparencia en el archivo original**: la webapp elimina el fondo verde en tiempo real, localmente, para mostrar solo al Ratón Pérez sobre la foto. El globo sigue el recorrido dibujado con el dedo y mantiene la escala fijada en el control de tamaño. La tarjeta lateral puede seguir mostrando una miniatura fija como referencia visual.
+## Qué cambia
+- Controles «Ruta / Diente / Mover» superpuestos en la foto. Marco táctil para escalar el globo y deslizador dentro de la escena.
+- «Ver vuelo» dentro de la imagen. «Crear vídeo» accesible en barra fija desde iPhone.
+- Luz nocturna automática por zona bajo el globo, con interruptor Auto y ajuste manual 30-150%.
+- Sonido nuevo: **grabación de campo real** de quemador (CC0), soplidos con cadencia natural y destellos originales no repetitivos; sin música.
+- Ajustes opcionales plegables: duración, intensidad de partículas, zoom foto, cromas, volumen y calidad.
+- Estado y ajustes conservados localmente. Foto y vídeo final nunca se suben a un servidor.
+- Pruebas automatizadas en Chromium y WebKit, móvil y escritorio: `tests/smoke.mjs`.
 
-Si el archivo no carga, se puede cargar otro MP4 propio con «Cargar otro vídeo». Una imagen del globo sirve únicamente de respaldo mientras el vídeo está cargando.
+## Cómo probar desde iPhone
+1. Abrir enlace anterior en **Safari**, no el visor de archivos de ChatGPT.
+2. Pulsar «Elegir una fotografía»; si se repite la prueba tocar «Cambiar foto».
+3. Dibujar una ruta y tocar «Diente» para marcar la mesita si se desea.
+4. Ajustar escala arrastrando la esquina del recuadro; tocar ☾ para ver y modificar la iluminación.
+5. Pulsar «▶ Ver vuelo»; cuando guste, «✦ Crear vídeo».
 
-## Cómo utilizar
+El vídeo base de 15s es `assets/raton-perez-vuelo.mp4` (chroma #00FF00; la webapp elimina el fondo en tiempo real). La miniatura PNG solo aparece como respaldo si el vídeo no puede reproducirse. El audio es `assets/sonido-vuelo-real.mp3`.
 
-1. Abrir el sitio online directamente en Safari (no en el visor de ChatGPT).
-2. Seleccionar una foto de la habitación desde el dispositivo.
-3. Dibujar el recorrido con el dedo; opcionalmente marcar dónde está el diente.
-4. Reproducir, cambiar tamaño, duración, velocidad y brillo de las partículas.
-5. Exportar en el navegador si este admite `canvas.captureStream` + `MediaRecorder`.
-
-La fotografía permanece en el dispositivo. El vídeo público está servido desde GitHub Pages; el chroma y la exportación se ejecutan en el navegador.
+## Licencia de sonido y detalles técnicos
+Ver `SOUND-DESIGN.md`. La grabación del quemador original se distribuye bajo CC0, y el resto del diseño sonoro es nuevo. No se ha usado ninguna otra generación de vídeo con IA.
 
 ## Limitaciones
-
-No se ha probado físicamente en Safari de iPhone. Puede haber incompatibilidades de reproducción o exportación en iOS; la exportación también está condicionada al codec y a `MediaRecorder` del sistema. No modifica la portada ni los demás módulos del repositorio.
+La exportación es local mediante MediaRecorder y depende de la implementación del navegador. Los navegadores pueden producir MP4 o WebM; no se garantiza guardado en «Fotos» desde todas las versiones de iOS. Queda por verificar físicamente en Safari iPhone, además de las pruebas simuladas WebKit.
