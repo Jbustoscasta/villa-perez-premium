@@ -499,3 +499,10 @@ body::before{
 @media(max-height:645px) and (orientation:portrait){
  .magic-balloon-orb{width:98px;height:123px;flex-basis:123px}
 }
+
+
+/* La silueta guía debe quedar completa DENTRO del cielo reservado. */
+.camera-ghost-balloon{
+ top:51%;height:52%;max-width:41%;object-fit:contain;
+ transform:translate(-50%,-50%);opacity:.45;
+}
