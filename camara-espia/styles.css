@@ -43,7 +43,7 @@ button{font:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipul
 .artboard.is-running .mission-button{cursor:default}
 .artboard.is-running .mission-button-active{display:flex;align-items:center;justify-content:center;position:absolute;inset:13% 7%;border-radius:999px;background:radial-gradient(ellipse at 30% 18%,#c1262c,#850d20 75%);color:#ffdda0;text-shadow:0 2px 5px #4b0b11;font-family:Georgia,"Times New Roman",serif;font-size:5.8cqw;font-weight:800;box-shadow:inset 0 0 14px #50091c;pointer-events:none}
 .alert-text{position:absolute;z-index:4;left:25.1%;top:83.0%;height:2.6%;margin:0;width:64%;display:flex;align-items:center;text-align:left;color:#f3e7d2;font-weight:600;font-size:3.0cqw;line-height:1.13;text-shadow:0 1px 3px #000b,0 0 3px #000a;white-space:nowrap;pointer-events:none}
-.alert-text.ready{font-size:3cqw;width:39%}
+.alert-text.ready{font-size:2.9cqw;width:38%;white-space:normal;line-height:1.05;top:82.8%;height:3.3%}
 .view-capture{position:absolute;z-index:5;left:66%;top:82.78%;width:19.3%;height:3.65%;border-radius:999px;border:1.4px solid #ffd78f;background:linear-gradient(180deg,#7a3d13 0%,#2a1a11 57%,#683314 100%);color:#fff0c4;font-family:Georgia,serif;font-weight:800;font-size:4cqw;text-shadow:0 1px 2px #000;box-shadow:0 0 11px #ffae4880,inset 0 0 6px #f8c478aa;cursor:pointer}
 .view-capture:active{transform:scale(.97)}
 .quiet-footer{width:min(100%,540px);text-align:center;padding:0 12px 14px;color:#aab7c9;font-size:10px}
@@ -65,3 +65,15 @@ button{font:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipul
 @media(min-width:600px){.page{padding:18px}.artboard{border-radius:35px;overflow:hidden;box-shadow:0 12px 40px #0008}.quiet-footer{padding-top:6px}}
 @media(max-width:440px){.page{justify-content:flex-start;padding:0}.artboard{width:100%}.quiet-footer{padding:8px 12px 22px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* Reutilizamos el REC, visor, esquinas y visión nocturna que YA forman parte del arte original. */
+.live-viewport:not(.has-feed) .hud-night,
+.live-viewport:not(.has-feed) .hud-signal,
+.live-viewport:not(.has-feed) .hud-battery,
+.live-viewport:not(.has-feed) .hud-crosshair,
+.live-viewport:not(.has-feed) .hud-corner{display:none}
+.live-viewport:not(.has-feed) .hud-rec{top:1%;left:5%;padding:0;background:transparent;font-size:0}
+.live-viewport:not(.has-feed) .hud-rec i{width:2.6cqw;height:2.6cqw}
+.live-viewport:not(.has-feed) .hud-timer{top:0.5%;padding:1.2cqw 2.1cqw;min-width:27%;justify-content:center;background:#0a3039f2}
+.live-viewport.has-feed .hud-timer{top:1%;background:#052e31d9}
+.live-viewport.has-feed .hud-rec,.live-viewport.has-feed .hud-battery{top:1%}
