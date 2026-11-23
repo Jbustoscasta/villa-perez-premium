@@ -48,6 +48,21 @@ jobs:
             await page.waitForFunction(()=>!document.getElementById('cameraShutter').disabled,{timeout:12000});
             const camera=await page.screenshot({type:'jpeg',quality:55});
             console.log('VP_CAMERA_BEGIN'+camera.toString('base64')+'VP_CAMERA_END');
+            await page.locator('#cameraCloseBtn').click();
+            const photoData=await page.evaluate(()=>{
+              const canvas=document.createElement('canvas');canvas.width=360;canvas.height=640;
+              const g=canvas.getContext('2d');
+              g.fillStyle='#1b2b44';g.fillRect(0,0,360,640);
+              g.fillStyle='#465570';g.fillRect(50,370,260,165);
+              g.fillStyle='#dec6b5';g.beginPath();g.ellipse(150,400,40,28,0,0,Math.PI*2);g.fill();
+              g.fillStyle='#192438';g.fillRect(0,0,70,640);
+              return canvas.toDataURL('image/png').split(',')[1];
+            });
+            await page.locator('#centerPhotoInput').setInputFiles({name:'habitacion.png',mimeType:'image/png',buffer:Buffer.from(photoData,'base64')});
+            await page.waitForFunction(()=>window.VillaPerezFlight.getState().photoLoaded,{timeout:12000});
+            await page.waitForTimeout(450);
+            const editor=await page.screenshot({type:'jpeg',quality:55});
+            console.log('VP_EDITOR_BEGIN'+editor.toString('base64')+'VP_EDITOR_END');
             await b.close();
           })().catch(e=>{console.log('QA_ERROR',e.stack);process.exitCode=1}).finally(()=>server.kill());
           NODE
