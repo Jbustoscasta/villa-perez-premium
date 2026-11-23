@@ -415,20 +415,40 @@
     video.onerror=()=>{ $('assetInfo').textContent='Vídeo no disponible; puedes cargar el MP4'; toast('No se pudo abrir el vídeo. Usa «Cargar otro vídeo».'); };
   }
 
-  let audioCtx=null,audioSource=null,audioDestination=null;
+  let audioCtx=null,audioSource=null,audioDestination=null,audioGain=null;
   async function initAudio(){
-    if(!audioCtx){const AudioCtx=window.AudioContext||window.webkitAudioContext;if(!AudioCtx)return null;audioCtx=new AudioCtx();
-      audioDestination=audioCtx.createMediaStreamDestination();audioSource=audioCtx.createMediaElementSource(sound);
-      const gain=audioCtx.createGain();gain.gain.value=.85;audioSource.connect(gain);gain.connect(audioCtx.destination);gain.connect(audioDestination);
+    if(!audioCtx){
+      const AudioCtx=window.AudioContext||window.webkitAudioContext;
+      if(!AudioCtx)return null;
+      audioCtx=new AudioCtx();audioDestination=audioCtx.createMediaStreamDestination();
+      audioSource=audioCtx.createMediaElementSource(sound);
+      audioGain=audioCtx.createGain();audioGain.gain.value=state.soundLevel;
+      audioSource.connect(audioGain);audioGain.connect(audioCtx.destination);
+      audioGain.connect(audioDestination);
     }
-    if(audioCtx.state==='suspended')await audioCtx.resume();return audioDestination;
+    if(audioCtx.state==='suspended')await audioCtx.resume();
+    return audioDestination;
   }
-  async function startAudio(){if(state.silent)return;try {await initAudio();sound.currentTime=0;await sound.play();}catch(e){console.warn('audio unavailable',e);}}
+  function startAudio(){
+    if(state.silent||state.soundLevel<.005)return Promise.resolve();
+    try{
+      // Start inside a real user gesture for Safari audio permissions.
+      if(sound.readyState>=1){
+        const length=Number.isFinite(sound.duration)&&sound.duration>0?sound.duration:30;
+        if(Math.abs(sound.currentTime-state.time)>.3)sound.currentTime=state.time%length;
+      }
+      const started=sound.play();
+      const initialized=initAudio();
+      return Promise.all([Promise.resolve(started),initialized]).catch(err=>console.warn('audio unavailable',err));
+    }catch(err){console.warn('audio start unavailable',err);return Promise.resolve();}
+  }
   function pauseAudio(){sound.pause();video.pause();}
   function pause(){if(!state.playing)return;state.time=CLAMP((performance.now()-state.startedAt)/1000,0,state.duration);state.playing=false;cancelAnimationFrame(state.frameRequest);pauseAudio();updatePlayUi();$('scenePill').textContent='EDITANDO';drawFrame();}
   async function play(fromZero=false){
     if(state.recording)return;
+    if(!state.photo){toast('Primero sube una foto para ver el vuelo.');return;}
     if(fromZero||state.time>=state.duration-.05)state.time=0;
+    $('lightPopover').hidden=true;
     if(state.playing)return;
     state.playing=true;state.startedAt=performance.now()-state.time*1000;
     updatePlayUi();$('scenePill').textContent='REPRODUCIENDO';
@@ -454,6 +474,7 @@
     if(!state.photo){toast('Añade primero una fotografía de la habitación.');return;}
     if(!canvas.captureStream||!window.MediaRecorder){toast('Este navegador no puede grabar el vídeo. Prueba con Chrome o Safari actualizado.');return;}
     if(state.playing)pause();
+    $('lightPopover').hidden=true;
     const exportWidth=Number($('qualitySelect').value)||720;resizeCanvas(exportWidth);
     const safari=/^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
     const mp4=['video/mp4;codecs="avc1.42E01E,mp4a.40.2"','video/mp4'];
@@ -482,8 +503,8 @@
       };
       rec.start(250);state.time=0;state.playing=true;state.startedAt=performance.now();
       updatePlayUi();$('scenePill').textContent='EXPORTANDO';
-      if(state.loadedVideo||video.src){try{if(state.loadedVideo)video.currentTime=0;await video.play();}catch(e){console.warn('video asset',e);}}
-      await startAudio();state.startedAt=performance.now();ticker();
+      if(state.loadedVideo||video.src){try{if(state.loadedVideo)video.currentTime=0;const run=video.play();if(run?.catch)run.catch(e=>console.warn('video asset',e));}catch(e){console.warn('video asset',e);}}
+      startAudio();state.startedAt=performance.now();ticker();
     }catch(err){console.error(err);state.recording=false;state.playing=false;pauseAudio();updatePlayUi();$('exportModal').hidden=true;resizeCanvas(720);toast('No se pudo exportar el vídeo. Prueba otro navegador o calidad HD.');}
   }
   function saveBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),45000);}
@@ -526,9 +547,9 @@
   }
   $('durationControl').addEventListener('input',e=>{state.duration=+e.target.value;$('durationValue').textContent=e.target.value+' s';state.time=CLAMP(state.time,0,state.duration);buildPath();drawFrame();});
   $('magicControl').addEventListener('input',e=>{state.magic=+e.target.value/100;$('magicValue').textContent=e.target.value+'%';drawFrame();saveSettings();});
-  $('zoomControl').addEventListener('input',e=>{state.photoZoom=+e.target.value/100;$('zoomValue').textContent=e.target.value+'%';ambienceDirty=true;drawFrame();});
+  $('zoomControl').addEventListener('input',e=>{state.photoZoom=+e.target.value/100;$('zoomValue').textContent=e.target.value+'%';ambienceDirty=true;lightSmoothed=null;drawFrame();});
   $('chromaControl').addEventListener('input',e=>{state.chromaStrength=+e.target.value/100;$('chromaValue').textContent=e.target.value+'%';if(keyer)keyer.crop=null;drawFrame();});
-  $('soundToggle').addEventListener('change',e=>{state.silent=!e.target.checked;if(state.silent)pauseAudio();else if(state.playing)startAudio();$('soundBtn').textContent=state.silent?'♫̸':'♫';});
+  $('soundToggle').addEventListener('change',e=>{state.silent=!e.target.checked;if(state.silent)sound.pause();else if(state.playing)startAudio();$('soundBtn').textContent=state.silent?'♫̸':'♫';$('soundBtn').setAttribute('aria-pressed',String(!state.silent));});
   $('soundBtn').addEventListener('click',()=>{const t=$('soundToggle');t.checked=!t.checked;t.dispatchEvent(new Event('change'));});
   $('lightBadge').addEventListener('click',()=>{$('lightPopover').hidden=!$('lightPopover').hidden;});
   $('lightCloseBtn').addEventListener('click',()=>{$('lightPopover').hidden=true;});
