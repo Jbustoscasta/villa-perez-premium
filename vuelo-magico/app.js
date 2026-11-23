@@ -1,5 +1,5 @@
 /*
- * VILLA PÉREZ — El vuelo mágico | v1.3.0
+ * VILLA PÉREZ — El vuelo mágico | v1.3.1
  * Static, local-first editor. No API keys, third-party SDKs or server uploads.
  * The user controls a curved motion path; a chroma-keyed local video or official
  * transparent art follows it.  Video compositing and export happen in the browser.
@@ -341,9 +341,34 @@
   function setMode(mode){$('lightPopover').hidden=true;state.mode=mode;stage.className=`stage mode-${mode}`;document.querySelectorAll('[data-mode]').forEach(b=>{const active=b.dataset.mode===mode;b.classList.toggle('selected',active);b.setAttribute('aria-pressed',String(active));});const hints={draw:'Arrastra el dedo sobre la fotografía para dibujar el vuelo de Pérez.',target:'Toca la mesita donde está el diente. El globo reducirá su velocidad al acercarse.',pan:'Arrastra la imagen para encuadrar mejor la cama.'};setHint(hints[mode]);}
 
   let gesture=null;
+  // iOS Safari can promote a vertical swipe into document scrolling before
+  // pointermove fires. Reserve all touches begun inside the photo for the scene,
+  // even when the finger crosses its boundary. This is intentionally scoped:
+  // scrolling outside the scene must continue to work normally.
+  const sceneTouches=new Set();
+  stage.addEventListener('touchstart',event=>{
+    if(!state.photo)return; // don't interfere with the native iPhone photo picker
+    for(const touch of event.changedTouches)sceneTouches.add(touch.identifier);
+  },{passive:true,capture:true});
+  document.addEventListener('touchmove',event=>{
+    if(!state.photo||!event.cancelable||!sceneTouches.size)return;
+    // Range sliders retain their native drag behaviour; CSS touch-action:none
+    // on the stage still prevents page panning under those controls.
+    if(event.target?.closest?.('input[type="range"]'))return;
+    for(const touch of event.changedTouches){
+      if(sceneTouches.has(touch.identifier)){event.preventDefault();break;}
+    }
+  },{passive:false,capture:true});
+  const endSceneTouches=event=>{
+    for(const touch of event.changedTouches)sceneTouches.delete(touch.identifier);
+  };
+  document.addEventListener('touchend',endSceneTouches,{passive:true,capture:true});
+  document.addEventListener('touchcancel',endSceneTouches,{passive:true,capture:true});
+  window.addEventListener('blur',()=>sceneTouches.clear());
   function xy(ev){const r=overlay.getBoundingClientRect();return point(CLAMP((ev.clientX-r.left)/r.width,0,1),CLAMP((ev.clientY-r.top)/r.height,0,1));}
   overlay.addEventListener('pointerdown',ev=>{
-    if(state.playing||state.recording)return;
+    if(state.playing||state.recording||gesture)return;
+    if(ev.pointerType==='touch'&&!ev.isPrimary)return;
     ev.preventDefault();overlay.setPointerCapture(ev.pointerId);const p=xy(ev);
     gesture={mode:state.mode, start:p,last:p,prevPath:state.path,panX:state.panX,panY:state.panY};
     if(state.mode==='draw'){state.path=[p];state.pathName='manual';state.hasDrawn=true;}
@@ -624,5 +649,5 @@
   if(window.matchMedia?.('(min-width:831px)').matches)$('advancedSettings').open=true;
   $('sizeControl').value=Math.round(state.size*100);$('sizeValue').textContent=Math.round(state.size*100)+'%';$('durationControl').value=state.duration;$('magicControl').value=Math.round(state.magic*100);$('magicValue').textContent=Math.round(state.magic*100)+'%';
   buildPath();resizeCanvas(720);setMode('draw');loadDefaultVideo();
-  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite',exposure:state.appliedExposure,lightMode:state.autoLight?'auto':'manual',soundReady:sound.readyState,soundTime:sound.currentTime}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.3.0' };
+  window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite',exposure:state.appliedExposure,lightMode:state.autoLight?'auto':'manual',soundReady:sound.readyState,soundTime:sound.currentTime}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), version:'1.3.1' };
 })();
