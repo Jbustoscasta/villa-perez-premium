@@ -21,3 +21,18 @@ button:disabled{cursor:not-allowed;opacity:.42}button:focus-visible,a:focus-visi
 @media(max-width:880px){.workspace{grid-template-columns:1fr}.editor{padding:22px}.intro{padding-top:30px}.canvas-area{min-height:340px}}
 @media(max-width:520px){.shell{padding:0 13px}.header{min-height:67px}.brand-mark{width:35px;height:35px}.brand b{font-size:12px}.back-link{font-size:11px;padding:10px}.intro h1{font-size:45px}.intro p{font-size:13px;padding:0 4px}.intro{padding:25px 0 20px}.steps{gap:4px;margin-top:18px}.step{font-size:10px;padding:7px 9px;gap:4px}.panel-header{padding:17px}.panel-header h2{font-size:20px}.photo-privacy{font-size:10px}.photo-toolbar{padding:12px}.photo-toolbar .button{font-size:12px;padding:13px 9px}.photo-note{padding:0 17px 15px}.canvas-area{min-height:290px}.footer span{display:none}.editor{border-radius:17px}.edit-actions{flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.button{transition:none}}
+/* Edición de huellas v2: controles compactos de materiales, clima y gestos. */
+.choice-grid{display:grid;gap:7px;margin-top:11px}
+.surface-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.weather-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.gesture-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.choice{min-height:42px;padding:10px 6px;border:1px solid #37465d;background:#15243a;border-radius:10px;color:#cbd6e7;font-size:12px;font-weight:650;line-height:1.35;white-space:nowrap;display:flex;justify-content:center;align-items:center;gap:6px;transition:background .15s ease}
+.choice>span{font-size:17px;color:#bfcfe1}
+.choice.is-selected{background:#36404d;color:#ffe6b5;border-color:#edcf98;box-shadow:inset 0 0 0 1px rgba(237,207,152,.18)}
+.choice:hover:not(.is-selected){background:#22334b}
+.choice:disabled{opacity:.42}
+.choice:focus-visible{outline:2px solid #ffe0a3;outline-offset:2px}
+.control-help{font-size:11px;line-height:1.55;color:#a6b5c9;margin:10px 0 0}
+.effect-summary{background:linear-gradient(130deg,rgba(214,172,106,.14),rgba(117,149,190,.12));border:1px solid rgba(235,204,150,.30);color:#efddb8;border-radius:10px;margin-top:12px;padding:12px 13px;font-size:12px;line-height:1.5}
+.swatch-natural{background:linear-gradient(120deg,#d8c8b0 50%,#665343 50%)}
+@media (max-width:520px){.choice{font-size:11px;padding:10px 3px;min-height:44px}.surface-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.palette-option{flex:1;justify-content:center;padding:10px 3px;font-size:11px}}
