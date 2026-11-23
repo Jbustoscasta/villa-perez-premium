@@ -209,3 +209,31 @@
   .stage .player-in-scene{gap:5px;padding:9px 6px 6px}
   .stage .player-in-scene .play-btn{min-width:76px}
 }
+
+/* v1.3.1 — Los gestos dentro de la escena son de edición, nunca de scroll.
+   Safari iOS necesita el bloqueo antes de empezar el toque.
+   Fuera de la escena el documento mantiene su desplazamiento normal. */
+.stage-wrap,.stage{
+  touch-action:none;
+  -ms-touch-action:none;
+  overscroll-behavior:contain;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+.stage canvas,#overlayCanvas,#overlayCanvas.photo-ready,
+.stage .balloon-transform,.stage .resize-handle,
+.stage .scene-tool-dock,.stage .scene-size-panel,
+.stage .player-in-scene,.stage .scene-light-badge,
+.stage .scene-light-popover{
+  touch-action:none !important;
+  overscroll-behavior:contain;
+}
+/* Mantener operativos los controles nativos aunque la escena no desplace página. */
+.stage input[type="range"]{
+  touch-action:none !important;
+}
+.stage input[type="file"]{
+  -webkit-user-select:auto;
+  user-select:auto;
+}
