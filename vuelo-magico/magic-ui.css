@@ -481,3 +481,21 @@ body::before{
  .success-modal p{font-size:11px;margin-bottom:11px}
  .success-actions button{min-height:38px}
 }
+
+
+/* Visual QA: el personaje original debe verse ENTERO, incluida la cesta. */
+.magic-balloon-orb{
+ width:130px;height:164px;flex:0 0 164px;
+ overflow:visible;min-height:0;margin:0 auto 3px;
+}
+.magic-balloon-orb img{
+ width:100%!important;height:100%!important;
+ max-width:100%!important;max-height:100%!important;
+ object-fit:contain!important;object-position:center center!important;
+}
+@media(max-width:430px){
+ .magic-balloon-orb{width:119px;height:149px;flex-basis:149px}
+}
+@media(max-height:645px) and (orientation:portrait){
+ .magic-balloon-orb{width:98px;height:123px;flex-basis:123px}
+}
