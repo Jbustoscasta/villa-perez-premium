@@ -9,6 +9,18 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="stylesheet" href="styles.css?v=152">
   <link rel="stylesheet" href="magic-ui.css?v=153">
+  <style>
+    .footprint-extra{display:flex;gap:12px;align-items:center;margin:14px 0 20px;padding:16px;border:1px solid rgba(238,209,153,.42);border-radius:15px;background:linear-gradient(125deg,rgba(227,187,111,.14),rgba(89,126,165,.14));text-decoration:none;color:#f7e8c9;transition:background .2s ease}
+    .footprint-extra:hover{background:rgba(227,187,111,.2)}
+    .footprint-extra-icon{font-size:26px;flex-shrink:0;color:#efcf90}
+    .footprint-extra-copy{min-width:0;flex:1}
+    .footprint-extra-copy strong{display:block;font-size:13px;line-height:1.4}
+    .footprint-extra-copy small{display:block;color:#bac9db;font-size:11px;line-height:1.5;margin-top:4px}
+    .footprint-extra-arrow{font-size:24px;color:#eacb93}
+    .footprint-extra:focus-visible{outline:2px solid #eacb93;outline-offset:3px}
+    .success-footprints{display:block;text-align:center;padding:11px 14px;border:1px solid rgba(235,200,146,.4);border-radius:11px;color:#f1d29a;text-decoration:none;font-size:13px}
+    .success-footprints:hover{background:rgba(235,200,146,.12)}
+  </style>
 </head>
 <body>
   <div class="app-shell">
@@ -138,6 +150,11 @@
 
           </div>
         </details>
+        <a class="footprint-extra" href="../huellas-perez/" aria-label="Abrir Huellas de Pérez: fotografía una superficie y dibuja el recorrido de las huellas">
+          <span class="footprint-extra-icon" aria-hidden="true">✣</span>
+          <span class="footprint-extra-copy"><strong>Nuevo · Huellas de Pérez</strong><small>Haz una foto de la mesita o la almohada y dibuja por dónde pasó.</small></span>
+          <span class="footprint-extra-arrow" aria-hidden="true">›</span>
+        </a>
         <section class="tip-card"><span class="tip-star">✦</span><strong>El secreto del vuelo</strong><p>Señala el diente sobre la mesita. Pérez se acercará despacito, como si estuviera buscándolo.</p></section>
         <div class="export-block"><button id="exportBtn" class="primary-button">✧ &nbsp; Guardar recuerdo mágico</button><button id="snapshotBtn" class="secondary-button">Guardar fotograma</button><button id="shareBtn" class="secondary-button" hidden>Compartir vídeo creado</button><div class="export-detail"><span>🔒</span> Se procesa en tu dispositivo, sin subir fotos.</div></div>
       </aside>
@@ -220,6 +237,7 @@
         <button type="button" id="prepareSpyBtn" class="secondary-button">Activar Cámara Mágica</button>
         <p id="prepareSpyStatus" class="spy-parent-status" role="status" hidden></p>
         <a id="openSpyForChild" class="spy-parent-link" href="../camara-espia/" target="_blank" rel="noopener">Abrir Cámara Mágica para el niño</a>
+        <a class="success-footprints" href="../huellas-perez/" target="_blank" rel="noopener">✣ Crear también las huellas de Pérez</a>
         <button type="button" id="successClose" class="success-back">Volver al vuelo</button>
       </div>
       <span class="success-private">🔒 La foto y el vídeo se han creado en tu dispositivo</span>
