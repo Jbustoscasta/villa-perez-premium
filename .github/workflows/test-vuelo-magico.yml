@@ -24,3 +24,5 @@ jobs:
         run: node --check vuelo-magico/app.js
       - name: Probar iPhone y escritorio (Chromium y WebKit)
         run: node vuelo-magico/tests/smoke.mjs
+      - name: Probar cámara mágica (Chromium y WebKit)
+        run: node vuelo-magico/tests/camera.mjs
