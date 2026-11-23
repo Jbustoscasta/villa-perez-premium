@@ -48,12 +48,13 @@ try{
       });
       const response=await page.goto(origin,{waitUntil:'domcontentloaded'});
       assert.equal(response.status(),200);
-      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.4.0');
+      await page.waitForFunction(()=>window.VillaPerezFlight?.version==='1.5.0');
       assert.equal(await page.locator('#openCameraMain').isVisible(),true,'camera is main CTA');
       assert.equal(await page.locator('#emptyUploadBtn').isVisible(),true,'gallery remains available');
       await page.locator('#openCameraMain').click();
       await page.waitForFunction(()=>!document.getElementById('cameraShutter').disabled,{timeout:18000});
       assert.equal(await page.locator('#magicCamera').isVisible(),true,'camera overlay visible');
+      assert.match(await page.locator('#cameraStepIndicator').innerText(),/01 \/ 03/,'camera begins on framing');
       assert.equal(await page.locator('.camera-air-space').isVisible(),true,'balloon air guide visible');
       assert.equal(await page.locator('#cameraPreview').isVisible(),false,'photo preview hidden before shutter');
       assert.equal(await page.evaluate(()=>document.documentElement.classList.contains('camera-active')),true);
@@ -63,6 +64,8 @@ try{
       await page.locator('#cameraShutter').click();
       await page.waitForFunction(()=>!document.getElementById('cameraReviewActions').hidden,{timeout:18000});
       assert.equal(await page.locator('#cameraPreview').isVisible(),true,'captured photo preview visible');
+      assert.equal(await page.locator('#cameraGuide').isVisible(),false,'guides disappear for honest photo review');
+      assert.match(await page.locator('#cameraStepIndicator').innerText(),/02 \/ 03/,'review step visible');
       const capturedSize=await page.locator('#cameraPreview').evaluate(img=>new Promise(resolve=>{
         if(img.complete&&img.naturalWidth)return resolve({w:img.naturalWidth,h:img.naturalHeight});
         img.onload=()=>resolve({w:img.naturalWidth,h:img.naturalHeight});
@@ -74,6 +77,7 @@ try{
       await page.locator('#cameraRetakeBtn').click();
       await page.waitForFunction(()=>!document.getElementById('cameraShutter').disabled,{timeout:18000});
       assert.equal(await page.locator('#cameraReviewActions').isVisible(),false,'retake returns to camera');
+      assert.equal(await page.locator('#cameraGuide').isVisible(),true,'guides return when retaking');
       await page.locator('#cameraShutter').click();
       await page.waitForFunction(()=>!document.getElementById('cameraReviewActions').hidden,{timeout:18000});
       await page.locator('#cameraAcceptBtn').click();
