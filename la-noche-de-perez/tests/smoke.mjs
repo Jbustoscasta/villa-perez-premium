@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 
 const base='http://127.0.0.1:4173/';
-const app=base+'la-noche-de-perez/';
+const app=base+'la-noche-de-perez/?screen=home';
 const server=spawn('python3',['-m','http.server','4173','--bind','127.0.0.1'],{stdio:'ignore'});
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
@@ -78,6 +78,7 @@ try{
         await page.locator('#toothName').fill('su primer incisivo');
         await page.locator('#letterMessage').fill('Gracias por cuidar tu sonrisa. He venido desde Villa Pérez.');
         await page.locator('#letterForm button[type="submit"]').click();
+        await page.locator('#saveLetterButton').click();
         await page.waitForSelector('#memoryList .memory-item');
         await noPageOrScreenScroll(page,'library after letter '+browserName+' '+viewport.width+'x'+viewport.height);
         let items=await page.evaluate(()=>window.LNPMemoryStore.list());
