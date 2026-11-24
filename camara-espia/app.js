@@ -16,6 +16,7 @@
   const modal = $('captureModal');
   const savedVideo = $('savedVideo');
   const params = new URLSearchParams(location.search);
+  if(params.get('desde')==='lnp') $('returnChildStory').hidden=false;
   const demoMode = params.get('demo'); // ?demo=ready / ?demo=empty — isolated QA only
   let media = null;
   let startedAt = 0;
