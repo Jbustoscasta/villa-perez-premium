@@ -7,6 +7,10 @@
     destination:"",
     videoFile:null,
     videoPhotoUrl:null,
+    videoBalloonScale:1,
+    videoBalloonX:.55,
+    videoBalloonY:.32,
+    videoShowPath:true,
     proofType:"selfie",
     proofImage:null,
     proofScale:.18,
@@ -15,7 +19,7 @@
     overlayY:.58,
     memoryUrls:[]
   };
-  const DEFAULT_MESSAGE = "¡Gracias por cuidar tan bien tus dientes! Sigue así, estás haciendo un gran trabajo. He venido volando desde Villa Pérez para recoger tu dientecito. ¡Sigue soñando y sonriendo!";
+  const DEFAULT_MESSAGE = "Esta noche he pasado por tu habitación y he recogido tu diente. ¡Qué valiente has sido! Sigue cuidando tan bien de tu sonrisa.";
   const proofConfig = {
     selfie:{
       eyebrow:"EL RATÓN HA VENIDO A VERLE",
@@ -24,8 +28,8 @@
     },
     window:{
       eyebrow:"EL GLOBO ESTÁ MUY CERCA",
-      title:"Pérez en la ventana.",
-      description:"Elige una foto desde la habitación hacia el exterior. Coloca el globo en el cielo o junto a la ventana."
+      title:"Pérez en la ventana",
+      description:"Haz una foto desde la habitación hacia el exterior y coloca el globo junto a la ventana."
     }
   };
 
@@ -82,17 +86,21 @@
     }
     state.destination=value;
     $("addressStatus").textContent="Destino anotado para esta sesión. No se guarda en el Cofre ni se comparte con el modo niño.";
+    $("routeDestination").textContent=value;
     $("destinationContinue").disabled=false;
-    toast("Destino anotado.");
+    showScreen("route");
   });
   $("destinationContinue").addEventListener("click",()=>showScreen("video"));
+  $("routeStartButton").addEventListener("click",()=>showScreen("video"));
   $("useLocation").addEventListener("click",()=>{
     if(!navigator.geolocation){$("addressStatus").textContent="Este navegador no permite usar tu ubicación. Escribe tu dirección.";return;}
     $("useLocation").disabled=true;$("addressStatus").textContent="Solicitando permiso de ubicación…";
     navigator.geolocation.getCurrentPosition(position=>{
       state.destinationCoordinates={lat:position.coords.latitude,lng:position.coords.longitude};
-      $("addressStatus").textContent="Ubicación anotada para esta sesión. El origen del mapa sigue pendiente.";
+      state.destination="Mi ubicación actual";$("addressInput").value=state.destination;$("routeDestination").textContent=state.destination;
+      $("addressStatus").textContent="Ubicación anotada para esta sesión. El punto de partida de Villa Pérez aún debe configurarse.";
       $("destinationContinue").disabled=false;$("useLocation").disabled=false;
+      showScreen("route");
     },()=>{$("addressStatus").textContent="No se ha podido obtener tu ubicación. Puedes escribir tu dirección.";$("useLocation").disabled=false;},{enableHighAccuracy:false,timeout:10000,maximumAge:0});
   });
 
@@ -112,6 +120,8 @@
       $("videoPhotoPreview").src=state.videoPhotoUrl;
       $("videoPhotoPreview").hidden=false;
       $("videoPhotoStatus").textContent="Foto guardada en este dispositivo. Ya puedes abrir el editor.";
+      $("videoEditorPhoto").src=state.videoPhotoUrl;
+      $("openVideoEditor").disabled=false;
       toast("Fotografía preparada.");
     }catch(error){
       console.warn(error);
@@ -119,16 +129,26 @@
     }
   });
 
-  $("openVideoEditor").addEventListener("click",async()=>{
-    try{
-      if(state.videoFile)await window.VPPhotoStore.access("put",state.videoFile);
-      location.href="../vuelo-magico/?desde=padres";
-    }catch(error){
-      console.warn(error);
-      toast("No se ha podido preparar la foto. Abre el editor y selecciónala allí.");
-      setTimeout(()=>location.href="../vuelo-magico/?desde=padres",700);
-    }
+  $("openVideoEditor").addEventListener("click",()=>{
+    if(!state.videoFile){toast("Primero haz o elige una foto de la habitación.");return;}
+    showScreen("video-editor");applyVideoEditor();
   });
+  $("createFlightVideo").addEventListener("click",async()=>{
+    try{if(state.videoFile)await window.VPPhotoStore.access("put",state.videoFile);location.href="../vuelo-magico/?desde=padres&asistente=video";}
+    catch(error){console.warn(error);toast("No se ha podido preparar la foto. Inténtalo de nuevo.");}
+  });
+  function applyVideoEditor(){
+    const balloon=$("videoEditorBalloon");balloon.style.left=(state.videoBalloonX*100)+"%";balloon.style.top=(state.videoBalloonY*100)+"%";balloon.style.width=(36*state.videoBalloonScale)+"%";
+    $("videoEditorPath").hidden=!state.videoShowPath;
+  }
+  $("videoMoveButton").addEventListener("click",()=>$("videoEditorHint").textContent="Arrastra el globo para colocarlo");
+  $("videoSizeButton").addEventListener("click",()=>{state.videoBalloonScale=state.videoBalloonScale>=1.25?.8:state.videoBalloonScale+.2;applyVideoEditor();});
+  $("videoPathButton").addEventListener("click",()=>{state.videoShowPath=!state.videoShowPath;applyVideoEditor();$("videoEditorHint").textContent=state.videoShowPath?"Recorrido mágico activado":"Recorrido oculto";});
+  let videoDrag=false;
+  $("videoEditorStage").addEventListener("pointerdown",event=>{if(event.target!==$("videoEditorBalloon"))return;videoDrag=true;$("videoEditorStage").setPointerCapture(event.pointerId);});
+  $("videoEditorStage").addEventListener("pointermove",event=>{if(!videoDrag)return;const rect=$("videoEditorStage").getBoundingClientRect();state.videoBalloonX=Math.max(.12,Math.min(.88,(event.clientX-rect.left)/rect.width));state.videoBalloonY=Math.max(.12,Math.min(.82,(event.clientY-rect.top)/rect.height));applyVideoEditor();});
+  $("videoEditorStage").addEventListener("pointerup",()=>{videoDrag=false;});
+  $("videoEditorStage").addEventListener("pointercancel",()=>{videoDrag=false;});
 
   function openProofEditor(type) {
     state.proofType=type;
@@ -136,6 +156,10 @@
     state.proofScale=type==="window"?.22:.35;
     state.proofRotation=0;
     masterImage.src=type==="window"?"../vuelo-magico/assets/perez-globo-iphone.webp":"../perez.png";
+    $("screen-proof-editor").dataset.proofType=type;
+    $("windowPresets").hidden=type!=="window";
+    $("proofSampleImage").src=type==="window"?"../camara-espia/assets/habitacion-original.webp":"../modo-padres/assets/habitacion-ejemplo.webp";
+    $("proofSampleCharacter").src=type==="window"?"../vuelo-magico/assets/perez-globo-iphone.webp":"../perez.png";
     state.overlayX=.78;
     state.overlayY=type==="window"?.34:.58;
     const config=proofConfig[type]||proofConfig.selfie;
@@ -156,6 +180,12 @@
   document.querySelectorAll("[data-proof]").forEach(button=>{
     button.addEventListener("click",()=>openProofEditor(button.dataset.proof));
   });
+  document.querySelectorAll("#windowPresets [data-preset]").forEach(button=>button.addEventListener("click",()=>{
+    const presets={left:[.34,.34],center:[.52,.31],right:[.7,.33]};
+    [state.overlayX,state.overlayY]=presets[button.dataset.preset]||presets.center;
+    document.querySelectorAll("#windowPresets button").forEach(item=>item.classList.toggle("active",item===button));
+    drawProof();
+  }));
 
   const proofCanvas=$("proofCanvas");
   const proofContext=proofCanvas.getContext("2d");
@@ -284,10 +314,10 @@
   });
 
   function updateLetterPreview() {
-    $("letterPreviewName").textContent=$("childName").value.trim()||"peque";
+    $("letterPreviewName").textContent=$("childName").value.trim()||"Olivia";
     const tooth=$("toothName").value.trim();
     let message=$("letterMessage").value.trim()||DEFAULT_MESSAGE;
-    if(tooth)message=message.replace(/tu dientecito/gi,tooth);
+    if(tooth)message=message.replace(/tu diente/gi,tooth);
     $("letterPreviewTooth").textContent=tooth?"He venido a recoger: "+tooth+".":"";
     $("letterPreviewTooth").hidden=!tooth;
     $("letterPreviewMessage").textContent=message;
@@ -413,7 +443,7 @@
 
   $("activateChildMode").addEventListener("click",async()=>{
     const button=$("activateChildMode");button.disabled=true;
-    try{const items=await window.LNPMemoryStore.list();if(!items.length){$("activationStatus").textContent="Prepara al menos un recuerdo antes de activar el modo niño.";return;}
+    try{const items=await window.LNPMemoryStore.list();
       const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);tomorrow.setHours(7,0,0,0);
       localStorage.setItem("lnp-child-mission-v1",JSON.stringify({ids:items.map(item=>item.id),availableAt:tomorrow.getTime(),createdAt:Date.now()}));
       location.href="./nino.html";
