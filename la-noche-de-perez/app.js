@@ -104,30 +104,26 @@
     },()=>{$("addressStatus").textContent="No se ha podido obtener tu ubicación. Puedes escribir tu dirección.";$("useLocation").disabled=false;},{enableHighAccuracy:false,timeout:10000,maximumAge:0});
   });
 
-  $("videoPhotoInput").addEventListener("change",async event=>{
-    const file=event.currentTarget.files?.[0];
-    event.currentTarget.value="";
+  async function prepareVideoPhoto(file){
     if(!file)return;
     if(!file.type.startsWith("image/")&&!/\.(heic|heif|jpe?g|png|webp)$/i.test(file.name)){
-      $("videoPhotoStatus").textContent="Elige una fotografía válida.";
-      return;
+      $("videoPhotoStatus").textContent="Elige una fotografía válida.";return;
     }
     try{
       await window.VPPhotoStore.access("put",file);
       state.videoFile=file;
       if(state.videoPhotoUrl)URL.revokeObjectURL(state.videoPhotoUrl);
       state.videoPhotoUrl=URL.createObjectURL(file);
-      $("videoPhotoPreview").src=state.videoPhotoUrl;
-      $("videoPhotoPreview").hidden=false;
-      $("videoPhotoStatus").textContent="Foto guardada en este dispositivo. Ya puedes abrir el editor.";
+      $("videoPhotoPreview").src=state.videoPhotoUrl;$("videoPhotoPreview").hidden=false;
       $("videoEditorPhoto").src=state.videoPhotoUrl;
+      $("videoPhotoStatus").textContent="Foto preparada. Ya puedes editar el vídeo.";
       $("openVideoEditor").disabled=false;
       toast("Fotografía preparada.");
-    }catch(error){
-      console.warn(error);
-      $("videoPhotoStatus").textContent="No se ha podido guardar la foto. Puedes elegirla directamente en el editor.";
-    }
-  });
+    }catch(error){console.warn(error);$("videoPhotoStatus").textContent="No se ha podido guardar la foto. Inténtalo de nuevo.";}
+  }
+  ["videoPhotoInput","videoCameraInput"].forEach(id=>$(id).addEventListener("change",event=>{
+    const file=event.currentTarget.files?.[0];event.currentTarget.value="";prepareVideoPhoto(file);
+  }));
 
   $("openVideoEditor").addEventListener("click",()=>{
     if(!state.videoFile){toast("Primero haz o elige una foto de la habitación.");return;}
@@ -319,7 +315,7 @@
     let message=$("letterMessage").value.trim()||DEFAULT_MESSAGE;
     if(tooth)message=message.replace(/tu diente/gi,tooth);
     $("letterPreviewTooth").textContent=tooth?"He venido a recoger: "+tooth+".":"";
-    $("letterPreviewTooth").hidden=!tooth;
+    $("letterPreviewTooth").hidden=true;
     $("letterPreviewMessage").textContent=message;
   }
   ["childName","toothName","letterMessage"].forEach(id=>$(id).addEventListener("input",updateLetterPreview));
