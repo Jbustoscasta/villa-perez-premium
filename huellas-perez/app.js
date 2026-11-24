@@ -118,6 +118,7 @@
   function schedule(){if(!state.frame&&!state.exporting)state.frame=requestAnimationFrame(()=>{state.frame=0;if(!state.exporting)render();});}
   function update(){
     const photo=!!state.photo,drawn=state.paths.length>0;
+    document.body.classList.toggle('has-photo',photo);
     $('placeholder').hidden=photo;
     canvas.hidden=!photo;
     $('hint').hidden=!photo||drawn;
