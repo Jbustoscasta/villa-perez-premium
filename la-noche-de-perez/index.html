@@ -105,7 +105,7 @@
       <div class="video-controls">
         <label class="secondary-action file-action" for="videoCameraInput">▧ &nbsp; Hacer foto<input id="videoCameraInput" type="file" accept="image/*" capture="environment"></label><label class="secondary-action file-action" for="videoPhotoInput">Elegir foto<input id="videoPhotoInput" type="file" accept="image/*,.heic,.heif"></label>
         <p class="form-status" id="videoPhotoStatus" role="status"></p>
-        <a class="main-action gold-action" href="../vuelo-magico/?desde=padres&asistente=foto"><span class="action-icon">◎</span><span>Hacer foto</span><span class="action-arrow">›</span></a>
+        
         <button class="main-action gold-action" id="openVideoEditor" type="button" disabled><span>Editar vídeo</span><span class="action-arrow">›</span></button>
       </div>
       <button class="text-action" type="button" data-screen="proofs">Continuar sin vídeo</button>
@@ -152,7 +152,7 @@
         <canvas id="proofCanvas" aria-label="Previsualización de la fotografía con Ratón Pérez" hidden></canvas>
         
       </div>
-      <div class="window-presets" id="windowPresets" hidden><button type="button" data-preset="left"><img src="../camara-espia/assets/habitacion-original.webp" alt=""><span>Izquierda</span></button><button type="button" data-preset="center"><img src="../camara-espia/assets/habitacion-original.webp" alt=""><span>Centro</span></button><button type="button" data-preset="right"><img src="../camara-espia/assets/habitacion-original.webp" alt=""><span>Derecha</span></button></div>
+      <div class="window-presets" id="windowPresets" hidden><button type="button" data-preset="left"><img src="../camara-espia/assets/habitacion-original.webp" alt=""><img class="preset-balloon" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt=""><span>Izquierda</span></button><button type="button" data-preset="center"><img src="../camara-espia/assets/habitacion-original.webp" alt=""><img class="preset-balloon" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt=""><span>Centro</span></button><button type="button" data-preset="right"><img src="../camara-espia/assets/habitacion-original.webp" alt=""><img class="preset-balloon" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt=""><span>Derecha</span></button></div>
       <div class="proof-tools">
         <label class="secondary-action file-action" for="proofPhotoInput">◎ &nbsp; Hacer foto o elegir de galería<input id="proofPhotoInput" type="file" accept="image/*,.heic,.heif"></label>
         <div class="transform-tools"><button type="button" id="proofMove" disabled>✥<small>Mover</small></button><button type="button" id="proofResize" disabled>⛶<small>Tamaño</small></button><button type="button" id="proofRotate" disabled>⟳<small>Rotar</small></button></div><label class="scale-control" for="proofScale" id="proofSizePanel"><span>Tamaño</span><output id="proofScaleValue">18%</output><input id="proofScale" type="range" min="10" max="70" step="1" value="18" disabled></label>
