@@ -34,20 +34,20 @@
 .splash-copy{position:absolute;z-index:2;top:34%;left:40%;right:5%;text-align:center;color:#ffe2a1;text-shadow:0 2px 7px #000}.splash-copy h1{margin:0;font:400 clamp(28px,7.4vw,37px)/.98 Georgia,serif}.splash-copy h1 strong{display:block;font-size:1.55em;font-weight:700}.splash-copy p{margin:9px 0 0;font:12px Georgia,serif}
 .splash-enter{position:relative;z-index:3;width:68%;margin:0 auto max(28px,5vh);min-height:48px}
 .home-screen{padding:0 16px max(9px,var(--safe-bottom));gap:8px;background:linear-gradient(180deg,#06172b,#020d1b 100%)}
-.home-art{position:relative;flex:0 0 clamp(270px,43vh,370px);min-height:0;margin:0 -16px;overflow:hidden;background:linear-gradient(180deg,#06152a55,#06152a77 65%,#06152a99),url("../modo-padres/assets/noche-villa-perez.webp") center 48%/cover no-repeat}
+.home-art{position:relative;flex:0 0 clamp(330px,50vh,430px);min-height:0;margin:0 -16px;overflow:hidden;background:linear-gradient(180deg,#06152a55,#06152a77 65%,#06152a99),url("../modo-padres/assets/noche-villa-perez.webp") center 48%/cover no-repeat}
 .home-art:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#061327 0%,transparent 38%,#06132722 100%)}
 .home-art .home-city{display:none}
 .home-art .home-character{position:absolute;z-index:2;left:-6%;bottom:-7%;width:78%;height:106%;object-fit:contain;object-position:left bottom;filter:drop-shadow(0 5px 8px #000a)}
 .home-art-shade{position:absolute;z-index:3;inset:0;background:linear-gradient(90deg,transparent 30%,#04132920 58%,#04132933 100%)}
 .home-copy{position:absolute;z-index:4;top:18%;left:41%;right:4%;text-align:center;text-shadow:0 2px 7px #000}.home-copy h1{margin:0;color:#ffe3a3;font:700 clamp(24px,6vw,31px)/1.02 Georgia,serif}.home-copy p{margin:6px auto;color:#fff0cf;font:11px Georgia,serif}
-.home-actions{position:relative;z-index:4;display:flex;flex:1;min-height:0;flex-direction:column;justify-content:space-between;gap:8px}
+.home-actions{position:relative;z-index:4;display:flex;flex:1;min-height:0;flex-direction:column;justify-content:flex-start;gap:8px}
 .home-actions>.main-action{flex:0 0 auto;min-height:49px;width:100%}
 .shortcut-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .shortcut-card{min-width:0;min-height:clamp(72px,10vh,86px);padding:7px 9px;display:flex;align-items:center;gap:8px;border:1px solid #9d773f;border-radius:13px;background:linear-gradient(145deg,#102c48f5,#06172bf5);color:#ffe4ad;text-align:left;box-shadow:0 0 0 1px #3d2b1a,0 3px 8px #0007,inset 0 1px 3px #fff2}
 .shortcut-icon{width:43px;height:48px;flex:0 0 43px;display:grid;place-items:center;border:0;border-radius:8px;background:transparent;color:#ffdc91;font-size:29px}
 .shortcut-icon img,.shortcut-icon svg{width:100%;height:100%;object-fit:contain;overflow:visible;filter:drop-shadow(0 3px 4px #0008)}
 .shortcut-card>span:nth-child(2){min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}.shortcut-card strong{font:700 clamp(13px,3.8vw,15px)/1.05 Georgia,serif;color:#ffe6b4}.shortcut-card small{font:10px/1.1 Georgia,serif;color:#e4c99a}.shortcut-card>b{color:#ffdc8e;font:20px Georgia,serif}
-.home-actions .child-action{width:72%;min-height:40px;align-self:center;background:linear-gradient(180deg,#102d49,#06182b);color:#ffdf9e;border:1px solid #9b763f;box-shadow:0 2px 0 #392616;font-size:14px}.home-actions .child-action:before{display:none}
+.home-actions .child-action{width:72%;min-height:40px;align-self:center;margin-top:auto;background:linear-gradient(180deg,#102d49,#06182b);color:#ffdf9e;border:1px solid #9b763f;box-shadow:0 2px 0 #392616;font-size:14px}.home-actions .child-action:before{display:none}
 .task-screen{gap:6px}
 .task-form{display:flex;flex:1;min-height:0;flex-direction:column;gap:8px}
 .field-card{position:relative;min-height:54px;padding:8px 12px;display:flex;align-items:center;gap:10px;border:1.5px solid #edc37c;border-radius:12px;background:linear-gradient(110deg,#fff0d1,#f2d19a);color:#35220f;box-shadow:0 2px 9px #0006,inset 0 1px #fff}
@@ -151,7 +151,7 @@
 #memoryPreviewContent img,#memoryPreviewContent video{display:block;width:100%;max-height:60dvh;object-fit:contain;border-radius:9px}#memoryPreviewContent p{white-space:pre-wrap;color:#3b2410}
 @media(max-height:740px){
  .screen{padding-top:4px;gap:4px}.topbar{height:calc(49px + var(--safe-top));min-height:calc(49px + var(--safe-top))}
- .home-art{flex-basis:clamp(205px,32vh,220px)}.home-screen{gap:5px}.shortcut-card{min-height:61px}.shortcut-icon{height:40px;width:36px;flex-basis:36px}.home-actions{gap:5px;justify-content:space-between}.home-actions>.main-action{min-height:41px}.home-actions .child-action{min-height:38px}
+ .home-art{flex-basis:clamp(225px,35vh,240px)}.home-screen{gap:5px}.shortcut-card{min-height:61px}.shortcut-icon{height:40px;width:36px;flex-basis:36px}.home-actions{gap:5px;justify-content:space-between}.home-actions>.main-action{min-height:41px}.home-actions .child-action{min-height:38px;margin-top:0}
  .screen-heading{padding:2px 0 6px}.screen-heading h1{font-size:25px}.screen-heading p{font-size:11px}
  .main-action{min-height:43px;font-size:14px}.secondary-action{min-height:38px}.video-preview{min-height:130px}
  .proof-card{min-height:67px}.proof-thumb{min-height:52px}.proof-workspace{min-height:110px}.transform-tools button{min-height:41px}
