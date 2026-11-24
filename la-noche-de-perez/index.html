@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07192b">
+  <meta name="description" content="La noche de Pérez: prepara el vuelo, crea recuerdos y descubre la magia.">
+  <title>La noche de Pérez · Prototipo</title>
+  <link rel="stylesheet" href="styles.css?v=1">
+  <script src="app.js?v=1" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="scene-bg" aria-hidden="true">
+      <img src="../modo-padres/assets/noche-villa-perez.webp" alt="">
+      <div class="scene-vignette"></div>
+    </div>
+
+    <header class="topbar">
+      <button class="back-button" id="backButton" type="button" aria-label="Volver" hidden>←</button>
+      <button class="brand" type="button" data-screen="home" aria-label="Ir al inicio">
+        <span class="brand-seal">✦</span>
+        <span><small>LA NOCHE</small><strong>DE PÉREZ</strong></span>
+      </button>
+      <div class="top-actions">
+        <button class="top-link" type="button" data-screen="library" aria-label="Abrir cofre de recuerdos"><span>▣</span><small>Recuerdos</small></button>
+        <button class="help-button" id="helpButton" type="button" aria-label="Ayuda">?</button>
+      </div>
+    </header>
+
+    <main class="screen-stack">
+      <section class="screen home-screen active" id="screen-home" aria-labelledby="homeTitle">
+        <div class="home-hero">
+          <span class="eyebrow"><i></i> UNA NOCHE MUY ESPECIAL</span>
+          <h1 id="homeTitle">Esta noche,<br><em>Pérez viene de visita.</em></h1>
+          <p>Prepara su llegada y deja pequeñas sorpresas para mañana.</p>
+        </div>
+
+        <div class="home-panel">
+          <button class="main-action" type="button" data-screen="destination">
+            <span class="main-action-copy">
+              <small>EMPEZAMOS POR EL VIAJE</small>
+              <strong>¿Dónde recogerá tu diente?</strong>
+              <span>Indica tu dirección y prepara su recorrido</span>
+            </span>
+            <span class="main-action-arrow">→</span>
+          </button>
+
+          <div class="shortcut-grid" aria-label="Otras cosas que puedes preparar">
+            <button class="shortcut" type="button" data-screen="video">
+              <span class="shortcut-icon">◉</span><span><b>Vídeo del globo</b><small>En su habitación</small></span><span class="shortcut-arrow">›</span>
+            </button>
+            <button class="shortcut" type="button" data-screen="proofs">
+              <span class="shortcut-icon">✧</span><span><b>Pruebas de visita</b><small>Fotos y huellas</small></span><span class="shortcut-arrow">›</span>
+            </button>
+            <button class="shortcut" type="button" data-screen="letter">
+              <span class="shortcut-icon">✉</span><span><b>Carta de Pérez</b><small>Un mensaje especial</small></span><span class="shortcut-arrow">›</span>
+            </button>
+            <button class="shortcut" type="button" data-screen="library">
+              <span class="shortcut-icon">▣</span><span><b>Cofre de recuerdos</b><small>Todo lo preparado</small></span><span class="shortcut-arrow">›</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="home-footer">
+          <span class="privacy-note">✦ Tú decides cuánta magia preparar</span>
+          <a class="child-mode-link" href="../camara-espia/">Activar modo niño <span>↗</span></a>
+        </div>
+        <span class="prototype-note">MAQUETA DE NAVEGACIÓN · NO SUSTITUYE LA VERSIÓN ACTUAL</span>
+      </section>
+
+      <section class="screen task-screen" id="screen-destination" aria-labelledby="destinationTitle">
+        <div class="step-line"><span>01</span><i></i><span>EL VIAJE</span><b>1 / 4</b></div>
+        <div class="screen-heading">
+          <span class="eyebrow">EL PRIMER PASO</span>
+          <h1 id="destinationTitle">¿Dónde va a recoger tu diente?</h1>
+          <p>Escribe la dirección de casa. Pérez preparará su recorrido nocturno desde Villa Pérez.</p>
+        </div>
+        <form id="addressForm" class="task-body">
+          <label class="field-label" for="addressInput">Dirección de destino</label>
+          <input id="addressInput" class="text-field" type="text" autocomplete="street-address" placeholder="Calle, número y localidad" required>
+          <div class="map-preview" id="mapPreview">
+            <div class="map-topline"><span>✦ VUELO NOCTURNO</span><span class="map-pending">VISTA DE DISEÑO</span></div>
+            <svg viewBox="0 0 340 126" role="img" aria-label="Esquema ilustrativo del recorrido, no es un mapa real">
+              <path class="road road-a" d="M-10 28 C52 15 72 65 127 53 S215 12 350 38"/>
+              <path class="road road-b" d="M-12 91 C60 70 97 104 150 92 S249 63 350 92"/>
+              <path class="road road-c" d="M80 -10 C95 26 125 37 118 136"/>
+              <path class="road road-d" d="M244 -10 C222 28 252 71 237 136"/>
+              <path class="route-dash" d="M40 81 C88 24 147 108 198 56 S263 34 305 52"/>
+              <circle class="map-pin pin-origin" cx="40" cy="81" r="5"/>
+              <circle class="map-pin pin-destination" cx="305" cy="52" r="5"/>
+              <text x="25" y="108">VILLA PÉREZ</text><text x="264" y="27">TU CASA</text>
+            </svg>
+            <p id="mapNote">El mapa real se conectará cuando esté definido el origen definitivo de Villa Pérez.</p>
+          </div>
+          <p class="privacy-inline">🔒 La dirección se utiliza para calcular el trayecto. No formará parte de los recuerdos que verá el niño.</p>
+          <p class="form-status" id="addressStatus" role="status"></p>
+          <div class="task-footer">
+            <button class="primary-button" type="submit">Guardar destino <span>→</span></button>
+            <button class="text-button" type="button" data-screen="video">Lo haré después</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="screen task-screen" id="screen-video" aria-labelledby="videoTitle">
+        <div class="step-line"><span>02</span><i></i><span>EL GLOBO EN SU HABITACIÓN</span><b>2 / 4</b></div>
+        <div class="screen-heading">
+          <span class="eyebrow">UN RECUERDO EN VÍDEO</span>
+          <h1 id="videoTitle">Que Pérez sobrevuele su habitación.</h1>
+          <p>Haz una foto de la habitación, coloca el globo y prepara el vídeo de su visita.</p>
+        </div>
+        <div class="video-preview-card">
+          <img src="../modo-padres/assets/habitacion-ejemplo.webp" alt="Ejemplo de dormitorio infantil preparado para el vuelo de Pérez">
+          <div class="video-preview-shade"></div>
+          <span class="preview-chip">VÍDEO MÁGICO</span>
+          <span class="preview-caption">El globo aparece en la habitación<br>como si estuviera allí de verdad.</span>
+        </div>
+        <div class="task-footer">
+          <a class="primary-button link-button" href="../vuelo-magico/?desde=padres">Abrir asistente de vídeo <span>→</span></a>
+          <p class="integration-note">Se reutiliza el editor de vuelo existente. En la integración final, el vídeo se guardará directamente en el Cofre.</p>
+          <button class="text-button" type="button" data-screen="proofs">Continuar sin vídeo</button>
+        </div>
+      </section>
+
+      <section class="screen task-screen" id="screen-proofs" aria-labelledby="proofsTitle">
+        <div class="step-line"><span>03</span><i></i><span>LAS PRUEBAS DE SU VISITA</span><b>3 / 4</b></div>
+        <div class="screen-heading">
+          <span class="eyebrow">PEQUEÑAS PISTAS</span>
+          <h1 id="proofsTitle">¿Qué quieres que encuentre mañana?</h1>
+          <p>Puedes preparar una, dos o las tres. Cada recuerdo tendrá su propio asistente.</p>
+        </div>
+        <div class="proof-list">
+          <button class="proof-card" type="button" data-proof="selfie">
+            <span class="proof-art proof-selfie"><span>✦</span></span>
+            <span class="proof-copy"><b>Una foto con Pérez</b><small>El ratón junto a tu peque dormido</small></span><span class="proof-arrow">›</span>
+          </button>
+          <button class="proof-card" type="button" data-proof="window">
+            <span class="proof-art proof-window"><span>☾</span></span>
+            <span class="proof-copy"><b>Pérez en la ventana</b><small>El globo volando junto a casa</small></span><span class="proof-arrow">›</span>
+          </button>
+          <a class="proof-card" href="../huellas-perez/">
+            <span class="proof-art proof-prints"><span>✣</span></span>
+            <span class="proof-copy"><b>Huellas de Pérez</b><small>En la almohada, mesita o dormitorio</small></span><span class="proof-arrow">↗</span>
+          </a>
+        </div>
+        <div class="task-footer">
+          <button class="primary-button" type="button" data-screen="letter">Continuar a la carta <span>→</span></button>
+          <button class="text-button" type="button" data-screen="library">Ir directamente al cofre</button>
+        </div>
+      </section>
+
+      <section class="screen task-screen" id="screen-proof-detail" aria-labelledby="proofDetailTitle">
+        <div class="step-line"><span>03</span><i></i><span>PREPARA LA FOTOGRAFÍA</span><b>3 / 4</b></div>
+        <div class="screen-heading">
+          <span class="eyebrow" id="proofKicker">UNA PRUEBA MÁGICA</span>
+          <h1 id="proofDetailTitle">Una foto con Pérez.</h1>
+          <p id="proofDescription">Elige una foto real del peque dormido. Después colocaremos a Pérez en la escena.</p>
+        </div>
+        <label class="photo-drop" for="proofPhoto">
+          <input id="proofPhoto" type="file" accept="image/*,.heic,.heif">
+          <img id="proofImage" alt="Vista previa de la fotografía elegida" hidden>
+          <span id="proofPlaceholder"><b>＋</b><strong>Hacer foto o elegir de galería</strong><small>La imagen se mostrará aquí para revisar el encuadre</small></span>
+        </label>
+        <p class="integration-note">Boceto de flujo: el montaje final con el máster oficial de Pérez y la exportación se integrarán en la siguiente fase.</p>
+        <div class="task-footer">
+          <button class="primary-button" id="saveProofButton" type="button" disabled>Guardar foto de referencia <span>→</span></button>
+          <button class="text-button" type="button" data-screen="proofs">Elegir otra prueba</button>
+        </div>
+      </section>
+
+      <section class="screen task-screen" id="screen-letter" aria-labelledby="letterTitle">
+        <div class="step-line"><span>04</span><i></i><span>LA CARTA DE PÉREZ</span><b>4 / 4</b></div>
+        <div class="screen-heading compact-heading">
+          <span class="eyebrow">UN MENSAJE SOLO PARA ÉL O ELLA</span>
+          <h1 id="letterTitle">Una carta muy especial.</h1>
+          <p>Personaliza unas palabras de Pérez. Podrás revisarlas antes de guardarlas.</p>
+        </div>
+        <form id="letterForm" class="letter-form">
+          <label class="field-label" for="childName">Nombre del peque</label>
+          <input class="text-field" id="childName" type="text" maxlength="32" placeholder="¿Cómo se llama?" required>
+          <label class="field-label" for="letterMessage">Mensaje de Pérez</label>
+          <textarea class="text-field letter-input" id="letterMessage" rows="3" maxlength="260">¡Hola! Gracias por cuidar tan bien de tu sonrisa. He venido volando desde muy lejos para recoger tu dientecito. ¡Sigue soñando y sonriendo!</textarea>
+          <div class="letter-preview">
+            <div class="letter-preview-top"><span>✦</span><small>UNA CARTA DE VILLA PÉREZ</small><span>✦</span></div>
+            <p>Querido/a <strong id="letterPreviewName">peque</strong>:</p>
+            <p id="letterPreviewMessage">¡Hola! Gracias por cuidar tan bien de tu sonrisa. He venido volando desde muy lejos para recoger tu dientecito. ¡Sigue soñando y sonriendo!</p>
+            <div class="letter-sign">Con cariño,<br><b>Ratón Pérez</b> <span>✧</span></div>
+          </div>
+          <div class="task-footer">
+            <button class="primary-button" type="submit">Guardar carta <span>→</span></button>
+            <button class="text-button" type="button" data-screen="library">Ahora no, ir al cofre</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="screen task-screen library-screen" id="screen-library" aria-labelledby="libraryTitle">
+        <div class="step-line"><span>✦</span><i></i><span>TODO LO QUE VERÁ MAÑANA</span><b>COFRE</b></div>
+        <div class="screen-heading">
+          <span class="eyebrow">TU PEQUEÑO TESORO</span>
+          <h1 id="libraryTitle">El cofre de los recuerdos.</h1>
+          <p>Aquí se reunirán todos los vídeos, fotos, huellas y la carta de Pérez.</p>
+        </div>
+        <div class="memory-list" id="memoryList">
+          <div class="empty-library"><span>✧</span><strong>Aún no hay recuerdos guardados</strong><small>Cuando prepares una sorpresa, aparecerá aquí.</small></div>
+        </div>
+        <div class="availability-note"><span>☾</span><span><b>Preparados para mañana</b><small>El niño solo verá los recuerdos que tú hayas activado.</small></span></div>
+        <div class="task-footer">
+          <a class="primary-button link-button" href="../camara-espia/">Activar modo niño <span>→</span></a>
+          <button class="text-button" type="button" data-screen="home">Volver al inicio</button>
+        </div>
+        <p class="integration-note">Maqueta visual: la galería unificada y la sincronización con el modo niño son parte de la siguiente fase.</p>
+      </section>
+    </main>
+
+    <dialog id="helpDialog" class="help-dialog">
+      <button class="dialog-close" id="closeHelp" type="button" aria-label="Cerrar ayuda">×</button>
+      <span class="eyebrow">UN SECRETO DE PÉREZ</span>
+      <h2>Prepara la magia a tu ritmo.</h2>
+      <p>No tienes que hacerlo todo. Puedes preparar solo el vuelo, una fotografía o una carta. Cada cosa que crees se reunirá en el Cofre de recuerdos.</p>
+      <p>Cuando quieras, activa el modo niño para que tu peque descubra su sorpresa. En esta maqueta, los editores y el cofre todavía se están conectando.</p>
+      <button class="primary-button" id="helpDone" type="button">¡Entendido!</button>
+    </dialog>
+  </div>
+</body>
+</html>
