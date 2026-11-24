@@ -77,7 +77,7 @@ try{
         await page.waitForFunction(()=>!document.getElementById('proofCanvas').hidden);
         await page.waitForTimeout(250);
         await noPageOrScreenScroll(page,'photo editor '+browserName+' '+viewport.width+'x'+viewport.height);
-        await page.locator('#proofScale').fill('22');
+        await page.locator('#proofScale').evaluate(el=>{el.value='22';el.dispatchEvent(new Event('input',{bubbles:true}));});
         await page.locator('#saveProofButton').click();
         await page.waitForFunction(async()=>{const a=await window.LNPMemoryStore.list();return a.some(x=>x.type==='perez-selfie');});
         const hasSavedImage=await page.evaluate(async()=>{const a=await window.LNPMemoryStore.list();return a.some(item=>item.type==='perez-selfie'&&item.blob instanceof Blob&&item.blob.type==='image/png');});
