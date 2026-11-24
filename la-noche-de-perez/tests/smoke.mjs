@@ -90,12 +90,30 @@ try{
         await page.waitForFunction(()=>!document.getElementById('videoPhotoPreview').hidden);
         const storedPhoto=await page.evaluate(async()=>{const file=await window.VPPhotoStore.access('get');return file?.name||null;});
         assert.equal(storedPhoto,'habitacion.png');
+
+        await page.goto(base+'huellas-perez/?desde=la-noche',{waitUntil:'domcontentloaded'});
+        await page.waitForFunction(()=>{const c=document.getElementById('footprintCanvas');return c&&!c.hidden;});
+        const footprintBox=await page.locator('#footprintCanvas').boundingBox();
+        assert.ok(footprintBox,'footprint editor receives the shared room photo');
+        await page.mouse.move(footprintBox.x+footprintBox.width*.16,footprintBox.y+footprintBox.height*.25);
+        await page.mouse.down();
+        await page.mouse.move(footprintBox.x+footprintBox.width*.78,footprintBox.y+footprintBox.height*.68,{steps:12});
+        await page.mouse.up();
+        await page.waitForFunction(()=>!document.getElementById('downloadBtn').disabled);
+        await page.locator('#downloadBtn').click();
+        await page.waitForURL(/la-noche-de-perez/);
+        await page.waitForFunction(async()=>{const a=await window.LNPMemoryStore.list();return a.some(x=>x.type==='footprints');});
+        const savedFootprints=await page.evaluate(async()=>{const a=await window.LNPMemoryStore.list();return a.some(x=>x.type==='footprints'&&x.blob instanceof Blob&&x.blob.type==='image/png');});
+        assert.equal(savedFootprints,true);
+
+        await page.locator('.brand-plaque').click();
+        await page.locator('#screen-home [data-screen="video"]').click();
         await page.locator('#openVideoEditor').click();
         await page.waitForURL(/vuelo-magico/);
         await page.waitForFunction(()=>window.VillaPerezFlight?.getState().photoLoaded===true,{timeout:30000});
         assert.equal(await page.evaluate(()=>window.LNPMemoryStore!==undefined),true);
         assert.deepEqual(errors,[]);
-        console.log('PASS',browserName,viewport,'home/menu, letter, photo composition, chest, photo handoff to flight editor');
+        console.log('PASS',browserName,viewport,'home/menu, letter, photo composition, footprints handoff, chest, photo handoff to flight editor');
         await context.close();
       }
     } finally { await browser.close(); }
