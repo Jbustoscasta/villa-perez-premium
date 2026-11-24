@@ -67,7 +67,7 @@ try{
 
         await page.locator('#helpButton').click();
         assert.equal(await page.locator('#helpDialog').evaluate(e=>e.open),true);
-        await page.locator('#helpDialog [data-close-dialog]').click();
+        await page.locator('#helpDialog .dialog-done').click();
 
         await page.locator('#menuButton').click();
         assert.equal(await page.locator('#menuDialog').evaluate(e=>e.open),true);
