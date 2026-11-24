@@ -1040,11 +1040,11 @@
       const tomorrow=new Date();
       tomorrow.setDate(tomorrow.getDate()+1);
       tomorrow.setHours(7,0,0,0);
-      let extraPhoto=null,extraLetter=null;
+      let extraPhoto=null,extraLetter=null,photoItem=null,letterItem=null;
       try{
         const memories=window.LNPMemoryStore?await window.LNPMemoryStore.list():[];
-        const photoItem=memories.find(item=>['perez-selfie','window-balloon','footprints'].includes(item.type)&&item.blob instanceof Blob);
-        const letterItem=memories.find(item=>item.type==='letter');
+        photoItem=memories.find(item=>['perez-selfie','window-balloon','footprints'].includes(item.type)&&item.blob instanceof Blob);
+        letterItem=memories.find(item=>item.type==='letter');
         if(photoItem)extraPhoto=photoItem.blob;
         if(letterItem){
           const esc=value=>String(value||'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -1093,6 +1093,14 @@
           base.letterBlob=null;
         }
         await put(base);
+      }
+      if(window.LNPMemoryStore){
+        for(const item of [photoItem,letterItem]){
+          if(!item)continue;
+          item.status='scheduled';
+          item.note=(item.note||'Recuerdo guardado')+' · Incluido en Cámara Mágica';
+          try{await window.LNPMemoryStore.put(item);}catch(error){console.warn('No se pudo actualizar el estado del recuerdo',error);}
+        }
       }
       localStorage.setItem('vp_cam_espia_mission_v1',String(Date.now()));
       localStorage.setItem('vp_cam_espia_capture_changed_v1',String(Date.now()));
