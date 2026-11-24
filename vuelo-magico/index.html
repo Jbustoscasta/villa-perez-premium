@@ -8,7 +8,7 @@
   <title>Vuelo Mágico · Modo padres · Una noche inolvidable | Ilusiono</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="stylesheet" href="styles.css?v=152">
-  <link rel="stylesheet" href="magic-ui.css?v=157">
+  <link rel="stylesheet" href="magic-ui.css?v=162">
   <style>
     .footprint-extra{display:flex;gap:12px;align-items:center;margin:14px 0 20px;padding:16px;border:1px solid rgba(238,209,153,.42);border-radius:15px;background:linear-gradient(125deg,rgba(227,187,111,.14),rgba(89,126,165,.14));text-decoration:none;color:#f7e8c9;transition:background .2s ease}
     .footprint-extra:hover{background:rgba(227,187,111,.2)}
@@ -29,13 +29,13 @@
         <div class="brand-icon" aria-hidden="true"><span class="seal-moon">☾</span><span class="seal-star">✦</span></div>
         <div class="brand-copy"><strong>ILUSIONO</strong><small>Experiencias que hacen magia</small></div>
         <div class="brand-divider"></div>
-        <div class="project-name">Vuelo Mágico <span class="beta">VILLA PÉREZ</span></div>
+        <a href="../modo-padres/" class="project-name" style="text-decoration:none" aria-label="Volver al modo padres">Vuelo Mágico <span class="beta">VILLA PÉREZ</span></a>
       </div>
       <div class="top-right"><span class="privacy"><span class="privacy-dot"></span> Un secreto entre vosotros y Pérez</span><button class="help-btn" id="helpBtn" title="Ayuda" aria-label="Ayuda">?</button></div>
     </header>
 
     <main class="workspace">
-      <aside class="sidebar left-sidebar">
+      <aside class="sidebar left-sidebar" id="vpPhotoPanel"><button type="button" class="vp-panel-close" data-vp-close>← Volver al centro mágico</button>
         <div class="sidebar-heading"><span class="eyebrow">✦ LA VISITA MÁS ESPERADA</span><h1>Esta noche,<br><em>la magia vuela.</em></h1><p>Pérez está a punto de llegar. Solo necesita una fotografía de su habitación para encontrar el camino.</p></div>
 
         <section class="panel-section">
@@ -128,10 +128,10 @@
           <button type="button" id="openCameraAgain" class="quick-photo camera-new-photo">📷 Nueva foto</button>
           <label class="quick-photo" for="replacePhotoInput">Galería<input id="replacePhotoInput" type="file" accept="image/*,.heic,.heif" aria-label="Cambiar fotografía de la habitación"></label>
         </div>
-        <p class="preview-foot" id="contextHint">✦ <span>Dibuja un camino de estrellas para Pérez o deja que la magia te sugiera uno.</span></p>
+        <nav class="vp-mobile-tools" aria-label="Instrumentos de la misión"><button type="button" data-vp-panel="vpPhotoPanel" aria-expanded="false">✧ Foto</button><button type="button" data-vp-panel="vpMagicPanel" aria-expanded="false">☾ Ajustes</button><a href="../huellas-perez/">✣ Huellas</a></nav><p class="preview-foot" id="contextHint">✦ <span>Dibuja un camino de estrellas para Pérez o deja que la magia te sugiera uno.</span></p>
       </section>
 
-      <aside class="sidebar right-sidebar">
+      <aside class="sidebar right-sidebar" id="vpMagicPanel"><button type="button" class="vp-panel-close" data-vp-close>← Volver al centro mágico</button>
         <span class="eyebrow">✦ EL TOQUE FINAL</span>
         <h2 class="right-title">A tu manera <span>✧</span></h2>
         <p class="right-intro">El cielo, la luz y el sonido se ajustan por ti. Puedes cambiar cualquier detalle si lo deseas.</p>
@@ -155,7 +155,7 @@
           <span class="footprint-extra-copy"><strong>Nuevo · Huellas de Pérez</strong><small>Haz una foto de la mesita o la almohada y dibuja por dónde pasó.</small></span>
           <span class="footprint-extra-arrow" aria-hidden="true">›</span>
         </a>
-        <section class="tip-card"><span class="tip-star">✦</span><strong>El secreto del vuelo</strong><p>Señala el diente sobre la mesita. Pérez se acercará despacito, como si estuviera buscándolo.</p></section>
+        <div class="vp-route-storage"><button id="saveRouteBtn" class="secondary-button">Guardar recorrido</button><button id="loadRouteBtn" class="secondary-button">Cargar recorrido</button><input hidden type="file" accept=".json,application/json" id="routeInput"></div><section class="tip-card"><span class="tip-star">✦</span><strong>El secreto del vuelo</strong><p>Señala el diente sobre la mesita. Pérez se acercará despacito, como si estuviera buscándolo.</p></section>
         <div class="export-block"><button id="exportBtn" class="primary-button">✧ &nbsp; Guardar recuerdo mágico</button><button id="snapshotBtn" class="secondary-button">Guardar fotograma</button><button id="shareBtn" class="secondary-button" hidden>Compartir vídeo creado</button><div class="export-detail"><span>🔒</span> Se procesa en tu dispositivo, sin subir fotos.</div></div>
       </aside>
     </main>
@@ -164,7 +164,7 @@
       <span class="mobile-cta-copy"><strong>Su recuerdo mágico</strong><small id="mobileDuration">Privado · 15 s</small></span>
       <button type="button" id="mobileExportBtn">✦ Guardar recuerdo</button>
     </div>
-    <footer class="footer"><span>© Ilusiono · Villa Pérez · v1.5.4</span><span><button id="saveRouteBtn">Guardar recorrido</button> <button id="loadRouteBtn">Cargar recorrido</button><input hidden type="file" accept=".json,application/json" id="routeInput"></span><span>Experiencia privada · No se almacena ninguna foto</span></footer>
+    <footer class="footer"><span>© Ilusiono · Villa Pérez · v1.5.4</span><span>Experiencia privada · Tu foto se queda en este dispositivo</span></footer>
   </div>
 
   <!-- Cámara propia: visor HTTPS vertical con guía; nunca sube la foto al servidor. -->
@@ -244,6 +244,8 @@
     </div>
   </div>
   <div class="modal-backdrop" id="helpModal" hidden><div class="modal help-modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle"><button id="closeHelpBtn" class="modal-close" aria-label="Cerrar">×</button><h2 id="helpTitle">Cómo funciona el vuelo</h2><ol><li>Para hacer la foto, pulsa <b>Abrir asistente de foto</b>: coloca la cama en la mitad inferior y deja el recuadro superior libre para el globo. Puedes repetir antes de aceptar, o elegir una foto existente.</li><li>Con <b>Dibujar recorrido</b> activado, arrastra el dedo dibujando la trayectoria.</li><li>Opcionalmente marca el lugar donde está el diente.</li><li>Ajusta el tamaño con el recuadro del globo o el control dentro de la escena y reproduce sin salir de la foto.</li><li>Exporta el vídeo para guardarlo o compartirlo.</li></ol><p>Para usar la cámara integrada necesitas abrir la web por HTTPS en Safari y aceptar el permiso. No usamos flash ni enviamos fotos al servidor. El vídeo animado del globo viene incluido. La aplicación elimina el fondo verde automáticamente sobre la fotografía; también puedes cargar otro MP4.</p><p>Todo se procesa localmente; no enviamos fotos a ningún servidor. En Chrome la exportación habitual es WebM y en Safari puede ser MP4 según el dispositivo.</p><button class="primary-button" id="helpDoneBtn">Entendido</button></div></div>
-  <script src="app.js?v=159" defer></script>
+  <script src="../modo-padres/photo-store.js?v=1" defer></script>
+  <script src="app.js?v=161" defer></script>
+  <script src="parent-layout.js?v=160" defer></script>
 </body>
 </html>

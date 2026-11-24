@@ -100,6 +100,8 @@ try{
       assert.equal(await page.evaluate(()=>document.documentElement.classList.contains('camera-active')),false,'document scroll is restored');
       // Safari denial path: provide usable native gallery, not a dead camera screen.
       await page.evaluate(()=>window.__cameraPermissionDenied=true);
+      await page.locator('[data-vp-panel="vpPhotoPanel"]').click();
+      assert.equal(await page.locator('#vpPhotoPanel').isVisible(),true,'photo panel opens from mobile toolbar');
       await page.locator('#openCameraSidebar').click();
       await page.waitForFunction(()=>!document.getElementById('cameraError').hidden,{timeout:8000});
       assert.equal(await page.locator('#cameraShutter').isDisabled(),true);
