@@ -55,6 +55,10 @@ try{
           console.log('LNP_HOME_BEGIN'+shot.toString('base64')+'LNP_HOME_END');
         }
 
+        await page.goto(base+'la-noche-de-perez/');
+        await page.waitForSelector('#screen-splash.active');
+        await noPageOrScreenScroll(page,'splash '+browserName+' '+viewport.width+'x'+viewport.height);
+        await page.locator('#screen-splash [data-screen="home"]').click();
         await page.locator('#screen-home [data-screen="destination"]').click();
         await noPageOrScreenScroll(page,'destination '+browserName+' '+viewport.width+'x'+viewport.height);
         await page.locator('#addressInput').fill('Calle de la Prueba 12, Madrid');
@@ -78,6 +82,7 @@ try{
         await page.locator('#toothName').fill('su primer incisivo');
         await page.locator('#letterMessage').fill('Gracias por cuidar tu sonrisa. He venido desde Villa Pérez.');
         await page.locator('#letterForm button[type="submit"]').click();
+        await noPageOrScreenScroll(page,'letter result '+browserName+' '+viewport.width+'x'+viewport.height);
         await page.locator('#saveLetterButton').click();
         await page.waitForSelector('#memoryList .memory-item');
         await noPageOrScreenScroll(page,'library after letter '+browserName+' '+viewport.width+'x'+viewport.height);
@@ -129,6 +134,23 @@ try{
         await page.waitForURL(/vuelo-magico/);
         await page.waitForFunction(()=>window.VillaPerezFlight?.getState().photoLoaded===true,{timeout:30000});
         assert.equal(await page.evaluate(()=>window.LNPMemoryStore!==undefined),true);
+        await page.goto(base+'la-noche-de-perez/?screen=cofre');
+        await page.waitForSelector('#memoryList .memory-item');
+        await page.locator('#screen-library [data-screen="ready"]').click();
+        await noPageOrScreenScroll(page,'ready '+browserName+' '+viewport.width+'x'+viewport.height);
+        await page.locator('#activateChildMode').click();
+        await page.waitForURL(/nino\.html/);
+        await page.waitForFunction(()=>document.getElementById('childStatus').textContent.includes('Mañana'));
+        assert.equal(await page.locator('#childView').isVisible(),false);
+        await page.evaluate(()=>{const key='lnp-child-mission-v1';const m=JSON.parse(localStorage.getItem(key));m.availableAt=Date.now()-1000;localStorage.setItem(key,JSON.stringify(m));});
+        await page.reload();
+        await page.locator('#childView').click();
+        await page.waitForSelector('#childGallery:not([hidden])');
+        assert.equal(await page.locator('.child-memory').count(),3);
+        assert.equal(await page.locator('.child-memory.letter-tile').count(),1);
+        await page.locator('.child-memory.letter-tile').click();
+        assert.match(await page.locator('#childPreviewContent').textContent(),/Leo/);
+        await page.locator('#closeChildPreview').click();
         assert.deepEqual(errors,[]);
         console.log('PASS',browserName,viewport,'home/menu, letter, photo composition, footprints handoff, chest, photo handoff to flight editor');
         await context.close();
