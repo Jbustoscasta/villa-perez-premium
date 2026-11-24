@@ -7,6 +7,9 @@ on:
       - 'vuelo-magico/**'
       - '.github/workflows/test-la-noche-de-perez.yml'
   workflow_dispatch:
+concurrency:
+  group: la-noche-perez-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
