@@ -7,10 +7,10 @@
   <meta name="description" content="Crea unas pequeñas huellas del Ratón Pérez sobre una foto de la mesita, almohada o dormitorio.">
   <title>Huellas de Pérez · Ilusiono</title>
   <link rel="icon" href="../vuelo-magico/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=4">
+  <link rel="stylesheet" href="./styles.css?v=5">
   <script defer src="../modo-padres/photo-store.js?v=2"></script>
   <script defer src="../la-noche-de-perez/memory-store.js?v=1"></script>
-  <script defer src="./app.js?v=6"></script>
+  <script defer src="./app.js?v=7"></script>
 </head>
 <body>
   <div class="shell">
@@ -27,9 +27,9 @@
       <section class="editor" aria-label="Editor de huellas">
         <div class="controls" aria-label="Ajustes de huellas">
           <div class="types" role="group" aria-label="Tipo de huella">
-            <button type="button" class="type active" data-style="normal" aria-pressed="true"><span class="type-icon dark-print">✣</span> Normales</button>
-            <button type="button" class="type" data-style="inverse" aria-pressed="false"><span class="type-icon light-print">✣</span> Invertidas</button>
-            <button type="button" class="type" data-style="magic" aria-pressed="false"><span class="type-icon magic-print">✦</span> Mágicas</button>
+            <button type="button" class="type active" data-style="normal" aria-pressed="true"><svg class="type-icon dark-print" viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="66" rx="25" ry="22"/><ellipse cx="20" cy="35" rx="10" ry="15"/><ellipse cx="42" cy="20" rx="10" ry="15"/><ellipse cx="64" cy="20" rx="10" ry="15"/><ellipse cx="83" cy="38" rx="9" ry="14"/></svg> Normales</button>
+            <button type="button" class="type" data-style="inverse" aria-pressed="false"><svg class="type-icon light-print" viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="66" rx="25" ry="22"/><ellipse cx="20" cy="35" rx="10" ry="15"/><ellipse cx="42" cy="20" rx="10" ry="15"/><ellipse cx="64" cy="20" rx="10" ry="15"/><ellipse cx="83" cy="38" rx="9" ry="14"/></svg> Invertidas</button>
+            <button type="button" class="type" data-style="magic" aria-pressed="false"><svg class="type-icon magic-print" viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="66" rx="25" ry="22"/><ellipse cx="20" cy="35" rx="10" ry="15"/><ellipse cx="42" cy="20" rx="10" ry="15"/><ellipse cx="64" cy="20" rx="10" ry="15"/><ellipse cx="83" cy="38" rx="9" ry="14"/></svg> Mágicas</button>
           </div>
           <div class="sliders">
             <label for="sizeRange"><span>Tamaño</span><input id="sizeRange" type="range" min="30" max="110" step="5" value="60" aria-label="Tamaño de las huellas"></label>
@@ -38,7 +38,7 @@
         </div>
         <div class="canvas-wrap" id="canvasWrap">
           <div class="placeholder" id="placeholder">
-            <div class="placeholder-symbol" aria-hidden="true">✣ ✣ ✣</div>
+            <img class="footprint-sample" src="../modo-padres/assets/habitacion-ejemplo.webp" alt=""><div class="sample-paws" aria-hidden="true">🐾　🐾　🐾</div>
             <strong>¿Por dónde ha pasado Pérez?</strong>
             <p>Haz una foto de la mesita, la almohada o cualquier rincón.</p>
           </div>
