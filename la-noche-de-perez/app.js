@@ -2,14 +2,15 @@
   "use strict";
   const $ = id => document.getElementById(id);
   const state = {
-    current:"home",
-    history:["home"],
+    current:"splash",
+    history:["splash"],
     destination:"",
     videoFile:null,
     videoPhotoUrl:null,
     proofType:"selfie",
     proofImage:null,
     proofScale:.18,
+    proofRotation:0,
     overlayX:.78,
     overlayY:.58,
     memoryUrls:[]
@@ -18,8 +19,8 @@
   const proofConfig = {
     selfie:{
       eyebrow:"EL RATÓN HA VENIDO A VERLE",
-      title:"Una foto con Pérez.",
-      description:"Elige una foto real de tu peque dormido. Mueve el globo con el dedo y ajusta su tamaño."
+      title:"Selfie con Pérez",
+      description:"Elige una foto real de tu peque dormido. Mueve a Pérez con el dedo y ajusta su tamaño."
     },
     window:{
       eyebrow:"EL GLOBO ESTÁ MUY CERCA",
@@ -42,7 +43,8 @@
     if(push && state.current!==name)state.history.push(name);
     state.current=name;
     document.querySelectorAll(".screen").forEach(screen=>screen.classList.toggle("active",screen===target));
-    $("backButton").hidden=name==="home";
+    document.querySelector(".app-shell").dataset.screen=name;
+    $("backButton").hidden=name==="home"||name==="splash";
     $("menuButton").hidden=name!=="home";
     if(name==="library")renderLibrary();
     if(name==="letter")updateLetterPreview();
@@ -84,6 +86,7 @@
     toast("Destino anotado.");
   });
   $("destinationContinue").addEventListener("click",()=>showScreen("video"));
+  $("useLocation").addEventListener("click",()=>{ $("addressStatus").textContent="La ubicación automática aún no está conectada al mapa. Escribe la dirección para continuar."; $("addressInput").focus(); });
 
   $("videoPhotoInput").addEventListener("change",async event=>{
     const file=event.currentTarget.files?.[0];
@@ -122,7 +125,9 @@
   function openProofEditor(type) {
     state.proofType=type;
     state.proofImage=null;
-    state.proofScale=type==="window"?.22:.18;
+    state.proofScale=type==="window"?.22:.35;
+    state.proofRotation=0;
+    masterImage.src=type==="window"?"../vuelo-magico/assets/perez-globo-iphone.webp":"../perez.png";
     state.overlayX=.78;
     state.overlayY=type==="window"?.34:.58;
     const config=proofConfig[type]||proofConfig.selfie;
@@ -135,6 +140,7 @@
     $("proofScale").value=Math.round(state.proofScale*100);
     $("proofScaleValue").textContent=Math.round(state.proofScale*100)+"%";
     $("proofScale").disabled=true;
+    ["proofMove","proofResize","proofRotate"].forEach(id=>$(id).disabled=true);
     $("saveProofButton").disabled=true;
     $("proofStatus").textContent="";
     showScreen("proof-editor");
@@ -146,7 +152,7 @@
   const proofCanvas=$("proofCanvas");
   const proofContext=proofCanvas.getContext("2d");
   const masterImage=new Image();
-  masterImage.src="../vuelo-magico/assets/perez-globo-iphone.webp";
+  masterImage.src="../perez.png";
   masterImage.onload=()=>{if(state.proofImage)drawProof();};
 
   function drawProof() {
@@ -162,7 +168,9 @@
       proofContext.save();
       proofContext.shadowColor="rgba(0,0,0,.38)";
       proofContext.shadowBlur=Math.max(5,width*.012);
-      proofContext.drawImage(masterImage,x,y,overlayWidth,overlayHeight);
+      proofContext.translate(state.overlayX*width,state.overlayY*height);
+      proofContext.rotate(state.proofRotation*Math.PI/180);
+      proofContext.drawImage(masterImage,-overlayWidth/2,-overlayHeight/2,overlayWidth,overlayHeight);
       proofContext.restore();
     }
   }
@@ -184,8 +192,9 @@
       $("proofCanvas").hidden=false;
       $("proofPlaceholder").hidden=true;
       $("proofScale").disabled=false;
+      ["proofMove","proofResize","proofRotate"].forEach(id=>$(id).disabled=false);
       $("saveProofButton").disabled=false;
-      $("proofStatus").textContent="Arrastra el globo para colocarlo. Puedes cambiar su tamaño.";
+      $("proofStatus").textContent="Arrastra el personaje para colocarlo. Puedes cambiar su tamaño y rotarlo.";
       drawProof();
     };
     image.onerror=()=>{
@@ -205,6 +214,10 @@
     $("proofScaleValue").textContent=event.target.value+"%";
     drawProof();
   });
+
+  $("proofMove").addEventListener("click",()=>toast("Arrastra el personaje sobre la fotografía."));
+  $("proofResize").addEventListener("click",()=>$("proofScale").focus());
+  $("proofRotate").addEventListener("click",()=>{state.proofRotation=(state.proofRotation+15)%360;drawProof();});
 
   function canvasPoint(event) {
     const rect=proofCanvas.getBoundingClientRect();
@@ -272,8 +285,8 @@
     $("letterPreviewMessage").textContent=message;
   }
   ["childName","toothName","letterMessage"].forEach(id=>$(id).addEventListener("input",updateLetterPreview));
-  $("letterForm").addEventListener("submit",async event=>{
-    event.preventDefault();
+  $("letterForm").addEventListener("submit",event=>{event.preventDefault();updateLetterPreview();showScreen("letter-result");});
+  $("saveLetterButton").addEventListener("click",async()=>{
     const name=$("childName").value.trim();
     if(!name){$("childName").focus();return;}
     const tooth=$("toothName").value.trim();
@@ -345,14 +358,16 @@
     }
     items.forEach(item=>{
       const row=document.createElement("article");
-      row.className="memory-item";
+      row.className="memory-item";row.dataset.type=item.type;
       const thumb=document.createElement("span");
-      thumb.className="memory-thumb";
+      thumb.className="memory-thumb";thumb.tabIndex=0;thumb.setAttribute("role","button");thumb.setAttribute("aria-label","Ver "+(item.title||"recuerdo"));thumb.dataset.viewMemory=item.id;
       if(item.blob&&item.blob.type.startsWith("image/")){
         const url=URL.createObjectURL(item.blob);
         state.memoryUrls.push(url);
         const img=document.createElement("img");img.src=url;img.alt="";
         thumb.append(img);
+      }else if(item.type==="flight-video"&&item.blob instanceof Blob){
+        const url=URL.createObjectURL(item.blob);state.memoryUrls.push(url);const video=document.createElement("video");video.src=url;video.muted=true;video.playsInline=true;video.preload="metadata";thumb.append(video);const play=document.createElement("b");play.className="memory-play";play.textContent="▶";thumb.append(play);
       }else{
         const symbol=document.createElement("span");
         symbol.textContent=memoryIcon[item.type]||"✧";
@@ -377,7 +392,10 @@
     });
   }
 
+  async function viewMemory(id){ const item=await window.LNPMemoryStore.get(id);if(!item)return;const pane=$("memoryPreviewContent");pane.replaceChildren();$("memoryPreviewTitle").textContent=item.title||"Recuerdo de Pérez";if(item.blob instanceof Blob){const url=URL.createObjectURL(item.blob);state.memoryUrls.push(url);const node=document.createElement(item.blob.type.startsWith("video/")?"video":"img");node.src=url;if(node.tagName==="VIDEO"){node.controls=true;node.playsInline=true;}else node.alt=item.title||"Recuerdo";pane.append(node);}else{const p=document.createElement("p");p.textContent="Hola, "+(item.childName||"peque")+". "+(item.message||"");pane.append(p);} $("memoryPreviewDialog").showModal();}
+  $("memoryList").addEventListener("keydown",event=>{if((event.key==="Enter"||event.key===" ")&&event.target.dataset.viewMemory){event.preventDefault();viewMemory(event.target.dataset.viewMemory);}});
   $("memoryList").addEventListener("click",async event=>{
+    const view=event.target.closest("[data-view-memory]");if(view){await viewMemory(view.dataset.viewMemory);return;}
     const button=event.target.closest("[data-delete-memory]");
     if(!button)return;
     try{
@@ -394,7 +412,8 @@
   if(initialScreen==="cofre"||initialScreen==="library"){
     state.history=["home","library"];
     showScreen("library",false);
-  }
+  }else if(initialScreen==="home"){state.history=["home"];showScreen("home",false);}
+  else{showScreen("splash",false);}
 
   window.addEventListener("pagehide",()=>{
     if(state.videoPhotoUrl)URL.revokeObjectURL(state.videoPhotoUrl);
