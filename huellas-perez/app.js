@@ -214,9 +214,14 @@
   const entryParams=new URLSearchParams(location.search);
   const fromLaNoche=entryParams.get('desde')==='la-noche';
   if(fromLaNoche){
+    document.body.classList.add('lnp-footprints');
+    $('footBrand').textContent='La noche de Pérez';
+    $('backToParents').setAttribute('aria-label','Volver al Cofre');
+    document.querySelector('.intro h1').textContent='Huellas mágicas';
+    document.querySelector('.intro p').textContent='Haz una foto de cerca y dibuja sus huellas.';
     $('footBrand').href='../la-noche-de-perez/?screen=cofre';
     $('backToParents').href='../la-noche-de-perez/?screen=cofre';
-    $('backToParents').textContent='← Volver al Cofre';
+    $('backToParents').textContent='‹';
     $('downloadBtn').textContent='Guardar en el Cofre';
   }
   async function saveToChest(blob){
