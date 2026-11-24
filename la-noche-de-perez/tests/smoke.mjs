@@ -49,6 +49,7 @@ try{
         assert.equal(response.status(),200);
         await page.waitForFunction(()=>window.LNPMemoryStore&&window.VPPhotoStore);
         assert.equal(await page.locator('#screen-home').isVisible(),true);
+        for(const id of ['splash','home','destination','route','video','video-editor','proofs','proof-editor','letter','letter-result','library','ready'])assert.equal(await page.locator('#screen-'+id).count(),1,'missing storyboard screen '+id);
         await noPageOrScreenScroll(page,'home '+browserName+' '+viewport.width+'x'+viewport.height);
         if(browserName==='Chromium'&&viewport.width===390){
           const shot=await page.screenshot({type:'jpeg',quality:68});
@@ -80,7 +81,7 @@ try{
         assert.equal(await page.locator('#screen-letter').isVisible(),true);
         await noPageOrScreenScroll(page,'letter '+browserName+' '+viewport.width+'x'+viewport.height);
         await page.locator('#childName').fill('Leo');
-        await page.locator('#toothName').fill('su primer incisivo');
+        await page.locator('#toothName').selectOption('un incisivo');
         await page.locator('#letterMessage').fill('Gracias por cuidar tu sonrisa. He venido desde Villa Pérez.');
         await page.locator('#letterForm button[type="submit"]').click();
         await noPageOrScreenScroll(page,'letter result '+browserName+' '+viewport.width+'x'+viewport.height);
@@ -88,7 +89,7 @@ try{
         await page.waitForSelector('#memoryList .memory-item');
         await noPageOrScreenScroll(page,'library after letter '+browserName+' '+viewport.width+'x'+viewport.height);
         let items=await page.evaluate(()=>window.LNPMemoryStore.list());
-        assert.equal(items.some(item=>item.type==='letter'&&item.childName==='Leo'&&item.toothName==='su primer incisivo'),true);
+        assert.equal(items.some(item=>item.type==='letter'&&item.childName==='Leo'&&item.toothName==='un incisivo'),true);
 
         await page.locator('.brand-plaque').click();
         await page.locator('#screen-home [data-screen="proofs"]').click();
