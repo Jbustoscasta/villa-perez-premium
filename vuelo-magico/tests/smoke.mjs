@@ -169,7 +169,7 @@ try{
           x.arc=(...args)=>{if(x.fillStyle==='#ff414f')window.__recordedHud.pulse.push(x.globalAlpha);return originalArc(...args);};
         });
         const downloadPromise=page.waitForEvent('download',{timeout:30000});
-        await page.locator('#exportBtn').click();
+        await page.locator(dims.width<500?'#quickExportBtn':'#exportBtn').click();
         const download=await downloadPromise;
         assert.match(download.suggestedFilename(),/vuelo-raton-perez-.*\.(webm|mp4)$/);
         const recording=await readFile(await download.path());
