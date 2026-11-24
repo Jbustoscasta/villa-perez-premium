@@ -55,6 +55,20 @@ try{
           console.log('LNP_HOME_BEGIN'+shot.toString('base64')+'LNP_HOME_END');
         }
 
+        await page.locator('#screen-home [data-screen="destination"]').click();
+        await noPageOrScreenScroll(page,'destination '+browserName+' '+viewport.width+'x'+viewport.height);
+        await page.locator('#addressInput').fill('Calle de la Prueba 12, Madrid');
+        await page.locator('#addressForm button[type="submit"]').click();
+        assert.equal(await page.locator('#destinationContinue').isEnabled(),true);
+        assert.match(await page.locator('#addressStatus').textContent(),/Destino anotado/);
+        await page.locator('#destinationContinue').click();
+        await noPageOrScreenScroll(page,'video after destination '+browserName+' '+viewport.width+'x'+viewport.height);
+        await page.locator('.brand-plaque').click();
+
+        await page.locator('#helpButton').click();
+        assert.equal(await page.locator('#helpDialog').evaluate(e=>e.open),true);
+        await page.locator('#helpDialog [data-close-dialog]').click();
+
         await page.locator('#menuButton').click();
         assert.equal(await page.locator('#menuDialog').evaluate(e=>e.open),true);
         await page.locator('#menuDialog [data-screen="letter"]').click();
@@ -65,6 +79,7 @@ try{
         await page.locator('#letterMessage').fill('Gracias por cuidar tu sonrisa. He venido desde Villa Pérez.');
         await page.locator('#letterForm button[type="submit"]').click();
         await page.waitForSelector('#memoryList .memory-item');
+        await noPageOrScreenScroll(page,'library after letter '+browserName+' '+viewport.width+'x'+viewport.height);
         let items=await page.evaluate(()=>window.LNPMemoryStore.list());
         assert.equal(items.some(item=>item.type==='letter'&&item.childName==='Leo'&&item.toothName==='su primer incisivo'),true);
 
@@ -80,6 +95,7 @@ try{
         await page.locator('#proofScale').evaluate(el=>{el.value='22';el.dispatchEvent(new Event('input',{bubbles:true}));});
         await page.locator('#saveProofButton').click();
         await page.waitForFunction(async()=>{const a=await window.LNPMemoryStore.list();return a.some(x=>x.type==='perez-selfie');});
+        await noPageOrScreenScroll(page,'library after photo '+browserName+' '+viewport.width+'x'+viewport.height);
         const hasSavedImage=await page.evaluate(async()=>{const a=await window.LNPMemoryStore.list();return a.some(item=>item.type==='perez-selfie'&&item.blob instanceof Blob&&item.blob.type==='image/png');});
         assert.equal(hasSavedImage,true);
 
