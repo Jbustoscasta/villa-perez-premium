@@ -163,3 +163,9 @@
 @media(max-height:610px){
  .screen{overflow-y:auto}.home-art{flex-basis:160px}.home-actions{flex:none}.video-preview,.video-editor-stage,.proof-workspace{min-height:180px}
 }
+
+.window-presets button .preset-balloon{position:absolute;z-index:2;inset:auto;width:30%;height:85%;object-fit:contain;filter:drop-shadow(0 2px 3px #000)}
+.window-presets button:nth-child(1) .preset-balloon{left:14%;top:0}
+.window-presets button:nth-child(2) .preset-balloon{left:36%;top:0}
+.window-presets button:nth-child(3) .preset-balloon{right:12%;top:0}
+.window-presets button.active{border:2px solid #ffd37b;box-shadow:0 0 10px #ffbe58}
