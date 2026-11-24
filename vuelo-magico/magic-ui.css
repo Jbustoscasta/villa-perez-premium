@@ -614,3 +614,10 @@ body{background:radial-gradient(ellipse at 50% 2%,#23446c 0,transparent 48%),rad
  .stage-wrap{flex:0 0 auto;width:min(100%,390px,calc((100svh - 330px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * .5625))}
  .scene-quick-actions{position:relative;flex-shrink:0}
 }
+/* Keep a usable editing area; short phones may scroll the controls below it. */
+@media(max-width:830px) and (orientation:portrait){
+ .app-shell{height:auto;min-height:100svh;max-height:none;overflow:visible}
+ .workspace{flex:none;overflow:visible}
+ .center-column{height:auto;overflow:visible}
+ .stage-wrap{width:min(100%,390px,calc((100svh - 228px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * .5625));margin:12px auto;flex:0 0 auto}
+}
