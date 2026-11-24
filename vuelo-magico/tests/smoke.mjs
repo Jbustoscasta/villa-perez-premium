@@ -169,7 +169,7 @@ try{
           x.arc=(...args)=>{if(x.fillStyle==='#ff414f')window.__recordedHud.pulse.push(x.globalAlpha);return originalArc(...args);};
         });
         const downloadPromise=page.waitForEvent('download',{timeout:90000}).catch(async error=>{console.error('Export diagnostics',await page.evaluate(()=>({progress:document.getElementById('progressValue').textContent,modal:!document.getElementById('exportModal').hidden,pill:document.getElementById('scenePill').textContent,debug:window.VillaPerezFlight.getDebug()})),errors);throw error;});
-        await page.locator(dims.width<500?'#quickExportBtn':'#exportBtn').click();
+        await page.locator(dims.width<500?'#mobileExportBtn':'#exportBtn').click();
         const download=await downloadPromise;
         assert.match(download.suggestedFilename(),/vuelo-raton-perez-.*\.(webm|mp4)$/);
         const recording=await readFile(await download.path());
