@@ -176,3 +176,20 @@
 .app-shell[data-screen="ready"] .topbar{display:none}
 
 .library-screen .ready-ribbon,.library-screen .library-footnote{display:none}
+
+/* Responsive layout: reserve controls first, let artwork use remaining space. */
+.screen.active{overflow-y:auto;overscroll-behavior:contain}
+.screen.active>*{flex-shrink:0}
+.home-screen.active{overflow-y:auto}
+.home-art{flex:1 1 0;min-height:120px;max-height:none}
+.home-actions{flex:0 0 auto;min-height:auto;justify-content:flex-start}
+.home-art .home-character{left:0;bottom:0;width:75%;height:96%}
+.home-actions .child-action{margin-top:0}
+.shortcut-card{min-height:64px}
+.video-preview,.video-editor-stage,.proof-workspace,.route-art,.ready-art{flex:1 1 0;min-height:120px}
+.task-form,.letter-form,.proof-options,.memory-list{flex:1 1 auto;min-height:min-content}
+.screen-heading p:empty{display:none}
+.form-status{flex-shrink:0;overflow-wrap:anywhere}
+.field-copy input,.field-copy textarea,.field-copy select{font-size:16px}
+@media(max-height:740px){.home-art{flex:1 1 0;min-height:110px}.shortcut-card{min-height:58px}.home-actions>.main-action{min-height:44px}.home-actions .child-action{min-height:44px}}
+@media(max-height:610px){.home-art{min-height:100px}.screen.active{overflow-y:auto}.video-preview,.video-editor-stage,.proof-workspace{min-height:150px}}
