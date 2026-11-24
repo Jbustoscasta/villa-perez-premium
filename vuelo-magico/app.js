@@ -901,7 +901,7 @@
     startAudio().catch(e=>console.warn('audio start',e));ticker();
   }
   function ticker(){if(!state.playing)return;state.time=Math.min(state.duration,(performance.now()-state.startedAt)/1000);drawFrame();
-    if(state.time>=state.duration){state.playing=false;pauseAudio();updatePlayUi();$('scenePill').textContent=state.recording?'EXPORTANDO':'EDITANDO';
+    if(state.time>=state.duration){state.playing=false;pauseAudio();updatePlayUi();drawFrame();$('scenePill').textContent=state.recording?'EXPORTANDO':'EDITANDO';
       if(state.recording&&state.recorder?.state==='recording')setTimeout(()=>{if(state.recorder?.state==='recording')state.recorder.stop();},130);
       return;
     }
