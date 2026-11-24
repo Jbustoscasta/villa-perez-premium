@@ -43,6 +43,7 @@
     state.current=name;
     document.querySelectorAll(".screen").forEach(screen=>screen.classList.toggle("active",screen===target));
     $("backButton").hidden=name==="home";
+    $("menuButton").hidden=name!=="home";
     if(name==="library")renderLibrary();
     if(name==="letter")updateLetterPreview();
   }
@@ -274,7 +275,8 @@
     const name=$("childName").value.trim();
     if(!name){$("childName").focus();return;}
     const tooth=$("toothName").value.trim();
-    const message=$("letterMessage").value.trim()||DEFAULT_MESSAGE;
+    let message=$("letterMessage").value.trim()||DEFAULT_MESSAGE;
+    if(tooth)message=message.replace(/tu dientecito/gi,tooth);
     try{
       await window.LNPMemoryStore.put({
         id:"letter-"+Date.now(),
