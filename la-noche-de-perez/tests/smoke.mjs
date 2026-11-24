@@ -63,9 +63,10 @@ try{
         await noPageOrScreenScroll(page,'destination '+browserName+' '+viewport.width+'x'+viewport.height);
         await page.locator('#addressInput').fill('Calle de la Prueba 12, Madrid');
         await page.locator('#addressForm button[type="submit"]').click();
+        await noPageOrScreenScroll(page,'route '+browserName+' '+viewport.width+'x'+viewport.height);
         assert.equal(await page.locator('#destinationContinue').isEnabled(),true);
         assert.match(await page.locator('#addressStatus').textContent(),/Destino anotado/);
-        await page.locator('#destinationContinue').click();
+        await page.locator('#routeStartButton').click();
         await noPageOrScreenScroll(page,'video after destination '+browserName+' '+viewport.width+'x'+viewport.height);
         await page.locator('.brand-plaque').click();
 
@@ -131,6 +132,8 @@ try{
         await page.locator('.brand-plaque').click();
         await page.locator('#screen-home [data-screen="video"]').click();
         await page.locator('#openVideoEditor').click();
+        await noPageOrScreenScroll(page,'video editor '+browserName+' '+viewport.width+'x'+viewport.height);
+        await page.locator('#createFlightVideo').click();
         await page.waitForURL(/vuelo-magico/);
         await page.waitForFunction(()=>window.VillaPerezFlight?.getState().photoLoaded===true,{timeout:30000});
         assert.equal(await page.evaluate(()=>window.LNPMemoryStore!==undefined),true);
