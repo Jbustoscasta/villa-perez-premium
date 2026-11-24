@@ -377,9 +377,7 @@
       }else if(item.type==="flight-video"&&item.blob instanceof Blob){
         const url=URL.createObjectURL(item.blob);state.memoryUrls.push(url);const video=document.createElement("video");video.src=url;video.muted=true;video.playsInline=true;video.preload="metadata";thumb.append(video);const play=document.createElement("b");play.className="memory-play";play.textContent="▶";thumb.append(play);
       }else{
-        const symbol=document.createElement("span");
-        symbol.textContent=memoryIcon[item.type]||"✧";
-        thumb.append(symbol);
+        if(item.type==="letter"){const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");svg.setAttribute("viewBox","0 0 100 100");const use=document.createElementNS("http://www.w3.org/2000/svg","use");use.setAttribute("href","#art-letter");svg.append(use);thumb.append(svg);}else{const symbol=document.createElement("span");symbol.textContent=memoryIcon[item.type]||"✧";thumb.append(symbol);}
       }
       const copy=document.createElement("span");
       copy.className="memory-copy";
@@ -413,6 +411,14 @@
     }catch(error){toast("No se ha podido eliminar el recuerdo.");}
   });
 
+  $("activateChildMode").addEventListener("click",async()=>{
+    const button=$("activateChildMode");button.disabled=true;
+    try{const items=await window.LNPMemoryStore.list();if(!items.length){$("activationStatus").textContent="Prepara al menos un recuerdo antes de activar el modo niño.";return;}
+      const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);tomorrow.setHours(7,0,0,0);
+      localStorage.setItem("lnp-child-mission-v1",JSON.stringify({ids:items.map(item=>item.id),availableAt:tomorrow.getTime(),createdAt:Date.now()}));
+      location.href="./nino.html";
+    }catch(error){$("activationStatus").textContent="No hemos podido activar el modo niño en este navegador.";}finally{button.disabled=false;}
+  });
   renderLibrary();
   updateLetterPreview();
 
