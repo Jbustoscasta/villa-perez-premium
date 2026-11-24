@@ -211,16 +211,44 @@
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),30000);
   }
+  const entryParams=new URLSearchParams(location.search);
+  const fromLaNoche=entryParams.get('desde')==='la-noche';
+  if(fromLaNoche){
+    $('footBrand').href='../la-noche-de-perez/?screen=cofre';
+    $('backToParents').href='../la-noche-de-perez/?screen=cofre';
+    $('backToParents').textContent='← Volver al Cofre';
+  }
+  async function saveToChest(blob){
+    if(!fromLaNoche||!window.LNPMemoryStore)return false;
+    await window.LNPMemoryStore.put({
+      id:'footprints-'+Date.now(),type:'footprints',title:'Huellas de Pérez',
+      note:'Foto con huellas guardada en este dispositivo',status:'draft',
+      blob,mimeType:'image/png',createdAt:Date.now()
+    });
+    return true;
+  }
   $('downloadBtn').addEventListener('click',async()=>{
     const b=$('downloadBtn');b.disabled=true;
-    try{const blob=await exportPng();save(blob,name());message('¡Foto guardada! En iPhone puedes encontrarla en Descargas.');}
-    catch(error){message(error.message||'No se pudo guardar la foto.');}
+    try{
+      const blob=await exportPng();
+      if(fromLaNoche){
+        await saveToChest(blob);
+        save(blob,name());
+        message('Huellas guardadas en el Cofre. Volviendo…');
+        setTimeout(()=>location.href='../la-noche-de-perez/?screen=cofre',800);
+      }else{
+        save(blob,name());
+        message('¡Foto guardada! En iPhone puedes encontrarla en Descargas.');
+      }
+    }catch(error){message(error.message||'No se pudo guardar la foto.');}
     finally{b.disabled=!state.paths.length;}
   });
   $('shareBtn').addEventListener('click',async()=>{
     const b=$('shareBtn');b.disabled=true;
     try{
-      const blob=await exportPng(),filename=name(),file=new File([blob],filename,{type:'image/png'});
+      const blob=await exportPng();
+      if(fromLaNoche)await saveToChest(blob);
+      const filename=name(),file=new File([blob],filename,{type:'image/png'});
       if(navigator.share&&navigator.canShare?.({files:[file]})){
         await navigator.share({files:[file],title:'Las huellas del Ratón Pérez'});
         message('Foto compartida.');
@@ -229,6 +257,9 @@
     finally{b.disabled=!state.paths.length;}
   });
   update();
-  const initialStyle=new URLSearchParams(location.search).get('estilo');
+  const initialStyle=entryParams.get('estilo');
   if(['normal','inverse','magic'].includes(initialStyle)) document.querySelector('[data-style="'+initialStyle+'"]').click();
+  if(fromLaNoche&&window.VPPhotoStore){
+    window.VPPhotoStore.access('get').then(file=>{if(file)load(file);}).catch(error=>console.warn('No se pudo recuperar la foto compartida',error));
+  }
 })();
