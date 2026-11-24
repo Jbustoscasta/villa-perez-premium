@@ -815,6 +815,7 @@
       state.photoUrl=img.src.startsWith('blob:')?url:null;
       if(img.src!==url)URL.revokeObjectURL(url);
       state.photo=img;state.photoZoom=1;state.panX=0;state.panY=0;
+      window.VPPhotoStore?.access('put',file).catch(()=>{});
       ambienceDirty=true;lightSmoothed=null;
       status.textContent='Lista';status.classList.add('state-ready');
       $('photoTitle').textContent=(file.name||'Foto seleccionada').length>26?(file.name||'Fotografía').slice(0,24)+'…':(file.name||'Fotografía lista');
@@ -1137,5 +1138,8 @@
   if(window.matchMedia?.('(min-width:831px)').matches)$('advancedSettings').open=true;
   $('sizeControl').value=Math.round(state.size*100);$('sizeValue').textContent=Math.round(state.size*100)+'%';$('durationControl').value=state.duration;$('magicControl').value=Math.round(state.magic*100);$('magicValue').textContent=Math.round(state.magic*100)+'%';
   buildPath();resizeCanvas(720);setMode('draw');loadDefaultVideo();
+  const entryParams=new URLSearchParams(location.search);
+  if(entryParams.get('asistente')==='foto') openMagicCamera();
+  else if(entryParams.get('desde')==='padres') window.VPPhotoStore?.access('get').then(file=>{if(file)openPhoto(file);}).catch(()=>{});
   window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite',exposure:state.appliedExposure,lightMode:state.autoLight?'auto':'manual',soundReady:sound.readyState,soundTime:sound.currentTime}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), signalInterferenceAt:(t,duration)=>signalInterferenceAt(t,duration), version:'1.5.4' };
 })();
