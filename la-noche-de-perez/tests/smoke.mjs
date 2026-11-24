@@ -66,7 +66,7 @@ try{
         await page.locator('#letterForm button[type="submit"]').click();
         await page.waitForSelector('#memoryList .memory-item');
         let items=await page.evaluate(()=>window.LNPMemoryStore.list());
-        assert.equal(items.some(item=>item.type==='letter'&&item.childName==='Leo'&&item.message.includes('incisivo')),true);
+        assert.equal(items.some(item=>item.type==='letter'&&item.childName==='Leo'&&item.toothName==='su primer incisivo'),true);
 
         await page.locator('.brand-plaque').click();
         await page.locator('#screen-home [data-screen="proofs"]').click();
