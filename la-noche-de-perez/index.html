@@ -7,10 +7,10 @@
   <meta name="description" content="La noche de Pérez. Prepara su visita, crea recuerdos y activa la Cámara Mágica.">
   <title>La noche de Pérez · Modo padres</title>
   <link rel="icon" href="../vuelo-magico/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=6">
+  <link rel="stylesheet" href="./styles.css?v=7">
   <script src="../modo-padres/photo-store.js?v=2" defer></script>
   <script src="./memory-store.js?v=1" defer></script>
-  <script src="./app.js?v=6" defer></script>
+  <script src="./app.js?v=7" defer></script>
 </head>
 <body><svg class="art-symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
 <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff2bc"/><stop offset=".35" stop-color="#e6b35d"/><stop offset=".7" stop-color="#976024"/><stop offset="1" stop-color="#f7cc77"/></linearGradient>
@@ -103,7 +103,7 @@
         <img class="selected-photo" id="videoPhotoPreview" alt="Fotografía seleccionada" hidden>
       </div>
       <div class="video-controls">
-        <label class="secondary-action file-action" for="videoPhotoInput">▧ &nbsp; Hacer foto / Elegir foto<input id="videoPhotoInput" type="file" accept="image/*,.heic,.heif" capture="environment"></label>
+        <label class="secondary-action file-action" for="videoCameraInput">▧ &nbsp; Hacer foto<input id="videoCameraInput" type="file" accept="image/*" capture="environment"></label><label class="secondary-action file-action" for="videoPhotoInput">Elegir foto<input id="videoPhotoInput" type="file" accept="image/*,.heic,.heif"></label>
         <p class="form-status" id="videoPhotoStatus" role="status"></p>
         <a class="main-action gold-action" href="../vuelo-magico/?desde=padres&asistente=foto"><span class="action-icon">◎</span><span>Hacer foto</span><span class="action-arrow">›</span></a>
         <button class="main-action gold-action" id="openVideoEditor" type="button" disabled><span>Editar vídeo</span><span class="action-arrow">›</span></button>
