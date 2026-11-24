@@ -1,19 +1,64 @@
 <!doctype html>
 <html lang="es">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#071d33"><meta name="description" content="Prepara en secreto la visita de Pérez: fotografía, vuelo, huellas y Cámara Mágica para tu peque."><title>Villa Pérez · Modo padres</title><link rel="icon" href="../vuelo-magico/assets/favicon.svg"><link rel="stylesheet" href="styles.css?v=1"><script src="photo-store.js?v=1" defer></script><script src="app.js?v=1" defer></script></head>
-<body><main class="parents-shell">
-<header class="masthead"><a class="round home" href="../" aria-label="Inicio de Villa Pérez">⌂</a><div class="brand"><span class="brand-star" aria-hidden="true">✦</span><span class="brand-name">Villa Pérez</span><span class="mode">Modo padres</span></div><button class="round help" id="help" aria-label="Cómo preparar la visita">?</button></header>
-<section class="intro"><p class="eyebrow">UN SECRETO ENTRE VOSOTROS Y PÉREZ</p><h1>Preparemos la visita<br><em>de Pérez</em></h1><div class="star-trail" aria-hidden="true">✧ ───── ✦ ───── ✧</div><p>Crea un recuerdo mágico con la foto,<br class="desktop-break"> el vuelo y las huellas de esta noche.</p></section>
-<section class="preparation" aria-label="Prepara la visita">
-<div class="photo-column"><div class="polaroid"><img id="photoPreview" src="assets/habitacion-ejemplo.webp" alt="Ejemplo de una habitación infantil de noche"><span class="sample" id="sample">FOTO DE EJEMPLO</span><label class="photo-edit" aria-label="Elegir o cambiar la fotografía">✎<input id="photo" type="file" accept="image/*,.heic,.heif" aria-label="Elegir fotografía de la habitación"></label><p id="photoCaption">La habitación de tu peque</p></div><a class="photo-assistant" href="../vuelo-magico/?asistente=foto">✧ Abrir asistente de foto <span aria-hidden="true">›</span></a><p class="photo-tip">La cama abajo y espacio arriba para el globo.</p><button class="forget" id="forget" hidden>Eliminar mi foto de este dispositivo</button></div>
-<div class="instruments"><a class="instrument" href="../vuelo-magico/?desde=padres"><span class="instrument-icon" aria-hidden="true">▷</span><span><strong>Vídeo mágico</strong><small>Foto, recorrido y un recuerdo para guardar</small></span><span class="badge">CREAR</span></a>
-<a class="instrument" href="../vuelo-magico/?desde=padres"><img class="balloon-icon" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt=""><span><strong>Vuelo de Pérez</strong><small>Dibuja su camino con el dedo</small></span><span class="arrow" aria-hidden="true">›</span></a>
-<a class="instrument" href="../huellas-perez/"><span class="instrument-icon" aria-hidden="true">✣</span><span><strong>Huellas mágicas</strong><small>Una pista sobre la almohada o la mesita</small></span><span class="arrow" aria-hidden="true">›</span></a>
-<a class="instrument child-camera" href="../camara-espia/"><span class="instrument-icon" aria-hidden="true">◉</span><span><strong>Cámara Mágica</strong><small>El visor que verá tu peque esta noche</small></span><span class="arrow" aria-hidden="true">›</span></a>
-<p class="camera-note">Después de crear el vídeo, actívalo en la Cámara Mágica desde el editor.</p></div>
-</section>
-<a class="create-button" id="create" href="../vuelo-magico/?desde=padres"><span aria-hidden="true">▶</span> Crear mi vídeo mágico <span aria-hidden="true">✧</span></a>
-<p class="privacy" id="status" role="status">Tu foto se guarda solo en este dispositivo. Puedes eliminarla cuando quieras.</p>
-<ol class="journey" aria-label="Pasos de la experiencia"><li><span aria-hidden="true">▧</span><strong>Foto</strong></li><li><span aria-hidden="true">✦</span><strong>Vuelo y huellas</strong></li><li><span aria-hidden="true">▷</span><strong>Vídeo listo</strong></li></ol>
-<footer>ILUSIONO <span>·</span> Una noche que recordará siempre</footer>
-</main><dialog id="guide"><button id="closeGuide" class="round" aria-label="Cerrar ayuda">×</button><p class="eyebrow">EL SECRETO ESTÁ EN LOS DETALLES</p><h2>Su noche más mágica</h2><ol><li><strong>Prepara la foto.</strong> Usa el asistente o elige una fotografía. Deja espacio por encima de la cama.</li><li><strong>Crea el vuelo.</strong> Dibuja la ruta de Pérez, ajusta su tamaño y reproduce la escena antes de guardar el vídeo.</li><li><strong>Deja una pista.</strong> En Huellas mágicas, fotografía de cerca la almohada o la mesita.</li><li><strong>Activa la Cámara Mágica.</strong> Desde el editor, prepara el vídeo que descubrirá tu peque.</li></ol><p>Todo se prepara en tu dispositivo, sin subir la fotografía.</p><button id="guideDone" class="create-button">Vamos a preparar la visita</button></dialog></body></html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#061b30">
+  <meta name="description" content="Prepara la visita de Pérez con la foto de tu peque, su vuelo y unas huellas mágicas.">
+  <title>Villa Pérez · Modo padres</title>
+  <link rel="icon" href="../vuelo-magico/assets/favicon.svg">
+  <link rel="stylesheet" href="styles.css?v=2">
+  <script src="photo-store.js?v=1" defer></script>
+  <script src="app.js?v=2" defer></script>
+</head>
+<body>
+  <main class="parents-shell">
+    <section class="artboard" aria-labelledby="pageTitle">
+      <img class="panel-art" src="assets/panel-boceto.webp" width="1108" height="1170" alt="" fetchpriority="high">
+      <header>
+        <a class="hotspot home" href="../" aria-label="Inicio de Villa Pérez"></a>
+        <p class="sr-only">Villa Pérez · Modo padres</p>
+        <button class="hotspot help" id="help" type="button" aria-label="Cómo preparar la visita"></button>
+      </header>
+      <h1 class="sr-only" id="pageTitle">Preparemos la visita de Pérez</h1>
+      <p class="sr-only">Crea tu vídeo mágico con la foto, el vuelo y las huellas de esta noche.</p>
+      <div class="photo-window" id="photoWindow" hidden><img id="photoPreview" alt="Tu fotografía para preparar la visita de Pérez"></div>
+      <img class="photo-ribbon" src="assets/panel-boceto.webp" alt="" aria-hidden="true">
+      <label class="hotspot photo-edit" title="Elegir o cambiar la foto del niño">
+        <span class="sr-only">Elegir o cambiar la foto del niño</span>
+        <input id="photo" type="file" accept="image/*,.heic,.heif" aria-label="Elegir fotografía del niño">
+      </label>
+      <span class="sr-only" id="photoCaption">Foto de ejemplo del niño dormido. Pulsa el lápiz para elegir tu fotografía.</span>
+      <label class="video-row" for="videoEnabled">
+        <span class="sr-only">Vídeo mágico</span>
+        <span class="video-switch"><input type="checkbox" id="videoEnabled" checked><span class="switch-track" aria-hidden="true"></span></span>
+      </label>
+      <a class="hotspot flight" id="flightLink" href="../vuelo-magico/?desde=padres" aria-label="Vuelo de Pérez: dibujar su recorrido"></a>
+      <a class="hotspot footprints-title" id="footprintsLink" href="../huellas-perez/?estilo=magic" aria-label="Abrir el editor de huellas mágicas"></a>
+      <div class="footprint-options" role="group" aria-label="Tipo de huellas">
+        <button id="magicPrints" class="print-option selected" type="button" aria-label="Huellas mágicas" aria-pressed="true"><svg viewBox="0 0 100 50" aria-hidden="true"><g id="paw"><ellipse cx="21" cy="31" rx="10" ry="8" transform="rotate(-20 21 31)"/><ellipse cx="8" cy="22" rx="3.5" ry="5" transform="rotate(-27 8 22)"/><ellipse cx="15" cy="15" rx="3.5" ry="5" transform="rotate(-10 15 15)"/><ellipse cx="24" cy="14" rx="3.5" ry="5"/><ellipse cx="32" cy="20" rx="3.5" ry="5" transform="rotate(26 32 20)"/></g><use href="#paw" transform="translate(44 -2) rotate(18 20 25)"/></svg></button>
+        <button id="normalPrints" class="print-option" type="button" aria-label="Huellas normales" aria-pressed="false"><svg viewBox="0 0 100 50" aria-hidden="true"><use href="#paw" transform="translate(5 7) scale(.75)"/><use href="#paw" transform="translate(48 -1) scale(.75)"/></svg></button>
+      </div>
+      <label class="sr-only" for="music">Música</label>
+      <select id="music" aria-label="Música"><option value="original">Original de Pérez</option><option value="sin">Sin sonido</option></select>
+      <a class="hotspot create-button" id="create" href="../vuelo-magico/?desde=padres" aria-label="Crear mi vídeo mágico"><span class="photo-action" hidden>▶ Preparar mi foto mágica</span></a>
+      <nav class="journey" aria-label="Pasos de la experiencia">
+        <label class="hotspot journey-photo" for="photo"><span class="sr-only">Foto: elegir fotografía</span></label>
+        <a class="hotspot journey-flight" id="journeyFlight" href="../vuelo-magico/?desde=padres" aria-label="Vuelo y huellas: preparar la visita"></a>
+        <a class="hotspot journey-ready" id="journeyReady" href="../vuelo-magico/?desde=padres" aria-label="Vídeo listo: abrir el editor para crear y guardar el recuerdo"></a>
+      </nav>
+    </section>
+    <div class="below-art">
+      <p id="status" role="status">Elige su foto con el lápiz. Se guarda solo en este dispositivo.</p>
+      <nav aria-label="Más opciones"><a href="../vuelo-magico/?asistente=foto">Asistente de foto</a><span aria-hidden="true">·</span><a href="../camara-espia/">Cámara Mágica</a><button id="forget" type="button" hidden>Eliminar mi foto</button></nav>
+    </div>
+  </main>
+  <dialog id="guide">
+    <button id="closeGuide" class="dialog-close" aria-label="Cerrar ayuda">×</button>
+    <p class="eyebrow">UN SECRETO DE VILLA PÉREZ</p><h2>Preparemos su noche mágica</h2>
+    <ol><li><strong>Foto.</strong> Pulsa el lápiz para elegir tu fotografía o abre el asistente. La imagen del panel es un ejemplo.</li><li><strong>Vuelo de Pérez.</strong> Dibuja el recorrido del globo sobre la foto. Puedes preparar un vídeo o desactivar el interruptor para guardar una foto.</li><li><strong>Huellas mágicas.</strong> Elige el acabado y pulsa «Huellas mágicas» para abrir su editor.</li><li><strong>Música.</strong> Conserva el sonido original de Pérez o prepara el vuelo sin sonido.</li><li><strong>Crear mi vídeo mágico.</strong> Abre el editor para revisar y guardar el recuerdo. Después podrás activar la Cámara Mágica para tu peque.</li></ol>
+    <p>La fotografía se queda en este dispositivo y puedes eliminarla desde las opciones del panel.</p>
+    <button id="guideDone" class="dialog-done">Preparar la visita</button>
+  </dialog>
+</body>
+</html>

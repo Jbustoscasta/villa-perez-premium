@@ -229,4 +229,6 @@
     finally{b.disabled=!state.paths.length;}
   });
   update();
+  const initialStyle=new URLSearchParams(location.search).get('estilo');
+  if(['normal','inverse','magic'].includes(initialStyle)) document.querySelector('[data-style="'+initialStyle+'"]').click();
 })();

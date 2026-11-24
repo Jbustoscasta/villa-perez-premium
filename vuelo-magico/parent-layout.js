@@ -33,3 +33,23 @@
   if(mobile.addEventListener)mobile.addEventListener('change',()=>close(false));
   else mobile.addListener(()=>close(false));
 })();
+
+/* Apply the choices made in the illustrated parents panel. */
+(() => {
+  const params=new URLSearchParams(location.search);
+  const sound=document.getElementById('soundToggle');
+  if(params.has('sonido')) {
+    sound.checked=params.get('sonido')!=='sin';
+    sound.dispatchEvent(new Event('change'));
+  }
+  if(params.get('salida')==='foto') {
+    for(const id of ['exportBtn','quickExportBtn','mobileExportBtn']) {
+      const button=document.getElementById(id);
+      button.textContent='Guardar foto mágica';
+      button.addEventListener('click',event=>{
+        event.preventDefault();event.stopImmediatePropagation();
+        document.getElementById('snapshotBtn').click();
+      },true);
+    }
+  }
+})();
