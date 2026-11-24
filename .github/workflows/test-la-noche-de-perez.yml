@@ -1,0 +1,32 @@
+name: La noche de Pérez — QA de padres
+on:
+  push:
+    paths:
+      - 'la-noche-de-perez/**'
+      - 'huellas-perez/**'
+      - 'vuelo-magico/**'
+      - '.github/workflows/test-la-noche-de-perez.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install --with-deps chromium webkit
+      - name: Comprobar sintaxis
+        run: |
+          node --check la-noche-de-perez/app.js
+          node --check la-noche-de-perez/memory-store.js
+          node --check vuelo-magico/app.js
+          node --check huellas-perez/app.js
+      - name: Probar pantallas y handoff en Chromium y WebKit
+        run: node la-noche-de-perez/tests/smoke.mjs
