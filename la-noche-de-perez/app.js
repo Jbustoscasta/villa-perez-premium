@@ -267,6 +267,8 @@
     const tooth=$("toothName").value.trim();
     let message=$("letterMessage").value.trim()||DEFAULT_MESSAGE;
     if(tooth)message=message.replace(/tu dientecito/gi,tooth);
+    $("letterPreviewTooth").textContent=tooth?"He venido a recoger: "+tooth+".":"";
+    $("letterPreviewTooth").hidden=!tooth;
     $("letterPreviewMessage").textContent=message;
   }
   ["childName","toothName","letterMessage"].forEach(id=>$(id).addEventListener("input",updateLetterPreview));
