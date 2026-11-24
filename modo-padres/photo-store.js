@@ -1,22 +1,78 @@
-/* Same-origin, device-only photo handoff between the parents hub and editor. */
+/* Same-origin, device-only photo handoff between parent screens and editors.
+   Store bytes rather than File objects: this avoids Safari/WebKit DataCloneError. */
 window.VPPhotoStore = {
   async access(mode, value) {
     const db = await new Promise((resolve,reject) => {
-      const r = indexedDB.open('vp-parents-photo',1);
-      r.onupgradeneeded = () => r.result.createObjectStore('photo');
-      r.onsuccess = () => resolve(r.result);
-      r.onerror = () => reject(r.error);
+      if (!window.indexedDB) return reject(new Error('IndexedDB no está disponible.'));
+      const request = indexedDB.open('vp-parents-photo',1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains('photo')) request.result.createObjectStore('photo');
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error('No se pudo abrir el almacén de fotos.'));
     });
+
     try {
-      return await new Promise((resolve,reject) => {
-        const tx = db.transaction('photo',mode==='get'?'readonly':'readwrite');
-        const store = tx.objectStore('photo');
-        const r = mode==='get'?store.get('current'):mode==='delete'?store.delete('current'):store.put(value,'current');
-        let result;
-        r.onsuccess = () => { result=r.result; };
-        tx.oncomplete = () => resolve(result);
-        tx.onabort = tx.onerror = () => reject(tx.error || Error('No se pudo guardar la foto'));
+      if (mode === 'put') {
+        if (!(value instanceof Blob)) throw new Error('El archivo seleccionado no es una imagen válida.');
+        const record = {
+          bytes: new Uint8Array(await value.arrayBuffer()),
+          name: value.name || 'fotografia',
+          type: value.type || 'image/jpeg',
+          lastModified: Number(value.lastModified) || Date.now()
+        };
+        await new Promise((resolve,reject) => {
+          const transaction = db.transaction('photo','readwrite');
+          const request = transaction.objectStore('photo').put(record,'current');
+          request.onerror = () => reject(request.error || new Error('No se pudo guardar la fotografía.'));
+          transaction.oncomplete = resolve;
+          transaction.onerror = transaction.onabort = () => reject(transaction.error || new Error('No se pudo guardar la fotografía.'));
+        });
+        return true;
+      }
+
+      if (mode === 'delete') {
+        await new Promise((resolve,reject) => {
+          const transaction = db.transaction('photo','readwrite');
+          const request = transaction.objectStore('photo').delete('current');
+          request.onerror = () => reject(request.error || new Error('No se pudo eliminar la fotografía.'));
+          transaction.oncomplete = resolve;
+          transaction.onerror = transaction.onabort = () => reject(transaction.error || new Error('No se pudo eliminar la fotografía.'));
+        });
+        return true;
+      }
+
+      const record = await new Promise((resolve,reject) => {
+        const transaction = db.transaction('photo','readonly');
+        const request = transaction.objectStore('photo').get('current');
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error('No se pudo recuperar la fotografía.'));
+        transaction.onerror = transaction.onabort = () => reject(transaction.error || new Error('No se pudo recuperar la fotografía.'));
       });
-    } finally { db.close(); }
+      if (!record) return null;
+
+      // Backwards compatibility with the earlier version that stored a File directly.
+      if (record instanceof Blob) {
+        return new File([record], record.name || 'fotografia', {
+          type:record.type || 'image/jpeg',
+          lastModified:Number(record.lastModified) || Date.now()
+        });
+      }
+      if (record.blob instanceof Blob) {
+        return new File([record.blob], record.name || 'fotografia', {
+          type:record.type || record.blob.type || 'image/jpeg',
+          lastModified:Number(record.lastModified) || Date.now()
+        });
+      }
+      if (record.bytes) {
+        return new File([record.bytes], record.name || 'fotografia', {
+          type:record.type || 'image/jpeg',
+          lastModified:Number(record.lastModified) || Date.now()
+        });
+      }
+      return null;
+    } finally {
+      db.close();
+    }
   }
 };
