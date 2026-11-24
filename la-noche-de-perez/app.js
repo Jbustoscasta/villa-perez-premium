@@ -124,6 +124,15 @@
   ["videoPhotoInput","videoCameraInput"].forEach(id=>$(id).addEventListener("change",event=>{
     const file=event.currentTarget.files?.[0];event.currentTarget.value="";prepareVideoPhoto(file);
   }));
+  window.VPPhotoStore.access("get").then(file=>{
+    if(!file||state.videoFile)return;
+    state.videoFile=file;
+    state.videoPhotoUrl=URL.createObjectURL(file);
+    $("videoPhotoPreview").src=state.videoPhotoUrl;$("videoPhotoPreview").hidden=false;
+    $("videoEditorPhoto").src=state.videoPhotoUrl;
+    $("videoPhotoStatus").textContent="Hemos recuperado la fotografía de esta sesión.";
+    $("openVideoEditor").disabled=false;
+  }).catch(error=>console.warn("No se pudo recuperar la foto de la sesión",error));
 
   $("openVideoEditor").addEventListener("click",()=>{
     if(!state.videoFile){toast("Primero haz o elige una foto de la habitación.");return;}
