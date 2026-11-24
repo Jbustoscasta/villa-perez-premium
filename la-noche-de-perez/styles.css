@@ -1,5 +1,6 @@
 /* La noche de Pérez — maquetación fiel al storyboard aprobado */
 .art-symbols{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 :root{color-scheme:dark;--night:#061327;--night2:#0a1e36;--blue:#102b49;--gold:#d8a54e;--gold2:#ffda8a;--cream:#fff0cd;--paper:#f8dfad;--ink:#33200f;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);font-family:Georgia,"Times New Roman",serif}
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#020d1a;color:var(--cream)}body{overscroll-behavior:none}button,input,textarea,select{font:inherit}button,a,label{-webkit-tap-highlight-color:transparent}button{color:inherit;cursor:pointer}a{color:inherit;text-decoration:none}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #fff0b8;outline-offset:3px}[hidden]{display:none!important}
 .app-shell{position:relative;isolation:isolate;width:100%;height:100vh;height:100dvh;max-height:100dvh;overflow:hidden;display:flex;flex-direction:column;background:var(--night)}
@@ -33,19 +34,19 @@
 .splash-copy{position:absolute;z-index:2;top:34%;left:40%;right:5%;text-align:center;color:#ffe2a1;text-shadow:0 2px 7px #000}.splash-copy h1{margin:0;font:400 clamp(28px,7.4vw,37px)/.98 Georgia,serif}.splash-copy h1 strong{display:block;font-size:1.55em;font-weight:700}.splash-copy p{margin:9px 0 0;font:12px Georgia,serif}
 .splash-enter{position:relative;z-index:3;width:68%;margin:0 auto max(28px,5vh);min-height:48px}
 .home-screen{padding:0 16px max(9px,var(--safe-bottom));gap:8px;background:linear-gradient(180deg,#03101d22,#03101df0 95%),url("../villa-world.webp") center 50%/cover no-repeat}
-.home-art{position:relative;flex:0 0 clamp(215px,36vh,300px);min-height:0;margin:0 -16px;overflow:hidden;background:linear-gradient(180deg,#06152a00,#06152a66),url("../villa-world.webp") center 55%/cover no-repeat}
+.home-art{position:relative;flex:0 0 clamp(270px,43vh,370px);min-height:0;margin:0 -16px;overflow:hidden;background:linear-gradient(180deg,#06152a55,#06152a77 65%,#06152a99),url("../modo-padres/assets/noche-villa-perez.webp") center 48%/cover no-repeat}
 .home-art:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#061327 0%,transparent 38%,#06132722 100%)}
 .home-art .home-city{display:none}
 .home-art .home-character{position:absolute;z-index:2;left:-6%;bottom:-7%;width:78%;height:106%;object-fit:contain;object-position:left bottom;filter:drop-shadow(0 5px 8px #000a)}
 .home-art-shade{position:absolute;z-index:3;inset:0;background:linear-gradient(90deg,transparent 30%,#04132920 58%,#04132933 100%)}
 .home-copy{position:absolute;z-index:4;top:18%;left:41%;right:4%;text-align:center;text-shadow:0 2px 7px #000}.home-copy h1{margin:0;color:#ffe3a3;font:700 clamp(24px,6vw,31px)/1.02 Georgia,serif}.home-copy p{margin:6px auto;color:#fff0cf;font:11px Georgia,serif}
-.home-actions{position:relative;z-index:4;display:flex;flex:1;min-height:0;flex-direction:column;justify-content:flex-start;gap:8px}
+.home-actions{position:relative;z-index:4;display:flex;flex:1;min-height:0;flex-direction:column;justify-content:space-between;gap:8px}
 .home-actions>.main-action{flex:0 0 auto;min-height:49px;width:100%}
 .shortcut-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.shortcut-card{min-width:0;min-height:clamp(62px,9vh,76px);padding:7px 9px;display:flex;align-items:center;gap:8px;border:1px solid #9d773f;border-radius:13px;background:linear-gradient(145deg,#102c48f5,#06172bf5);color:#ffe4ad;text-align:left;box-shadow:0 0 0 1px #3d2b1a,0 3px 8px #0007,inset 0 1px 3px #fff2}
+.shortcut-card{min-width:0;min-height:clamp(72px,10vh,86px);padding:7px 9px;display:flex;align-items:center;gap:8px;border:1px solid #9d773f;border-radius:13px;background:linear-gradient(145deg,#102c48f5,#06172bf5);color:#ffe4ad;text-align:left;box-shadow:0 0 0 1px #3d2b1a,0 3px 8px #0007,inset 0 1px 3px #fff2}
 .shortcut-icon{width:43px;height:48px;flex:0 0 43px;display:grid;place-items:center;border:0;border-radius:8px;background:transparent;color:#ffdc91;font-size:29px}
 .shortcut-icon img,.shortcut-icon svg{width:100%;height:100%;object-fit:contain;overflow:visible;filter:drop-shadow(0 3px 4px #0008)}
-.shortcut-card>span:nth-child(2){min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}.shortcut-card strong{font:700 clamp(12px,3.5vw,14px)/1.05 Georgia,serif;color:#ffe6b4}.shortcut-card small{font:10px/1.1 Georgia,serif;color:#e4c99a}.shortcut-card>b{color:#ffdc8e;font:20px Georgia,serif}
+.shortcut-card>span:nth-child(2){min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}.shortcut-card strong{font:700 clamp(13px,3.8vw,15px)/1.05 Georgia,serif;color:#ffe6b4}.shortcut-card small{font:10px/1.1 Georgia,serif;color:#e4c99a}.shortcut-card>b{color:#ffdc8e;font:20px Georgia,serif}
 .home-actions .child-action{width:72%;min-height:40px;align-self:center;background:linear-gradient(180deg,#102d49,#06182b);color:#ffdf9e;border:1px solid #9b763f;box-shadow:0 2px 0 #392616;font-size:14px}.home-actions .child-action:before{display:none}
 .task-screen{gap:6px}
 .task-form{display:flex;flex:1;min-height:0;flex-direction:column;gap:8px}
@@ -150,7 +151,7 @@
 #memoryPreviewContent img,#memoryPreviewContent video{display:block;width:100%;max-height:60dvh;object-fit:contain;border-radius:9px}#memoryPreviewContent p{white-space:pre-wrap;color:#3b2410}
 @media(max-height:740px){
  .screen{padding-top:4px;gap:4px}.topbar{height:calc(49px + var(--safe-top));min-height:calc(49px + var(--safe-top))}
- .home-art{flex-basis:clamp(180px,31vh,235px)}.home-screen{gap:6px}.shortcut-card{min-height:57px}.shortcut-icon{height:39px;width:38px;flex-basis:38px}.home-actions{gap:6px}
+ .home-art{flex-basis:clamp(230px,37vh,255px)}.home-screen{gap:6px}.shortcut-card{min-height:66px}.shortcut-icon{height:43px;width:38px;flex-basis:38px}.home-actions{gap:6px;justify-content:space-between}
  .screen-heading{padding:2px 0 6px}.screen-heading h1{font-size:25px}.screen-heading p{font-size:11px}
  .main-action{min-height:43px;font-size:14px}.secondary-action{min-height:38px}.video-preview{min-height:130px}
  .proof-card{min-height:67px}.proof-thumb{min-height:52px}.proof-workspace{min-height:110px}.transform-tools button{min-height:41px}
@@ -170,3 +171,6 @@
 .window-presets button:nth-child(2) .preset-balloon{left:36%;top:0}
 .window-presets button:nth-child(3) .preset-balloon{right:12%;top:0}
 .window-presets button.active{border:2px solid #ffd37b;box-shadow:0 0 10px #ffbe58}
+
+@media(min-width:600px){.app-shell{max-width:480px;margin:0 auto;box-shadow:0 0 50px #0009}}
+.app-shell[data-screen="ready"] .topbar{display:none}
