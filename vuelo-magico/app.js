@@ -27,7 +27,7 @@
     photoZoom:1, panX:0,panY:0, size:.22, duration:15, magic:.65, chromaStrength:.55,
     autoLight:true, lightManual:1, appliedExposure:.65, soundLevel:.55,
     playing:false, seeking:false, time:0, startedAt:0, frameRequest:0,
-    recording:false, recorder:null, exportCancelled:false, exportBlob:null, exportName:null,
+    recording:false, recorder:null, exportCancelled:false, exportBlob:null, exportName:null, memoryItemId:null,
     spriteReady:false, silent:false, hasDrawn:false,
   };
   let toastTimer;
@@ -930,13 +930,23 @@
       state.recorder=rec;const chunks=[];
       rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
       rec.onerror=e=>{console.error('record',e);toast('Ha fallado la exportación. Prueba calidad HD.');};
-      rec.onstop=()=>{
+      rec.onstop=async()=>{
         stream.getTracks().forEach(t=>t.stop());state.recording=false;updatePlayUi();
         $('exportModal').hidden=true;$('scenePill').textContent='EDITANDO';
         if(state.exportCancelled||!chunks.length){resizeCanvas(720);return;}
         const blob=new Blob(chunks,{type:rec.mimeType||mime||'video/webm'});
         const ext=blob.type.includes('mp4')?'mp4':'webm';const name=`vuelo-raton-perez-${new Date().toISOString().slice(0,10)}.${ext}`;
         state.exportBlob=blob;state.exportName=name;
+        if(new URLSearchParams(location.search).get('desde')==='padres' && window.LNPMemoryStore){
+          state.memoryItemId='flight-video-'+Date.now();
+          try{
+            await window.LNPMemoryStore.put({
+              id:state.memoryItemId,type:'flight-video',title:'Vídeo del globo',
+              note:'Vídeo exportado y guardado en este dispositivo',status:'draft',
+              blob,mimeType:blob.type,createdAt:Date.now()
+            });
+          }catch(error){console.warn('No se pudo añadir el vídeo al Cofre',error);}
+        }
         $('shareBtn').hidden=false;
         $('prepareSpyBtn').disabled=false;
         $('prepareSpyBtn').textContent='Activar Cámara Mágica';
@@ -1030,10 +1040,22 @@
       const tomorrow=new Date();
       tomorrow.setDate(tomorrow.getDate()+1);
       tomorrow.setHours(7,0,0,0);
+      let extraPhoto=null,extraLetter=null;
+      try{
+        const memories=window.LNPMemoryStore?await window.LNPMemoryStore.list():[];
+        const photoItem=memories.find(item=>['perez-selfie','window-balloon','footprints'].includes(item.type)&&item.blob instanceof Blob);
+        const letterItem=memories.find(item=>item.type==='letter');
+        if(photoItem)extraPhoto=photoItem.blob;
+        if(letterItem){
+          const esc=value=>String(value||'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+          const letterHtml='<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Carta de Ratón Pérez</title><body style="margin:0;padding:28px;background:#0b1c32;font-family:Georgia,serif;color:#55351f"><main style="max-width:520px;margin:0 auto;padding:30px 24px;background:#f5e4c2;border:5px double #bd8b4a;border-radius:16px"><p style="text-align:center;color:#976c3e;font:700 11px Arial;letter-spacing:2px">UNA CARTA DE VILLA PÉREZ</p><h1 style="font-size:24px;font-weight:400">Querido/a '+esc(letterItem.childName||'peque')+':</h1><p style="font-size:17px;line-height:1.65">'+esc(letterItem.message||'')+'</p><p style="font-size:17px">Con mucho cariño,<br><strong>Ratón Pérez</strong></p></main></body></html>';
+          extraLetter=new Blob([letterHtml],{type:'text/html;charset=utf-8'});
+        }
+      }catch(error){console.warn('No se pudieron recuperar los recuerdos extra',error);}
       const base={
         id:'captura-magica',createdAt:Date.now(),availableAt:tomorrow.getTime(),
         videoBlob:state.exportBlob,videoUrl:null,
-        photoBlob:null,photoUrl:null,letterBlob:null,letterUrl:null
+        photoBlob:extraPhoto,photoUrl:null,letterBlob:extraLetter,letterUrl:null
       };
       async function put(record){
         const db=await new Promise((resolve,reject)=>{
@@ -1065,7 +1087,13 @@
       localStorage.setItem('vp_cam_espia_mission_v1',String(Date.now()));
       localStorage.setItem('vp_cam_espia_capture_changed_v1',String(Date.now()));
       status.hidden=false;
-      status.textContent='Cámara Mágica activa. Ábrela esta noche para mostrar la misión. Mañana desde las 7:00 aparecerá «Ver» en el mismo navegador y dispositivo.';
+      status.textContent='Cámara Mágica activa. Mañana desde las 7:00 aparecerá «Ver» en este dispositivo.'+(extraPhoto?' También se ha añadido una foto.':'')+(extraLetter?' También se ha añadido tu carta.':'');
+      if(state.memoryItemId&&window.LNPMemoryStore){
+        try{
+          const saved=await window.LNPMemoryStore.get(state.memoryItemId);
+          if(saved){saved.status='scheduled';saved.availableAt=tomorrow.getTime();saved.note='Activado en Cámara Mágica para mañana a las 7:00';await window.LNPMemoryStore.put(saved);}
+        }catch(error){console.warn('No se pudo actualizar el estado del vídeo en el Cofre',error);}
+      }
       btn.textContent='✓ Cámara Mágica activa';
       toast('¡Alerta mágica preparada para mañana!');
     }catch(error){
