@@ -33,7 +33,7 @@
 .splash-balloon{position:absolute;z-index:1;top:3%;left:-11%;width:68%;height:63%;object-fit:contain;object-position:left top;filter:drop-shadow(0 8px 15px #0009)}
 .splash-copy{position:absolute;z-index:2;top:34%;left:40%;right:5%;text-align:center;color:#ffe2a1;text-shadow:0 2px 7px #000}.splash-copy h1{margin:0;font:400 clamp(28px,7.4vw,37px)/.98 Georgia,serif}.splash-copy h1 strong{display:block;font-size:1.55em;font-weight:700}.splash-copy p{margin:9px 0 0;font:12px Georgia,serif}
 .splash-enter{position:relative;z-index:3;width:68%;margin:0 auto max(28px,5vh);min-height:48px}
-.home-screen{padding:0 16px max(9px,var(--safe-bottom));gap:8px;background:linear-gradient(180deg,#03101d22,#03101df0 95%),url("../villa-world.webp") center 50%/cover no-repeat}
+.home-screen{padding:0 16px max(9px,var(--safe-bottom));gap:8px;background:linear-gradient(180deg,#06172b,#020d1b 100%)}}
 .home-art{position:relative;flex:0 0 clamp(270px,43vh,370px);min-height:0;margin:0 -16px;overflow:hidden;background:linear-gradient(180deg,#06152a55,#06152a77 65%,#06152a99),url("../modo-padres/assets/noche-villa-perez.webp") center 48%/cover no-repeat}
 .home-art:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#061327 0%,transparent 38%,#06132722 100%)}
 .home-art .home-city{display:none}
