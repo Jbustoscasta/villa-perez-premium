@@ -608,3 +608,9 @@ body{background:radial-gradient(ellipse at 50% 2%,#23446c 0,transparent 48%),rad
 
 .vp-route-storage{display:flex;gap:8px;margin:0 0 12px}.vp-route-storage button{flex:1;margin:0;min-height:44px}
 @media(max-width:830px) and (orientation:portrait){.modal-backdrop{overflow:auto}.modal{max-height:calc(100svh - 30px);overflow:auto}.camera-bottom{grid-template-columns:minmax(0,1fr)}.camera-review-actions{width:min(100%,370px)}}
+
+/* Reserve the scene's intrinsic height when photo actions appear on small screens. */
+@media(max-width:830px) and (orientation:portrait){
+ .stage-wrap{flex:0 0 auto;width:min(100%,390px,calc((100svh - 330px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * .5625))}
+ .scene-quick-actions{position:relative;flex-shrink:0}
+}
