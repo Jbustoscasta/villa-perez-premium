@@ -17,7 +17,10 @@ body.lnp-footprints{height:100dvh;background:linear-gradient(180deg,#071a30,#020
 .lnp-footprints #footprintCanvas{display:block;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;touch-action:none;user-select:none}
 .lnp-footprints .placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0;background:#14273b}
 .lnp-footprints .footprint-sample{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 60%;filter:brightness(.72)}
-.lnp-footprints .sample-paws{position:absolute;top:30%;left:38%;color:#f4d7a2;font-size:28px;letter-spacing:8px;transform:rotate(-25deg);text-shadow:0 2px 6px #000}
+.lnp-footprints .sample-paws{position:absolute;top:65%;left:13%;display:flex;align-items:center;gap:13px;transform:rotate(-24deg);filter:drop-shadow(0 2px 3px #0005)}
+.lnp-footprints .sample-paws svg{width:21px;height:21px;fill:#47372d;opacity:.85}
+.lnp-footprints .sample-paws svg:nth-child(2){transform:translateY(-8px) rotate(12deg)}
+.lnp-footprints .sample-paws svg:nth-child(3){transform:translateY(-16px) rotate(-9deg)}
 .lnp-footprints .placeholder strong,.lnp-footprints .placeholder p{position:absolute;z-index:1;left:10px;right:10px;text-align:center;text-shadow:0 2px 5px #000}
 .lnp-footprints .placeholder strong{bottom:36px;color:#fff0cf;font:700 17px Georgia,serif}
 .lnp-footprints .placeholder p{bottom:12px;color:#fff0cf;font:11px Georgia,serif}
