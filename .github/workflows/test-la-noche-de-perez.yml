@@ -29,6 +29,7 @@ jobs:
         run: |
           node --check la-noche-de-perez/app.js
           node --check la-noche-de-perez/memory-store.js
+          node --check la-noche-de-perez/nino.js
           node --check vuelo-magico/app.js
           node --check huellas-perez/app.js
       - name: Probar pantallas y handoff en Chromium y WebKit
