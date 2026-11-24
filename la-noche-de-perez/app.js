@@ -423,7 +423,7 @@
       copy.append(title,note);
       const status=document.createElement("span");
       status.className="memory-status";
-      status.textContent=item.status==="scheduled"?"PREPARADO":"BORRADOR";
+      status.textContent="✓";status.setAttribute("aria-label","Guardado en el Cofre");
       const remove=document.createElement("button");
       remove.type="button";remove.className="memory-delete";remove.dataset.deleteMemory=item.id;
       remove.setAttribute("aria-label","Eliminar "+(item.title||"recuerdo"));
