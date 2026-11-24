@@ -1082,6 +1082,16 @@
         base.videoBytes=new Uint8Array(await state.exportBlob.arrayBuffer());
         base.videoMime=state.exportBlob.type||'video/mp4';
         base.videoBlob=null;
+        if(base.photoBlob){
+          base.photoBytes=new Uint8Array(await base.photoBlob.arrayBuffer());
+          base.photoMime=base.photoBlob.type||'image/jpeg';
+          base.photoBlob=null;
+        }
+        if(base.letterBlob){
+          base.letterBytes=new Uint8Array(await base.letterBlob.arrayBuffer());
+          base.letterMime=base.letterBlob.type||'text/html';
+          base.letterBlob=null;
+        }
         await put(base);
       }
       localStorage.setItem('vp_cam_espia_mission_v1',String(Date.now()));
