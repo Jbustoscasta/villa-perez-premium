@@ -33,7 +33,7 @@
 .splash-balloon{position:absolute;z-index:1;top:3%;left:-11%;width:68%;height:63%;object-fit:contain;object-position:left top;filter:drop-shadow(0 8px 15px #0009)}
 .splash-copy{position:absolute;z-index:2;top:34%;left:40%;right:5%;text-align:center;color:#ffe2a1;text-shadow:0 2px 7px #000}.splash-copy h1{margin:0;font:400 clamp(28px,7.4vw,37px)/.98 Georgia,serif}.splash-copy h1 strong{display:block;font-size:1.55em;font-weight:700}.splash-copy p{margin:9px 0 0;font:12px Georgia,serif}
 .splash-enter{position:relative;z-index:3;width:68%;margin:0 auto max(28px,5vh);min-height:48px}
-.home-screen{padding:0 16px max(9px,var(--safe-bottom));gap:8px;background:linear-gradient(180deg,#06172b,#020d1b 100%)}}
+.home-screen{padding:0 16px max(9px,var(--safe-bottom));gap:8px;background:linear-gradient(180deg,#06172b,#020d1b 100%)}
 .home-art{position:relative;flex:0 0 clamp(270px,43vh,370px);min-height:0;margin:0 -16px;overflow:hidden;background:linear-gradient(180deg,#06152a55,#06152a77 65%,#06152a99),url("../modo-padres/assets/noche-villa-perez.webp") center 48%/cover no-repeat}
 .home-art:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#061327 0%,transparent 38%,#06132722 100%)}
 .home-art .home-city{display:none}
@@ -134,9 +134,9 @@
 .memory-thumb img,.memory-thumb video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .memory-thumb svg{width:62%;height:62%}.memory-play{position:absolute;display:grid;place-items:center;width:34px;height:34px;border:1px solid #ffe3a5;border-radius:50%;background:#06172dbb;color:#fff0c6;font-size:16px}
 .memory-item[data-type="letter"] .memory-thumb{background:linear-gradient(135deg,#fff0c9,#c38d48);color:#9b3025}
-.memory-copy{padding:6px 7px;min-height:32px}.memory-copy strong{display:block;overflow:hidden;color:#ffe3a5;font:700 11px Georgia,serif;text-overflow:ellipsis;white-space:nowrap}.memory-copy small{display:none}
-.memory-status{position:absolute;top:5px;right:5px;padding:3px 5px;border:1px solid #ffe2a0;border-radius:50%;background:#0a6b43;color:white;font:10px Georgia,serif}
-.memory-delete{position:absolute;top:5px;left:5px;width:22px;height:22px;border:1px solid #fff7;border-radius:50%;background:#06172bc9;color:white;font-size:13px}
+.memory-copy{display:none}
+.memory-status{position:absolute;top:5px;right:5px;width:22px;height:22px;display:grid;place-items:center;padding:0;border:1px solid #a4efb9;border-radius:50%;background:#087345;color:white;font:700 13px Georgia,serif}
+.memory-delete{display:none}
 .empty-memory{grid-column:1/-1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;min-height:150px;border:1px dashed #a17a42;border-radius:12px;background:#07182b99;text-align:center;color:#ffe1a1}.empty-memory>span{font-size:28px}.empty-memory strong{font:16px Georgia,serif}.empty-memory small{font:11px Georgia,serif}
 .library-actions{margin-top:7px}.library-footnote{margin:0;color:#d7c39e;text-align:center;font:9px/1.25 Georgia,serif}
 .ready-screen{background:linear-gradient(180deg,#071a2a44,#03101dc9),url("../villa-world.webp") center 55%/cover no-repeat}
@@ -151,7 +151,7 @@
 #memoryPreviewContent img,#memoryPreviewContent video{display:block;width:100%;max-height:60dvh;object-fit:contain;border-radius:9px}#memoryPreviewContent p{white-space:pre-wrap;color:#3b2410}
 @media(max-height:740px){
  .screen{padding-top:4px;gap:4px}.topbar{height:calc(49px + var(--safe-top));min-height:calc(49px + var(--safe-top))}
- .home-art{flex-basis:clamp(230px,37vh,255px)}.home-screen{gap:6px}.shortcut-card{min-height:66px}.shortcut-icon{height:43px;width:38px;flex-basis:38px}.home-actions{gap:6px;justify-content:space-between}
+ .home-art{flex-basis:clamp(205px,32vh,220px)}.home-screen{gap:5px}.shortcut-card{min-height:61px}.shortcut-icon{height:40px;width:36px;flex-basis:36px}.home-actions{gap:5px;justify-content:space-between}.home-actions>.main-action{min-height:41px}.home-actions .child-action{min-height:38px}
  .screen-heading{padding:2px 0 6px}.screen-heading h1{font-size:25px}.screen-heading p{font-size:11px}
  .main-action{min-height:43px;font-size:14px}.secondary-action{min-height:38px}.video-preview{min-height:130px}
  .proof-card{min-height:67px}.proof-thumb{min-height:52px}.proof-workspace{min-height:110px}.transform-tools button{min-height:41px}
