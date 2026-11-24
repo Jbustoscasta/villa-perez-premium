@@ -4,172 +4,222 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07152d">
-  <meta name="description" content="La noche de Pérez. Prepara el vuelo, deja pistas mágicas y guarda sus recuerdos.">
+  <meta name="description" content="La noche de Pérez. Prepara su visita, crea recuerdos y activa la Cámara Mágica.">
   <title>La noche de Pérez · Modo padres</title>
   <link rel="icon" href="../vuelo-magico/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=2">
-  <script src="app.js?v=2" defer></script>
+  <link rel="stylesheet" href="./styles.css?v=3">
+  <script src="../modo-padres/photo-store.js?v=1" defer></script>
+  <script src="./memory-store.js?v=1" defer></script>
+  <script src="./app.js?v=3" defer></script>
 </head>
 <body>
-<svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <symbol id="i-tooth" viewBox="0 0 48 48"><path d="M24 7c-4.6-3.1-13.8-2.1-15.2 5.1-1.1 5.7 1.8 10.3 4.1 15.1 1.8 3.8 2.4 13.4 6.3 13.4 3.5 0 2.5-12.1 6.8-12.1s3.3 12.1 6.8 12.1c3.9 0 4.5-9.6 6.3-13.4 2.3-4.8 5.2-9.4 4.1-15.1C37.8 4.9 28.6 3.9 24 7Z" fill="currentColor" stroke="#a86e27" stroke-width="1.6" stroke-linejoin="round"/></symbol>
-  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-  <symbol id="i-help" viewBox="0 0 24 24"><path d="M9.3 9a2.8 2.8 0 1 1 4.8 1.9c-1.2 1.1-2.1 1.6-2.1 3.2M12 18h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-  <symbol id="i-video" viewBox="0 0 48 48"><rect x="5" y="10" width="38" height="28" rx="5" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="m20 17 12 7-12 7z" fill="currentColor"/><path d="M12 6h24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-  <symbol id="i-photos" viewBox="0 0 48 48"><rect x="8" y="8" width="27" height="31" rx="3" transform="rotate(-8 8 8)" fill="none" stroke="currentColor" stroke-width="2.2"/><rect x="15" y="12" width="27" height="31" rx="3" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="m19 34 7-8 5 5 3-4 5 7z" fill="currentColor"/><circle cx="24" cy="20" r="2.5" fill="currentColor"/></symbol>
-  <symbol id="i-letter" viewBox="0 0 48 48"><path d="M6 13a3 3 0 0 1 3-3h30a3 3 0 0 1 3 3v23a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3z" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="m8 14 16 13 16-13M8 36l12-11m20 11L28 25" fill="none" stroke="currentColor" stroke-width="2.2"/></symbol>
-  <symbol id="i-chest" viewBox="0 0 48 48"><path d="M7 20a7 7 0 0 1 7-7h20a7 7 0 0 1 7 7v19H7zM5 20h38v8H5zM12 13v-3a4 4 0 0 1 4-4h16a4 4 0 0 1 4 4v3" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M20 26h8v9h-8z" fill="currentColor"/></symbol>
-  <symbol id="i-child" viewBox="0 0 48 48"><circle cx="24" cy="17" r="10" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M8 42c1.2-9.2 7-14 16-14s14.8 4.8 16 14M18 17h.01M30 17h.01M20 22c2.5 2 5.5 2 8 0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
-  <symbol id="i-pin" viewBox="0 0 48 48"><path d="M24 43s15-15.2 15-26A15 15 0 0 0 9 17c0 10.8 15 26 15 26Z" fill="currentColor"/><circle cx="24" cy="17" r="5.5" fill="#fff1d6"/></symbol>
-  <symbol id="i-lock" viewBox="0 0 48 48"><rect x="8" y="21" width="32" height="23" rx="4" fill="none" stroke="currentColor" stroke-width="2.8"/><path d="M15 21v-7a9 9 0 0 1 18 0v7" fill="none" stroke="currentColor" stroke-width="2.8"/><circle cx="24" cy="32" r="3" fill="currentColor"/></symbol>
-  <symbol id="i-footprints" viewBox="0 0 48 48"><ellipse cx="15" cy="29" rx="6" ry="10" transform="rotate(24 15 29)" fill="currentColor"/><circle cx="7" cy="16" r="3" fill="currentColor"/><circle cx="13" cy="12" r="3.3" fill="currentColor"/><circle cx="20" cy="13" r="3" fill="currentColor"/><ellipse cx="34" cy="19" rx="6" ry="10" transform="rotate(-24 34 19)" fill="currentColor"/><circle cx="27" cy="5" r="3" fill="currentColor"/><circle cx="34" cy="3" r="3.3" fill="currentColor"/><circle cx="40" cy="7" r="3" fill="currentColor"/></symbol>
-  <symbol id="i-camera" viewBox="0 0 48 48"><path d="M6 15h8l3-5h14l3 5h8a3 3 0 0 1 3 3v20a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V18a3 3 0 0 1 3-3Z" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="24" cy="27" r="8" fill="none" stroke="currentColor" stroke-width="2.4"/></symbol>
-  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-</svg>
-
 <div class="app-shell">
-  <div class="night-backdrop" aria-hidden="true">
-    <div class="star-field"></div><div class="moon-glow"></div>
-    <img class="backdrop-villa" src="../modo-padres/assets/noche-villa-perez.webp" alt="">
-    <div class="backdrop-shade"></div>
-  </div>
+  <div class="scene-backdrop" aria-hidden="true"><div class="backdrop-stars"></div></div>
 
   <header class="topbar">
-    <button class="round-control" id="menuButton" type="button" aria-label="Abrir menú"><svg class="icon"><use href="#i-menu"></use></svg></button>
+    <button class="round-control back-control" id="backButton" type="button" aria-label="Volver" hidden>‹</button>
     <button class="brand-plaque" type="button" data-screen="home" aria-label="Ir al inicio">
-      <span class="brand-tooth"><svg class="icon"><use href="#i-tooth"></use></svg></span>
-      <span class="brand-name"><small>LA NOCHE</small><strong>DE PÉREZ</strong></span>
+      <span class="brand-seal">✦</span>
+      <span class="brand-copy"><small>LA NOCHE</small><strong>DE PÉREZ</strong></span>
     </button>
-    <button class="round-control" id="helpButton" type="button" aria-label="Ayuda"><svg class="icon"><use href="#i-help"></use></svg></button>
+    <button class="round-control help-control" id="helpButton" type="button" aria-label="Ayuda">?</button>
   </header>
 
   <main class="screen-viewport">
     <section class="screen home-screen active" id="screen-home" aria-labelledby="homeTitle">
-      <div class="home-stage">
+      <div class="home-art">
+        <img src="../modo-padres/assets/noche-villa-perez.webp" alt="" fetchpriority="high">
+        <div class="home-art-shade"></div>
         <div class="home-copy">
           <span class="eyebrow"><i></i> UNA NOCHE MUY ESPECIAL</span>
           <h1 id="homeTitle">La noche<br><em>de Pérez</em></h1>
-          <p>La noche mágica en la que Pérez viene a recoger un diente.</p>
-          <span class="title-spark">✧</span>
+          <p>Prepara una visita llena de pequeños momentos mágicos.</p>
         </div>
-        <img class="hero-balloon" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt="El Ratón Pérez viaja en su globo mágico">
-        <div class="villa-medallion"><img src="../villa-hero.webp" alt="La casa de Villa Pérez"><span>✦ VILLA PÉREZ ✦</span></div>
-        <div class="flight-trail" aria-hidden="true"></div>
       </div>
       <div class="home-actions">
-        <button class="enamel-button teal-button primary-home-action" type="button" data-screen="destination">
-          <span class="button-emblem"><svg class="icon"><use href="#i-tooth"></use></svg></span><span>Preparar la visita</span><svg class="button-arrow"><use href="#i-arrow"></use></svg>
+        <button class="main-action gold-action" type="button" data-screen="destination">
+          <span class="action-icon">✧</span><span>Preparar la visita</span><span class="action-arrow">›</span>
         </button>
         <div class="shortcut-grid">
-          <button class="paper-button shortcut-card" type="button" data-screen="video"><span class="shortcut-art"><svg class="icon"><use href="#i-video"></use></svg></span><span class="shortcut-label">Vídeo<br>del globo</span><span class="shortcut-chevron">›</span></button>
-          <button class="paper-button shortcut-card" type="button" data-screen="proofs"><span class="shortcut-art"><svg class="icon"><use href="#i-photos"></use></svg></span><span class="shortcut-label">Pruebas<br>de visita</span><span class="shortcut-chevron">›</span></button>
-          <button class="paper-button shortcut-card" type="button" data-screen="letter"><span class="shortcut-art"><svg class="icon"><use href="#i-letter"></use></svg></span><span class="shortcut-label">Carta<br>de Pérez</span><span class="shortcut-chevron">›</span></button>
-          <button class="paper-button shortcut-card" type="button" data-screen="library"><span class="shortcut-art"><svg class="icon"><use href="#i-chest"></use></svg></span><span class="shortcut-label">Cofre de<br>recuerdos</span><span class="shortcut-chevron">›</span></button>
+          <button class="shortcut-card" type="button" data-screen="video"><span class="shortcut-icon">◉</span><span><strong>Vídeo del globo</strong><small>En su habitación</small></span><b>›</b></button>
+          <button class="shortcut-card" type="button" data-screen="proofs"><span class="shortcut-icon">✧</span><span><strong>Pruebas de visita</strong><small>Fotos y huellas</small></span><b>›</b></button>
+          <button class="shortcut-card" type="button" data-screen="letter"><span class="shortcut-icon">✉</span><span><strong>Carta de Pérez</strong><small>Un mensaje especial</small></span><b>›</b></button>
+          <button class="shortcut-card" type="button" data-screen="library"><span class="shortcut-icon">▣</span><span><strong>Cofre de recuerdos</strong><small>Todo lo preparado</small></span><b>›</b></button>
         </div>
-        <a class="enamel-button red-button child-mode-button" href="../camara-espia/"><span class="button-emblem"><svg class="icon"><use href="#i-child"></use></svg></span><span>Activar modo niño</span><svg class="button-arrow"><use href="#i-arrow"></use></svg></a>
+        <a class="main-action child-action" href="../camara-espia/"><span class="action-icon">☼</span><span>Activar modo niño</span><span class="action-arrow">›</span></a>
       </div>
     </section>
 
-    <section class="screen task-screen destination-screen" id="screen-destination" aria-labelledby="destinationTitle">
-      <div class="step-line"><span class="step-number">01</span><span class="step-name">EL VIAJE DE PÉREZ</span><i></i><b>1 / 4</b></div>
-      <div class="destination-hero">
-        <div class="screen-heading"><span class="eyebrow">EL PRIMER PASO</span><h1 id="destinationTitle">¿Dónde va a recoger tu diente?</h1><p>Indícale a Pérez dónde tiene que llegar esta noche.</p></div>
-        <img class="small-balloon" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt="">
+    <section class="screen task-screen" id="screen-destination" aria-labelledby="destinationTitle">
+      <div class="step-line"><span>01</span><b>EL VIAJE DE PÉREZ</b><i></i><small>1 / 4</small></div>
+      <div class="screen-heading">
+        <span class="eyebrow">EL PRIMER PASO</span>
+        <h1 id="destinationTitle">¿Dónde tiene que llegar Pérez?</h1>
+        <p>Indícale dónde está tu casa para preparar el recorrido de esta noche.</p>
       </div>
-      <form class="destination-form" id="addressForm">
-        <label class="paper-input address-input">
-          <span class="input-emblem"><svg class="icon"><use href="#i-pin"></use></svg></span>
-          <span class="input-copy"><small>DIRECCIÓN DE DESTINO</small><input id="addressInput" type="text" autocomplete="street-address" placeholder="Escribe la dirección de tu casa" required></span>
+      <form class="task-form" id="addressForm">
+        <label class="field-card">
+          <span class="field-icon">⌖</span>
+          <span class="field-copy"><small>DIRECCIÓN DE DESTINO</small><input id="addressInput" type="text" autocomplete="street-address" placeholder="Calle, número, ciudad…" minlength="6" required></span>
         </label>
-        <div class="map-card">
-          <div class="map-card-heading"><span>✦ EL RECORRIDO DE ESTA NOCHE</span><small>MAPA MÁGICO · ILUSTRATIVO</small></div>
-          <svg class="route-map" viewBox="0 0 360 208" role="img" aria-label="Ilustración del vuelo desde Villa Pérez hasta una casa">
-            <defs><linearGradient id="routeGlow" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f5c96d"/><stop offset="1" stop-color="#fff0b3"/></linearGradient><filter id="mapGlow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-            <path class="map-river" d="M-10 142 C42 95 82 171 130 132S220 80 270 113 328 160 375 104"/>
-            <path class="map-road" d="M-5 49 C55 75 65 28 118 50S210 77 252 46 321 25 372 47"/><path class="map-road" d="M25 212 C80 170 111 189 153 161S226 142 255 176 326 200 368 165"/><path class="map-road" d="M92 -5 C115 38 91 82 112 115S150 170 142 216"/><path class="map-road" d="M284 -5 C258 39 289 75 267 107S249 160 277 214"/>
-            <path class="map-route" d="M55 115 C89 74 112 80 145 104S201 151 230 112 275 72 315 80"/><path class="map-route-glow" d="M55 115 C89 74 112 80 145 104S201 151 230 112 275 72 315 80"/>
-            <g class="map-villa-pin" transform="translate(20 77)"><path d="M2 25 24 7l22 18v23H2Z" fill="#f4dba4" stroke="#9b642b" stroke-width="2"/><path d="M-1 25 24 4l25 21" fill="none" stroke="#e7b75f" stroke-width="4"/><rect x="19" y="31" width="10" height="17" rx="2" fill="#8a4b2c"/></g>
-            <g class="map-home-pin" transform="translate(295 50)"><path d="M2 20 22 4l20 16v24H2Z" fill="#f6dfae" stroke="#9b642b" stroke-width="2"/><path d="M-1 20 22 1l23 19" fill="none" stroke="#e8b85e" stroke-width="4"/><rect x="17" y="29" width="10" height="15" rx="2" fill="#8b4b2b"/></g>
-            <g class="map-stars"><circle cx="75" cy="32" r="2"/><circle cx="175" cy="35" r="1.6"/><circle cx="252" cy="28" r="2"/><circle cx="186" cy="185" r="2"/></g>
-            <text x="13" y="145">VILLA PÉREZ</text><text x="288" y="115">TU CASA</text>
-            <g class="map-tooth" transform="translate(173 88)"><circle r="15"/><path d="M0-8c-5-4-11-1-10 5 1 4 3 6 4 10 1 3 2 7 4 7s2-8 4-8 2 8 4 8 3-4 4-7c1-4 3-6 4-10 1-6-5-9-10-5Z"/></g>
-          </svg>
-          <div class="map-legend"><span><i class="legend-dot"></i> Villa Pérez</span><span><i class="legend-line"></i> El vuelo mágico</span><span><i class="legend-dot home-dot"></i> Tu casa</span></div>
+        <div class="route-placeholder">
+          <div class="route-placeholder-icon">✦</div>
+          <div><small>EL RECORRIDO DE ESTA NOCHE</small><strong>El mapa aparecerá aquí</strong><p>Estamos preparando el punto de partida oficial de Villa Pérez. No mostraremos una ruta inventada.</p></div>
+          <span class="route-state">MAPA REAL PENDIENTE</span>
         </div>
-        <div class="privacy-ribbon"><span class="privacy-lock"><svg class="icon"><use href="#i-lock"></use></svg></span><span>Tu dirección es privada y solo se utiliza para que Pérez pueda llegar a tu casa.</span></div>
-        <p class="form-status" id="addressStatus" role="status"></p>
-        <div class="screen-actions"><button class="enamel-button red-button" type="submit"><span class="button-emblem"><svg class="icon"><use href="#i-pin"></use></svg></span><span>Guardar destino</span><svg class="button-arrow"><use href="#i-arrow"></use></svg></button><button class="quiet-link" type="button" data-screen="video">Lo haré después</button></div>
+        <div class="privacy-ribbon"><span>♧</span><p>Tu dirección se utiliza solo para preparar el destino. No se guarda en el Cofre ni se muestra en el modo niño.</p></div>
+        <p class="form-status" id="addressStatus" role="status" aria-live="polite"></p>
+        <div class="screen-actions">
+          <button class="main-action red-action" type="submit"><span class="action-icon">⌖</span><span>Guardar destino</span><span class="action-arrow">›</span></button>
+          <button class="secondary-action" id="destinationContinue" type="button" disabled>Continuar al siguiente paso</button>
+          <button class="text-action" type="button" data-screen="home">Volver al inicio</button>
+        </div>
       </form>
     </section>
 
-    <section class="screen task-screen video-screen" id="screen-video" aria-labelledby="videoTitle">
-      <div class="step-line"><span class="step-number">02</span><span class="step-name">EL GLOBO EN SU HABITACIÓN</span><i></i><b>2 / 4</b></div>
-      <div class="screen-heading centered-heading"><span class="eyebrow">UN RECUERDO EN VÍDEO</span><h1 id="videoTitle">Que Pérez sobrevuele<br>su habitación.</h1><p>Tú eliges una foto de su dormitorio y preparamos el vuelo mágico.</p></div>
-      <div class="video-scene gold-frame">
-        <img class="bedroom-photo" src="../modo-padres/assets/habitacion-ejemplo.webp" alt="Dormitorio infantil de noche">
-        <div class="scene-night-overlay"></div><div class="window-moon">☾</div>
-        <img class="scene-balloon" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt="Pérez sobrevuela la habitación en su globo">
-        <div class="scene-stars">✦　·　✧　　·　✦</div>
-        <div class="scene-caption"><small>VUELO MÁGICO</small><strong>Una visita que parecerá real.</strong></div>
+    <section class="screen task-screen" id="screen-video" aria-labelledby="videoTitle">
+      <div class="step-line"><span>02</span><b>EL GLOBO EN SU HABITACIÓN</b><i></i><small>2 / 4</small></div>
+      <div class="screen-heading">
+        <span class="eyebrow">UN RECUERDO EN VÍDEO</span>
+        <h1 id="videoTitle">Que Pérez sobrevuele su habitación.</h1>
+        <p>Haz una foto o elige una de su dormitorio. Después podrás dibujar el recorrido del globo.</p>
       </div>
-      <div class="video-steps"><span><i>1</i> Elige una foto</span><span class="step-dots">···</span><span><i>2</i> Traza el vuelo</span><span class="step-dots">···</span><span><i>3</i> Guarda el vídeo</span></div>
-      <div class="screen-actions"><a class="enamel-button teal-button" href="../vuelo-magico/?desde=padres"><span class="button-emblem"><svg class="icon"><use href="#i-video"></use></svg></span><span>Abrir asistente de vídeo</span><svg class="button-arrow"><use href="#i-arrow"></use></svg></a><button class="quiet-link" type="button" data-screen="proofs">Continuar sin vídeo</button></div>
+      <div class="video-preview">
+        <img class="bedroom-preview" src="../modo-padres/assets/habitacion-ejemplo.webp" alt="Ejemplo de un dormitorio infantil de noche">
+        <div class="video-preview-shade"></div>
+        <img class="preview-balloon" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt="Ratón Pérez en su globo">
+        <div class="preview-label"><small>EL VUELO MÁGICO</small><strong>Una visita que parecerá real.</strong></div>
+        <img class="selected-photo" id="videoPhotoPreview" alt="Fotografía seleccionada" hidden>
+      </div>
+      <div class="video-controls">
+        <label class="secondary-action file-action" for="videoPhotoInput">▧ &nbsp; Elegir una foto de la galería<input id="videoPhotoInput" type="file" accept="image/*,.heic,.heif"></label>
+        <p class="form-status" id="videoPhotoStatus" role="status"></p>
+        <a class="main-action gold-action" href="../vuelo-magico/?desde=padres&asistente=foto"><span class="action-icon">◎</span><span>Hacer foto con el asistente</span><span class="action-arrow">›</span></a>
+        <button class="main-action red-action" id="openVideoEditor" type="button"><span class="action-icon">▶</span><span>Continuar al editor de vídeo</span><span class="action-arrow">›</span></button>
+      </div>
+      <button class="text-action" type="button" data-screen="proofs">Continuar sin vídeo</button>
     </section>
 
-    <section class="screen task-screen proofs-screen" id="screen-proofs" aria-labelledby="proofsTitle">
-      <div class="step-line"><span class="step-number">03</span><span class="step-name">LAS PRUEBAS DE SU VISITA</span><i></i><b>3 / 4</b></div>
-      <div class="proofs-heading">
-        <div class="screen-heading"><span class="eyebrow">PEQUEÑAS PISTAS MÁGICAS</span><h1 id="proofsTitle">¿Qué quieres que encuentre mañana?</h1><p>Elige las pruebas que quieras dejarle. Puedes preparar una o todas.</p></div>
-        <img class="proofs-mascot" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt="">
+    <section class="screen task-screen" id="screen-proofs" aria-labelledby="proofsTitle">
+      <div class="step-line"><span>03</span><b>LAS PRUEBAS DE SU VISITA</b><i></i><small>3 / 4</small></div>
+      <div class="screen-heading">
+        <span class="eyebrow">PEQUEÑAS PISTAS MÁGICAS</span>
+        <h1 id="proofsTitle">¿Qué quieres que encuentre mañana?</h1>
+        <p>Elige las sorpresas que quieras preparar. Puedes hacer una o todas.</p>
       </div>
       <div class="proof-options">
-        <button class="paper-button proof-option" type="button" data-proof="selfie"><span class="proof-image selfie-image"><img src="../modo-padres/assets/habitacion-ejemplo.webp" alt=""><img class="proof-mascot-overlay" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt=""></span><span class="proof-option-copy"><strong>Una foto con Pérez</strong><small>El ratón junto a tu peque dormido</small></span><span class="proof-select">›</span></button>
-        <button class="paper-button proof-option" type="button" data-proof="window"><span class="proof-image window-image"><img src="../modo-padres/assets/noche-villa-perez.webp" alt=""><span class="window-balloon-glow">✦</span></span><span class="proof-option-copy"><strong>Pérez en la ventana</strong><small>El globo volando junto a casa</small></span><span class="proof-select">›</span></button>
-        <a class="paper-button proof-option" href="../huellas-perez/"><span class="proof-image footprints-image"><svg class="icon"><use href="#i-footprints"></use></svg><i>✧</i></span><span class="proof-option-copy"><strong>Huellas de Pérez</strong><small>En la almohada, la mesita o el dormitorio</small></span><span class="proof-select">↗</span></a>
+        <button class="proof-card" type="button" data-proof="selfie">
+          <span class="proof-thumb selfie-thumb"><img src="../modo-padres/assets/habitacion-ejemplo.webp" alt=""><span>✦</span></span>
+          <span class="proof-copy"><strong>Una foto con Pérez</strong><small>El ratón junto a tu peque dormido</small></span><b>›</b>
+        </button>
+        <button class="proof-card" type="button" data-proof="window">
+          <span class="proof-thumb window-thumb"><img src="../modo-padres/assets/noche-villa-perez.webp" alt=""><span>✧</span></span>
+          <span class="proof-copy"><strong>Pérez en la ventana</strong><small>El globo volando junto a casa</small></span><b>›</b>
+        </button>
+        <a class="proof-card" href="../huellas-perez/?desde=la-noche">
+          <span class="proof-thumb footprints-thumb"><span>✣</span></span>
+          <span class="proof-copy"><strong>Huellas de Pérez</strong><small>En la almohada, la mesita o el dormitorio</small></span><b>›</b>
+        </a>
       </div>
-      <div class="screen-actions"><button class="enamel-button red-button" type="button" data-screen="letter"><span class="button-emblem"><svg class="icon"><use href="#i-letter"></use></svg></span><span>Continuar a la carta</span><svg class="button-arrow"><use href="#i-arrow"></use></svg></button><button class="quiet-link" type="button" data-screen="library">Ir directamente al cofre</button></div>
+      <div class="screen-actions">
+        <button class="main-action red-action" type="button" data-screen="letter"><span class="action-icon">✉</span><span>Continuar a la carta</span><span class="action-arrow">›</span></button>
+        <button class="text-action" type="button" data-screen="library">Ir directamente al Cofre</button>
+      </div>
     </section>
 
     <section class="screen task-screen proof-editor-screen" id="screen-proof-editor" aria-labelledby="proofEditorTitle">
-      <div class="step-line"><span class="step-number">03</span><span class="step-name">PREPARA TU FOTOGRAFÍA</span><i></i><b>3 / 4</b></div>
-      <div class="screen-heading"><span class="eyebrow" id="proofEditorEyebrow">UNA FOTO MUY ESPECIAL</span><h1 id="proofEditorTitle">Una foto con Pérez.</h1><p id="proofEditorDescription">Elige una foto real de tu peque dormido. Después prepararemos el recuerdo con Pérez.</p></div>
-      <div class="photo-workspace gold-frame" id="photoWorkspace">
-        <img class="photo-placeholder" id="photoPlaceholder" src="../modo-padres/assets/habitacion-ejemplo.webp" alt="Ejemplo de una habitación infantil de noche">
-        <img class="photo-user" id="photoUser" alt="Tu fotografía" hidden>
-        <img class="photo-perez" id="photoPerez" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt="Ratón Pérez">
-        <div class="photo-hint" id="photoHint"><span>✧</span><strong>Tu foto aparecerá aquí</strong><small>Haz una foto o selecciónala de tu galería</small></div>
-        <label class="photo-pick-button" for="proofPhoto"><svg class="icon"><use href="#i-camera"></use></svg><span>Hacer foto o elegir de galería</span><input id="proofPhoto" type="file" accept="image/*" capture="environment"></label>
+      <div class="step-line"><span>03</span><b>PREPARA TU FOTOGRAFÍA</b><i></i><small>3 / 4</small></div>
+      <div class="screen-heading">
+        <span class="eyebrow" id="proofEditorEyebrow">UNA FOTO MUY ESPECIAL</span>
+        <h1 id="proofEditorTitle">Una foto con Pérez.</h1>
+        <p id="proofEditorDescription">Elige una foto real de tu peque dormido. Coloca el globo donde quieras y ajusta su tamaño.</p>
       </div>
-      <p class="editor-note">El montaje final con el personaje oficial y sus controles de posición se conectará en la siguiente fase.</p>
-      <div class="screen-actions"><button class="enamel-button red-button" id="saveProofButton" type="button" disabled><span class="button-emblem"><svg class="icon"><use href="#i-photos"></use></svg></span><span>Guardar borrador en el cofre</span><svg class="button-arrow"><use href="#i-arrow"></use></svg></button><button class="quiet-link" type="button" data-screen="proofs">Volver a las pruebas</button></div>
+      <div class="proof-workspace" id="proofWorkspace">
+        <div class="proof-placeholder" id="proofPlaceholder"><span>✧</span><strong>Tu fotografía aparecerá aquí</strong><small>Haz una foto o selecciónala de tu galería</small></div>
+        <canvas id="proofCanvas" aria-label="Previsualización de la fotografía con Ratón Pérez" hidden></canvas>
+        <div class="proof-watermark">MÁSTER OFICIAL · PÉREZ</div>
+      </div>
+      <div class="proof-tools">
+        <label class="secondary-action file-action" for="proofPhotoInput">◎ &nbsp; Hacer foto o elegir de galería<input id="proofPhotoInput" type="file" accept="image/*,.heic,.heif"></label>
+        <label class="scale-control" for="proofScale"><span>Tamaño del globo</span><output id="proofScaleValue">18%</output><input id="proofScale" type="range" min="10" max="34" step="1" value="18" disabled></label>
+      </div>
+      <p class="form-status" id="proofStatus" role="status"></p>
+      <div class="screen-actions">
+        <button class="main-action red-action" id="saveProofButton" type="button" disabled><span class="action-icon">▣</span><span>Guardar en el Cofre</span><span class="action-arrow">›</span></button>
+        <button class="text-action" type="button" data-screen="proofs">Volver a las pruebas</button>
+      </div>
     </section>
 
     <section class="screen task-screen letter-screen" id="screen-letter" aria-labelledby="letterTitle">
-      <div class="step-line"><span class="step-number">04</span><span class="step-name">UNA CARTA DE VILLA PÉREZ</span><i></i><b>4 / 4</b></div>
-      <div class="screen-heading letter-heading"><span class="eyebrow">UN MENSAJE SOLO PARA ÉL O ELLA</span><h1 id="letterTitle">Una carta muy especial.</h1><p>Escribe unas palabras de Pérez y crea un recuerdo que podrá leer mañana.</p></div>
+      <div class="step-line"><span>04</span><b>UNA CARTA DE VILLA PÉREZ</b><i></i><small>4 / 4</small></div>
+      <div class="screen-heading">
+        <span class="eyebrow">UN MENSAJE SOLO PARA ÉL O ELLA</span>
+        <h1 id="letterTitle">Una carta muy especial.</h1>
+        <p>Escribe unas palabras de Pérez. Mañana podrá descubrirlas en su Cofre.</p>
+      </div>
       <form class="letter-form" id="letterForm">
-        <label class="paper-input form-field"><span class="field-emblem">✦</span><span class="input-copy"><small>NOMBRE DEL PEQUE</small><input id="childName" type="text" maxlength="32" placeholder="¿Cómo se llama?" required></span></label>
-        <label class="paper-input message-field"><span class="field-emblem">✒</span><span class="input-copy"><small>MENSAJE DE PÉREZ</small><textarea id="letterMessage" maxlength="260" rows="3">¡Gracias por cuidar tan bien tus dientes! Sigue así, estás haciendo un gran trabajo. He venido volando desde Villa Pérez para recoger tu dientecito. ¡Sigue soñando y sonriendo!</textarea></span></label>
-        <div class="letter-paper"><div class="letter-rope"></div><div class="wax-seal"><svg class="icon"><use href="#i-tooth"></use></svg></div><div class="letter-paper-copy"><small>UNA CARTA DE VILLA PÉREZ</small><p class="letter-dear">Querido/a <strong id="letterPreviewName">peque</strong>:</p><p id="letterPreviewMessage">¡Gracias por cuidar tan bien tus dientes! Sigue así, estás haciendo un gran trabajo. He venido volando desde Villa Pérez para recoger tu dientecito. ¡Sigue soñando y sonriendo!</p><p class="letter-signature">Con mucho cariño,<br><strong>Ratón Pérez</strong></p></div><img class="letter-mascot" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt=""></div>
-        <div class="screen-actions"><button class="enamel-button red-button" type="submit"><span class="button-emblem"><svg class="icon"><use href="#i-letter"></use></svg></span><span>Guardar carta</span><svg class="button-arrow"><use href="#i-arrow"></use></svg></button><button class="quiet-link" type="button" data-screen="library">Ahora no, ir al cofre</button></div>
+        <label class="field-card compact-field"><span class="field-icon">✦</span><span class="field-copy"><small>NOMBRE DEL PEQUE</small><input id="childName" type="text" maxlength="32" placeholder="¿Cómo se llama?" required></span></label>
+        <label class="field-card compact-field"><span class="field-icon">♢</span><span class="field-copy"><small>¿QUÉ DIENTE HA PERDIDO?</small><input id="toothName" type="text" maxlength="40" placeholder="Su primer dientecito…"></span></label>
+        <label class="field-card message-field"><span class="field-icon">✒</span><span class="field-copy"><small>MENSAJE DE PÉREZ</small><textarea id="letterMessage" maxlength="260" rows="3">¡Gracias por cuidar tan bien tus dientes! Sigue así, estás haciendo un gran trabajo. He venido volando desde Villa Pérez para recoger tu dientecito. ¡Sigue soñando y sonriendo!</textarea></span></label>
+        <div class="letter-preview">
+          <div class="letter-seal">✦</div>
+          <small>UNA CARTA DE VILLA PÉREZ</small>
+          <p>Querido/a <strong id="letterPreviewName">peque</strong>:</p>
+          <p id="letterPreviewMessage">¡Gracias por cuidar tan bien tus dientes! Sigue así, estás haciendo un gran trabajo. He venido volando desde Villa Pérez para recoger tu dientecito. ¡Sigue soñando y sonriendo!</p>
+          <p class="letter-signature">Con mucho cariño,<br><strong>Ratón Pérez</strong></p>
+        </div>
+        <div class="screen-actions">
+          <button class="main-action red-action" type="submit"><span class="action-icon">✉</span><span>Guardar carta</span><span class="action-arrow">›</span></button>
+          <button class="text-action" type="button" data-screen="library">Ahora no, ir al Cofre</button>
+        </div>
       </form>
     </section>
 
     <section class="screen task-screen library-screen" id="screen-library" aria-labelledby="libraryTitle">
-      <div class="step-line"><span class="step-number">✦</span><span class="step-name">TODO LO QUE VERÁ MAÑANA</span><i></i><b>COFRE</b></div>
-      <div class="library-heading">
-        <div class="screen-heading"><span class="eyebrow">TU PEQUEÑO TESORO</span><h1 id="libraryTitle">El cofre de los recuerdos.</h1><p>Todas las pequeñas sorpresas de esta noche, reunidas en un solo lugar.</p></div>
-        <div class="treasure-illustration"><img src="../vuelo-magico/assets/perez-globo-iphone.webp" alt=""><div class="treasure-chest"><span class="chest-tooth"><svg class="icon"><use href="#i-tooth"></use></svg></span></div><span class="treasure-spark spark-one">✦</span><span class="treasure-spark spark-two">✧</span></div>
+      <div class="step-line"><span>✦</span><b>TODO LO QUE VERÁ MAÑANA</b><i></i><small>COFRE</small></div>
+      <div class="screen-heading">
+        <span class="eyebrow">TU PEQUEÑO TESORO</span>
+        <h1 id="libraryTitle">El Cofre de recuerdos.</h1>
+        <p>Tus fotos, huellas, vídeos y cartas, reunidos en un solo lugar.</p>
       </div>
-      <div class="ready-ribbon"><span class="ready-tooth"><svg class="icon"><use href="#i-tooth"></use></svg></span><span><strong id="readyTitle">¡Tu magia está tomando forma!</strong><small id="readyDescription">Cada vídeo, foto, huella o carta que prepares aparecerá aquí.</small></span></div>
-      <div class="memory-list" id="memoryList" aria-live="polite"><div class="empty-memory"><span>✧</span><strong>El cofre está esperando sus tesoros</strong><small>Prepara tu primera sorpresa para verla aquí.</small></div></div>
-      <div class="screen-actions library-actions"><a class="enamel-button red-button" href="../camara-espia/"><span class="button-emblem"><svg class="icon"><use href="#i-child"></use></svg></span><span>Activar modo niño</span><svg class="button-arrow"><use href="#i-arrow"></use></svg></a><button class="quiet-link" type="button" data-screen="home">Volver al inicio</button></div>
-      <p class="library-footnote">Los borradores de esta maqueta se guardan en este dispositivo. La sincronización privada con el modo niño llegará en la siguiente fase.</p>
+      <div class="ready-ribbon"><span>✧</span><span><strong id="readyTitle">El cofre está esperando sus tesoros.</strong><small id="readyDescription">Cada recuerdo que prepares aparecerá aquí.</small></span></div>
+      <div class="memory-list" id="memoryList" aria-live="polite">
+        <div class="empty-memory"><span>✧</span><strong>El cofre está esperando sus tesoros</strong><small>Prepara tu primera sorpresa para verla aquí.</small></div>
+      </div>
+      <div class="screen-actions library-actions">
+        <a class="main-action gold-action" href="../camara-espia/"><span class="action-icon">☼</span><span>Abrir Cámara Mágica</span><span class="action-arrow">›</span></a>
+        <button class="text-action" type="button" data-screen="home">Volver al inicio</button>
+      </div>
+      <p class="library-footnote">El vídeo se activa desde su editor. Las fotos, huellas y cartas quedan guardadas en este dispositivo.</p>
     </section>
   </main>
 
-  <dialog class="magic-dialog" id="menuDialog"><div class="dialog-card"><button class="dialog-close" type="button" data-close-dialog="menuDialog" aria-label="Cerrar">×</button><span class="eyebrow">EL MAPA DE LA NOCHE</span><h2>¿A dónde vamos?</h2><nav class="menu-list" aria-label="Navegación"><button type="button" data-screen="home"><span>✦</span> Inicio</button><button type="button" data-screen="destination"><span>⌖</span> El viaje de Pérez</button><button type="button" data-screen="video"><span>◉</span> Vídeo del globo</button><button type="button" data-screen="proofs"><span>✧</span> Pruebas de visita</button><button type="button" data-screen="letter"><span>✉</span> Carta de Pérez</button><button type="button" data-screen="library"><span>▣</span> Cofre de recuerdos</button><a href="../camara-espia/"><span>☼</span> Modo niño</a></nav></div></dialog>
-  <dialog class="magic-dialog" id="helpDialog"><div class="dialog-card"><button class="dialog-close" type="button" data-close-dialog="helpDialog" aria-label="Cerrar">×</button><span class="eyebrow">UN SECRETO DE PÉREZ</span><h2>Prepara la magia a tu ritmo.</h2><p>No tienes que hacerlo todo. Puedes preparar el vuelo, dejar una pista o escribir una carta. Cada sorpresa se reúne en el Cofre de recuerdos.</p><p>Cuando quieras, activa el modo niño para que descubra la magia. En esta maqueta, algunos recuerdos se guardan como borradores y los editores se conectarán progresivamente.</p><button class="enamel-button teal-button dialog-done" type="button" data-close-dialog="helpDialog">¡Entendido!</button></div></dialog>
+  <dialog class="magic-dialog" id="menuDialog">
+    <div class="dialog-card">
+      <button class="dialog-close" type="button" data-close-dialog="menuDialog" aria-label="Cerrar">×</button>
+      <span class="eyebrow">EL MAPA DE LA NOCHE</span><h2>¿A dónde vamos?</h2>
+      <nav class="menu-list" aria-label="Navegación">
+        <button type="button" data-screen="home">✦ &nbsp; Inicio</button>
+        <button type="button" data-screen="destination">⌖ &nbsp; El viaje de Pérez</button>
+        <button type="button" data-screen="video">◉ &nbsp; Vídeo del globo</button>
+        <button type="button" data-screen="proofs">✧ &nbsp; Pruebas de visita</button>
+        <button type="button" data-screen="letter">✉ &nbsp; Carta de Pérez</button>
+        <button type="button" data-screen="library">▣ &nbsp; Cofre de recuerdos</button>
+        <a href="../camara-espia/">☼ &nbsp; Modo niño</a>
+      </nav>
+    </div>
+  </dialog>
+
+  <dialog class="magic-dialog" id="helpDialog">
+    <div class="dialog-card">
+      <button class="dialog-close" type="button" data-close-dialog="helpDialog" aria-label="Cerrar">×</button>
+      <span class="eyebrow">UN SECRETO DE PÉREZ</span><h2>Prepara la magia a tu ritmo.</h2>
+      <p>No tienes que hacerlo todo. Puedes preparar el destino, crear el vídeo, dejar una pista o escribir una carta. Cada recuerdo se reúne en el Cofre.</p>
+      <p>El vídeo puede activarse en Cámara Mágica desde su editor. La dirección nunca se comparte con el niño.</p>
+      <button class="main-action gold-action dialog-done" type="button" data-close-dialog="helpDialog">¡Entendido!</button>
+    </div>
+  </dialog>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </div>
 </body>
