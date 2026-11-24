@@ -86,7 +86,15 @@
     toast("Destino anotado.");
   });
   $("destinationContinue").addEventListener("click",()=>showScreen("video"));
-  $("useLocation").addEventListener("click",()=>{ $("addressStatus").textContent="La ubicación automática aún no está conectada al mapa. Escribe la dirección para continuar."; $("addressInput").focus(); });
+  $("useLocation").addEventListener("click",()=>{
+    if(!navigator.geolocation){$("addressStatus").textContent="Este navegador no permite usar tu ubicación. Escribe tu dirección.";return;}
+    $("useLocation").disabled=true;$("addressStatus").textContent="Solicitando permiso de ubicación…";
+    navigator.geolocation.getCurrentPosition(position=>{
+      state.destinationCoordinates={lat:position.coords.latitude,lng:position.coords.longitude};
+      $("addressStatus").textContent="Ubicación anotada para esta sesión. El origen del mapa sigue pendiente.";
+      $("destinationContinue").disabled=false;$("useLocation").disabled=false;
+    },()=>{$("addressStatus").textContent="No se ha podido obtener tu ubicación. Puedes escribir tu dirección.";$("useLocation").disabled=false;},{enableHighAccuracy:false,timeout:10000,maximumAge:0});
+  });
 
   $("videoPhotoInput").addEventListener("change",async event=>{
     const file=event.currentTarget.files?.[0];
