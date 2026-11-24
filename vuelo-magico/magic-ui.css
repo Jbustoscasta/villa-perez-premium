@@ -605,3 +605,6 @@ body{background:radial-gradient(ellipse at 50% 2%,#23446c 0,transparent 48%),rad
  .camera-viewport{height:calc(100svh - 210px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
 }
 @media(max-width:830px) and (orientation:landscape){.vp-mobile-tools,.vp-panel-close{display:none}}
+
+.vp-route-storage{display:flex;gap:8px;margin:0 0 12px}.vp-route-storage button{flex:1;margin:0;min-height:44px}
+@media(max-width:830px) and (orientation:portrait){.modal-backdrop{overflow:auto}.modal{max-height:calc(100svh - 30px);overflow:auto}.camera-bottom{grid-template-columns:minmax(0,1fr)}.camera-review-actions{width:min(100%,370px)}}
