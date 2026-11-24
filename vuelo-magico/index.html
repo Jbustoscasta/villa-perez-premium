@@ -155,7 +155,7 @@
           <span class="footprint-extra-copy"><strong>Nuevo · Huellas de Pérez</strong><small>Haz una foto de la mesita o la almohada y dibuja por dónde pasó.</small></span>
           <span class="footprint-extra-arrow" aria-hidden="true">›</span>
         </a>
-        <section class="tip-card"><span class="tip-star">✦</span><strong>El secreto del vuelo</strong><p>Señala el diente sobre la mesita. Pérez se acercará despacito, como si estuviera buscándolo.</p></section>
+        <div class="vp-route-storage"><button id="saveRouteBtn" class="secondary-button">Guardar recorrido</button><button id="loadRouteBtn" class="secondary-button">Cargar recorrido</button><input hidden type="file" accept=".json,application/json" id="routeInput"></div><section class="tip-card"><span class="tip-star">✦</span><strong>El secreto del vuelo</strong><p>Señala el diente sobre la mesita. Pérez se acercará despacito, como si estuviera buscándolo.</p></section>
         <div class="export-block"><button id="exportBtn" class="primary-button">✧ &nbsp; Guardar recuerdo mágico</button><button id="snapshotBtn" class="secondary-button">Guardar fotograma</button><button id="shareBtn" class="secondary-button" hidden>Compartir vídeo creado</button><div class="export-detail"><span>🔒</span> Se procesa en tu dispositivo, sin subir fotos.</div></div>
       </aside>
     </main>
@@ -164,7 +164,7 @@
       <span class="mobile-cta-copy"><strong>Su recuerdo mágico</strong><small id="mobileDuration">Privado · 15 s</small></span>
       <button type="button" id="mobileExportBtn">✦ Guardar recuerdo</button>
     </div>
-    <footer class="footer"><span>© Ilusiono · Villa Pérez · v1.5.4</span><span><button id="saveRouteBtn">Guardar recorrido</button> <button id="loadRouteBtn">Cargar recorrido</button><input hidden type="file" accept=".json,application/json" id="routeInput"></span><span>Experiencia privada · No se almacena ninguna foto</span></footer>
+    <footer class="footer"><span>© Ilusiono · Villa Pérez · v1.5.4</span><span>Experiencia privada · No se almacena ninguna foto</span></footer>
   </div>
 
   <!-- Cámara propia: visor HTTPS vertical con guía; nunca sube la foto al servidor. -->
