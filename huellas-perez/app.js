@@ -217,6 +217,7 @@
     $('footBrand').href='../la-noche-de-perez/?screen=cofre';
     $('backToParents').href='../la-noche-de-perez/?screen=cofre';
     $('backToParents').textContent='← Volver al Cofre';
+    $('downloadBtn').textContent='Guardar en el Cofre';
   }
   async function saveToChest(blob){
     if(!fromLaNoche||!window.LNPMemoryStore)return false;
@@ -233,7 +234,6 @@
       const blob=await exportPng();
       if(fromLaNoche){
         await saveToChest(blob);
-        save(blob,name());
         message('Huellas guardadas en el Cofre. Volviendo…');
         setTimeout(()=>location.href='../la-noche-de-perez/?screen=cofre',800);
       }else{
