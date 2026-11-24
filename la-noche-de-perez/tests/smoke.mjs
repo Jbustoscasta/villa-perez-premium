@@ -68,9 +68,8 @@ try{
         let items=await page.evaluate(()=>window.LNPMemoryStore.list());
         assert.equal(items.some(item=>item.type==='letter'&&item.childName==='Leo'&&item.message.includes('incisivo')),true);
 
-        await page.locator('#screen-library [data-screen="proofs"]').click().catch(async()=>{
-          await page.locator('[data-screen="proofs"]').first().click();
-        });
+        await page.locator('.brand-plaque').click();
+        await page.locator('#screen-home [data-screen="proofs"]').click();
         assert.equal(await page.locator('#screen-proofs').isVisible(),true);
         await noPageOrScreenScroll(page,'proofs '+browserName+' '+viewport.width+'x'+viewport.height);
         await page.locator('[data-proof="selfie"]').click();
@@ -81,10 +80,11 @@ try{
         await page.locator('#proofScale').fill('22');
         await page.locator('#saveProofButton').click();
         await page.waitForFunction(async()=>{const a=await window.LNPMemoryStore.list();return a.some(x=>x.type==='perez-selfie');});
-        items=await page.evaluate(()=>window.LNPMemoryStore.list());
-        assert.equal(items.some(item=>item.type==='perez-selfie'&&item.blob?.type==='image/png'),true);
+        const hasSavedImage=await page.evaluate(async()=>{const a=await window.LNPMemoryStore.list();return a.some(item=>item.type==='perez-selfie'&&item.blob instanceof Blob&&item.blob.type==='image/png');});
+        assert.equal(hasSavedImage,true);
 
-        await page.locator('[data-screen="video"]').first().click();
+        await page.locator('.brand-plaque').click();
+        await page.locator('#screen-home [data-screen="video"]').click();
         await noPageOrScreenScroll(page,'video '+browserName+' '+viewport.width+'x'+viewport.height);
         await page.locator('#videoPhotoInput').setInputFiles({name:'habitacion.png',mimeType:'image/png',buffer:await imageBuffer(page)});
         await page.waitForFunction(()=>!document.getElementById('videoPhotoPreview').hidden);
