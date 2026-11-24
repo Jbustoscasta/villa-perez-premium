@@ -77,3 +77,12 @@ button{font:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipul
 .live-viewport:not(.has-feed) .hud-timer{top:0.5%;padding:1.2cqw 2.1cqw;min-width:27%;justify-content:center;background:#0a3039f2}
 .live-viewport.has-feed .hud-timer{top:1%;background:#052e31d9}
 .live-viewport.has-feed .hud-rec,.live-viewport.has-feed .hud-battery{top:1%}
+
+/* Stable artboard anchors: text stays in the painted frame in all mission states. */
+.alert-text,.alert-text.ready{top:82.8%;height:3.65%;left:25.1%;width:39%;font-size:2.9cqw;line-height:1.12;white-space:normal;overflow-wrap:normal;display:flex;align-items:center}
+.mission-button-active{white-space:nowrap;line-height:1;font-size:5.2cqw;text-align:center}
+.artboard.is-running .mission-button-active{font-size:5.2cqw;line-height:1}
+.hud-timer{white-space:nowrap;min-width:27%;justify-content:center;font-variant-numeric:tabular-nums}
+.capture-modal h1,.modal-subtitle{overflow-wrap:break-word}
+.capture-video-wrap{width:min(100%,310px,29.8125dvh);aspect-ratio:9/16}
+.capture-video-wrap video{min-width:0;min-height:0}
