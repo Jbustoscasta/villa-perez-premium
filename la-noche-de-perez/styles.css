@@ -320,3 +320,16 @@
 .home-actions .shortcut-icon{height:clamp(52px,10dvh,84px)}
 .home-art .home-character{max-width:none}
 @media(max-height:740px){.home-art .home-character{width:94%;left:-4%;top:0}.home-actions .shortcut-card{min-height:66px}.home-actions .shortcut-icon{height:48px}}
+
+/* Direct artwork crops from the approved storyboard, only at thumbnail size. */
+#screen-proofs .proof-thumb{flex-basis:35%;height:clamp(74px,11.5dvh,104px);border-radius:9px;background:#071829}
+#screen-proofs .proof-thumb>img{object-fit:cover;object-position:center;opacity:1;transform:none;filter:none}
+#screen-proofs .proof-card{min-height:clamp(94px,14dvh,124px)}
+#screen-proofs .proof-options{gap:13px}
+#screen-proofs .screen-heading{padding-bottom:15px}
+.home-art .home-character{width:91%;left:-3%;top:1%}
+.home-art{background-size:auto,180% auto}
+.home-actions .shortcut-icon{overflow:hidden}
+.home-actions .shortcut-card{min-height:clamp(84px,14dvh,118px)}
+.home-actions .shortcut-card:first-child .shortcut-icon img{height:100%;width:100%;object-fit:contain}
+@media(max-height:740px){#screen-proofs .proof-thumb{height:60px}#screen-proofs .proof-card{min-height:78px}.home-actions .shortcut-card{min-height:67px}.home-art .home-character{width:94%;left:-4%;top:0}}

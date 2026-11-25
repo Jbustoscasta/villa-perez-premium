@@ -20,6 +20,12 @@ async function noPageOrScreenScroll(page,label){
     label+' should fit the viewport without page scroll: '+JSON.stringify(metrics));
 }
 
+async function captureStoryboard(page,name,browserName,viewport){
+  if(browserName!=='Chromium'||viewport.width!==390)return;
+  await page.evaluate(async()=>{await Promise.all([...document.images].filter(i=>i.getBoundingClientRect().width>0).map(i=>i.decode().catch(()=>{})));});
+  const shot=await page.screenshot({type:'jpeg',quality:60});
+  console.log('LNP_'+name+'_BEGIN'+shot.toString('base64')+'LNP_'+name+'_END');
+}
 async function imageBuffer(page){
   const data=await page.evaluate(()=>{
     const canvas=document.createElement('canvas');
@@ -59,9 +65,11 @@ try{
         await page.goto(base+'la-noche-de-perez/');
         await page.waitForSelector('#screen-splash.active');
         await noPageOrScreenScroll(page,'splash '+browserName+' '+viewport.width+'x'+viewport.height);
+        await captureStoryboard(page,'SPLASH',browserName,viewport);
         await page.locator('#screen-splash [data-screen="home"]').click();
         await page.locator('#screen-home [data-screen="destination"]').click();
         await noPageOrScreenScroll(page,'destination '+browserName+' '+viewport.width+'x'+viewport.height);
+        await captureStoryboard(page,'DESTINATION',browserName,viewport);
         await page.locator('#addressInput').fill('Calle de la Prueba 12, Madrid');
         await page.locator('#addressForm button[type="submit"]').click();
         await noPageOrScreenScroll(page,'route '+browserName+' '+viewport.width+'x'+viewport.height);
@@ -80,11 +88,13 @@ try{
         await page.locator('#menuDialog [data-screen="letter"]').click();
         assert.equal(await page.locator('#screen-letter').isVisible(),true);
         await noPageOrScreenScroll(page,'letter '+browserName+' '+viewport.width+'x'+viewport.height);
+        await captureStoryboard(page,'LETTER',browserName,viewport);
         await page.locator('#childName').fill('Leo');
         await page.locator('#toothName').selectOption('un incisivo');
         await page.locator('#letterMessage').fill('Gracias por cuidar tu sonrisa. He venido desde Villa Pérez.');
         await page.locator('#letterForm button[type="submit"]').click();
         await noPageOrScreenScroll(page,'letter result '+browserName+' '+viewport.width+'x'+viewport.height);
+        await captureStoryboard(page,'LETTER_RESULT',browserName,viewport);
         await page.locator('#saveLetterButton').click();
         await page.waitForSelector('#memoryList .memory-item');
         await noPageOrScreenScroll(page,'library after letter '+browserName+' '+viewport.width+'x'+viewport.height);
@@ -95,6 +105,9 @@ try{
         await page.locator('#screen-home [data-screen="proofs"]').click();
         assert.equal(await page.locator('#screen-proofs').isVisible(),true);
         await noPageOrScreenScroll(page,'proofs '+browserName+' '+viewport.width+'x'+viewport.height);
+        await captureStoryboard(page,'PROOFS',browserName,viewport);
+        assert.equal(await page.locator('#screen-proofs .proof-thumb img').count(),3);
+        assert.equal(await page.locator('#screen-proofs .proof-thumb img').evaluateAll(async images=>{await Promise.all(images.map(i=>i.decode()));return images.every(i=>i.naturalWidth>0);}),true);
         await page.locator('[data-proof="selfie"]').click();
         await page.locator('#proofPhotoInput').setInputFiles({name:'dormitorio.png',mimeType:'image/png',buffer:await imageBuffer(page)});
         await page.waitForFunction(()=>!document.getElementById('proofCanvas').hidden);
@@ -110,6 +123,7 @@ try{
         await page.locator('.brand-plaque').click();
         await page.locator('#screen-home [data-screen="video"]').click();
         await noPageOrScreenScroll(page,'video '+browserName+' '+viewport.width+'x'+viewport.height);
+        await captureStoryboard(page,'VIDEO',browserName,viewport);
         await page.locator('#videoPhotoInput').setInputFiles({name:'habitacion.png',mimeType:'image/png',buffer:await imageBuffer(page)});
         await page.waitForFunction(()=>!document.getElementById('videoPhotoPreview').hidden);
         const storedPhoto=await page.evaluate(async()=>{const file=await window.VPPhotoStore.access('get');return file?.name||null;});
@@ -134,6 +148,7 @@ try{
         await page.locator('#screen-home [data-screen="video"]').click();
         await page.locator('#openVideoEditor').click();
         await noPageOrScreenScroll(page,'video editor '+browserName+' '+viewport.width+'x'+viewport.height);
+        await captureStoryboard(page,'VIDEO_EDITOR',browserName,viewport);
         assert.equal(await page.locator('#videoEditorBalloon').isVisible(),true);
         await page.locator('#videoSizeButton').click();
         await page.locator('#videoSizeRange').evaluate(el=>{el.value='34';el.dispatchEvent(new Event('input',{bubbles:true}));});
@@ -150,14 +165,17 @@ try{
         await page.waitForSelector('#memoryList .memory-item');
         await page.locator('#screen-library [data-screen="ready"]').click();
         await noPageOrScreenScroll(page,'ready '+browserName+' '+viewport.width+'x'+viewport.height);
+        await captureStoryboard(page,'READY',browserName,viewport);
         await page.locator('#activateChildMode').click();
         await page.waitForURL(/nino\.html/);
         await page.waitForFunction(()=>document.getElementById('childStatus').textContent.includes('Mañana'));
         assert.equal(await page.locator('#childView').isVisible(),false);
+        await captureStoryboard(page,'CHILD',browserName,viewport);
         await page.evaluate(()=>{const key='lnp-child-mission-v1';const m=JSON.parse(localStorage.getItem(key));m.availableAt=Date.now()-1000;localStorage.setItem(key,JSON.stringify(m));});
         await page.reload();
         await page.locator('#childView').click();
         await page.waitForSelector('#childGallery:not([hidden])');
+        await captureStoryboard(page,'GALLERY',browserName,viewport);
         assert.equal(await page.locator('.child-memory').count(),3);
         assert.equal(await page.locator('.child-memory.letter-tile').count(),1);
         await page.locator('.child-memory.letter-tile').click();
