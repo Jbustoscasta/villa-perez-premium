@@ -55,6 +55,7 @@
     if(name==="library")renderLibrary();
     if(name==="letter")updateLetterPreview();
     if(name==="video-editor")requestAnimationFrame(fitVideoFrame);
+    else if(typeof stopVideoPreview==="function")stopVideoPreview();
   }
 
   function goBack() {
@@ -184,7 +185,7 @@
   $("videoPathButton").addEventListener("click",()=>setVideoMode("path"));
   $("videoSizeRange").addEventListener("input",e=>{state.videoBalloonScale=Number(e.target.value)/100;applyVideoEditor();});
   $("videoPreviewSeek").addEventListener("input",e=>{stopVideoPreview();state.videoTime=Number(e.target.value)/10;applyVideoEditor();});
-  $("videoPreviewPlay").addEventListener("click",()=>{if(previewRaf){stopVideoPreview();return;}if(state.videoTime>=12)state.videoTime=0;const start=performance.now()-state.videoTime*1000;$("videoPreviewPlay").textContent="Ⅱ";const step=now=>{state.videoTime=Math.min(12,(now-start)/1000);applyVideoEditor();if(state.videoTime<12)previewRaf=requestAnimationFrame(step);else stopVideoPreview();};previewRaf=requestAnimationFrame(step);});
+  $("videoPreviewPlay").addEventListener("click",()=>{if(previewRaf){stopVideoPreview();return;}if(state.videoTime>=12)state.videoTime=0;const start=performance.now()-state.videoTime*1000;$("videoPreviewPlay").textContent="Ⅱ";const step=now=>{state.videoTime=Math.min(12,(now-start)/1000);applyVideoEditor();if(state.videoTime<12)previewRaf=requestAnimationFrame(step);else{stopVideoPreview();state.videoTime=0;applyVideoEditor();}};previewRaf=requestAnimationFrame(step);});
   const frame=$("videoEditorFrame");
   let videoGesture=null;
   function videoPoint(e){const r=frame.getBoundingClientRect();return {x:clampVideo((e.clientX-r.left)/r.width,0,1),y:clampVideo((e.clientY-r.top)/r.height,0,1)};}

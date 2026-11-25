@@ -116,6 +116,17 @@ try{
       });
       await page.waitForFunction(()=>document.getElementById('photoTitle').textContent.includes('otra-foto'),{timeout:10000});
       assert.equal(await page.locator('#magicCamera').isVisible(),false);
+      await page.goto(origin+'?desde=padres&asistente=foto&volver=lnp');
+      await page.waitForFunction(()=>!document.getElementById('cameraShutter').disabled,{timeout:18000});
+      await page.locator('#cameraShutter').click();
+      await page.waitForFunction(()=>!document.getElementById('cameraReviewActions').hidden,{timeout:18000});
+      assert.equal(await page.locator('.camera-ghost-balloon').isVisible(),true,'guided parent review preserves overlay');
+      await page.locator('#cameraAcceptBtn').click();
+      await page.waitForURL(/la-noche-de-perez\/\?screen=video/);
+      await page.waitForFunction(()=>!document.getElementById('videoPhotoPreview').hidden,{timeout:10000});
+      assert.equal(await page.locator('#screen-video .preview-balloon').isVisible(),true,'parent photo preview keeps the original balloon');
+      await page.locator('#openVideoEditor').click();
+      assert.equal(await page.locator('#videoEditorBalloon').isVisible(),true,'parent storyboard editor keeps balloon on top of photo');
       assert.deepEqual(errors,[],'no unhandled errors');
       console.log(browserName,'PASS camera guided capture -> retry -> accept; permission fallback -> gallery; portrait 9:16');
       await context.close();

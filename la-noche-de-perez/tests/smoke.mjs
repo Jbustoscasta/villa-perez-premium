@@ -145,6 +145,7 @@ try{
         await page.waitForFunction(()=>window.VillaPerezFlight?.getState().photoLoaded===true,{timeout:30000});
         assert.equal(await page.evaluate(()=>window.LNPMemoryStore!==undefined),true);
         const handoff=await page.evaluate(()=>window.VillaPerezFlight.getState());assert.equal(handoff.size,.34);assert.equal(handoff.duration,12);assert.ok(handoff.path.length>2);assert.ok(Math.abs(handoff.path[0].x-.25)<.04);
+        const transformX=await page.locator("#balloonTransform").evaluate(el=>parseFloat(el.style.left));assert.ok(Math.abs(transformX-25)<4,"same visible balloon position after handoff");
         await page.goto(base+'la-noche-de-perez/?screen=cofre');
         await page.waitForSelector('#memoryList .memory-item');
         await page.locator('#screen-library [data-screen="ready"]').click();

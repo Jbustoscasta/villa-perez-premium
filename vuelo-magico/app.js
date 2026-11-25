@@ -271,6 +271,7 @@
   function editingPos(t){
     const p=at(t);
     if(state.playing||state.recording||!state.photo)return p;
+    if(state.parentDraftActive&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1)return p;
     const safeXMin=.10+state.size*.56, safeXMax=.90-state.size*.56;
     const safeYMin=.11+state.size*.50, safeYMax=.83-state.size*.50;
     if(Number.isFinite(p.x)&&p.x>=safeXMin&&p.x<=safeXMax&&p.y>=safeYMin&&p.y<=safeYMax)return p;
@@ -784,7 +785,7 @@
   $('openCameraSidebar').addEventListener('click',openMagicCamera);
   $('openCameraMain').addEventListener('click',openMagicCamera);
   $('openCameraAgain').addEventListener('click',openMagicCamera);
-  $('cameraCloseBtn').addEventListener('click',closeMagicCamera);
+  $('cameraCloseBtn').addEventListener('click',()=>{closeMagicCamera();if(new URLSearchParams(location.search).get('volver')==='lnp')location.href='../la-noche-de-perez/?screen=video';});
   $('cameraRetryBtn').addEventListener('click',startCameraFeed);
   $('cameraShutter').addEventListener('click',captureMagicPhoto);
   $('cameraRetakeBtn').addEventListener('click',startCameraFeed);
@@ -818,6 +819,7 @@
       state.photoUrl=img.src.startsWith('blob:')?url:null;
       if(img.src!==url)URL.revokeObjectURL(url);
       state.photo=img;state.photoZoom=1;state.panX=0;state.panY=0;
+      state.parentDraftActive=!!options.parentDraft;
       if(options.parentDraft){const d=options.parentDraft;state.path=d.path.map(p=>point(p.x,p.y));state.pathName="manual";state.target=null;state.time=0;state.hasDrawn=true;state.duration=CLAMP(d.duration,8,30);state.size=CLAMP(d.size,.1,.43);$("sizeControl").value=Math.round(state.size*100);$("sizeValue").textContent=Math.round(state.size*100)+"%";$("durationControl")&&($("durationControl").value=state.duration);buildPath();}
       window.VPPhotoStore?.access('put',file).catch(()=>{});
       ambienceDirty=true;lightSmoothed=null;
