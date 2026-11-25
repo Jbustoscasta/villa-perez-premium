@@ -7,7 +7,7 @@
   <meta name="description" content="La noche de Pérez. Prepara su visita, crea recuerdos y activa la Cámara Mágica.">
   <title>La noche de Pérez · Modo padres</title>
   <link rel="icon" href="../vuelo-magico/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=14">
+  <link rel="stylesheet" href="./styles.css?v=15">
   <script src="../modo-padres/photo-store.js?v=2" defer></script>
   <script src="./memory-store.js?v=1" defer></script>
   <script src="./app.js?v=11" defer></script>
@@ -54,7 +54,7 @@
           <button class="shortcut-card" type="button" data-screen="letter"><span class="shortcut-icon illustrated-icon" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#art-letter"/></svg></span><span><strong>Carta de Pérez</strong></span><b>›</b></button>
           <button class="shortcut-card" type="button" data-screen="library"><span class="shortcut-icon illustrated-icon" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#art-chest"/></svg></span><span><strong>Cofre de recuerdos</strong></span><b>›</b></button>
         </div>
-        <a class="main-action child-action" href="./nino.html"><span class="action-icon">☼</span><span>Modo niño</span><span class="action-arrow">›</span></a>
+        <a class="main-action child-action" href="./nino.html"><span class="child-moon" aria-hidden="true">☾</span><span>Modo niño</span><span class="action-arrow">›</span></a>
       </div>
     </section>
 
@@ -74,7 +74,7 @@
         <div class="privacy-ribbon"><span>♧</span><p>Tu dirección es privada y solo se usa para el vuelo.</p></div>
         <div class="route-placeholder">
           <img class="map-art" src="../google-3d-vuelo/assets/mapa-pergamino.svg" alt="Pergamino ilustrativo, no es un recorrido real">
-          <div><small>EL RECORRIDO DE ESTA NOCHE</small><strong>El vuelo está a punto de despegar</strong><p>En cuanto configuremos el punto de partida de Villa Pérez, verás aquí el recorrido real hasta tu casa.</p></div>
+          <div><p>Mapa ilustrativo · origen pendiente de configurar.</p></div>
           <span class="route-state">PUNTO DE PARTIDA POR CONFIGURAR</span>
         </div>
         
@@ -87,7 +87,7 @@
       </form>
     </section>
 
-    <section class="screen task-screen route-screen" id="screen-route" aria-labelledby="routeTitle"><div class="screen-heading"><h1 id="routeTitle">El recorrido de Pérez</h1><p>Esta noche, Pérez volará hasta tu casa.</p></div><div class="route-art"><svg class="route-path" viewBox="0 0 360 460" preserveAspectRatio="none" aria-hidden="true"><path d="M40 45 C115 85 20 170 128 205 S270 240 304 392" fill="none" stroke="#ffb735" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 13"/><path d="M40 45 C115 85 20 170 128 205 S270 240 304 392" fill="none" stroke="#ffe6a0" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="1 13"/></svg><img class="route-balloon" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt="Pérez en su globo"><div class="route-home-marker">⌂</div><div class="route-destination-marker"><span>Tu casa</span><strong id="routeDestination">Destino preparado</strong></div><div class="route-villa-label">VILLA PÉREZ</div></div><div class="route-meta"><span>✦ Ruta mágica</span><span>☾ Esta noche</span><span>⌂ Tu casa</span></div><div class="screen-actions"><button class="main-action gold-action" id="routeStartButton" type="button">Iniciar vuelo ›</button><button class="text-action" type="button" data-screen="destination">Cambiar dirección</button></div></section>
+    <section class="screen task-screen route-screen" id="screen-route" aria-labelledby="routeTitle"><div class="screen-heading"><h1 id="routeTitle">El recorrido de Pérez</h1><p>Vista ilustrativa. El recorrido real aún no está configurado.</p></div><div class="route-art"><svg class="route-path" viewBox="0 0 360 460" preserveAspectRatio="none" aria-hidden="true"><path d="M40 45 C115 85 20 170 128 205 S270 240 304 392" fill="none" stroke="#ffb735" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 13"/><path d="M40 45 C115 85 20 170 128 205 S270 240 304 392" fill="none" stroke="#ffe6a0" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="1 13"/></svg><img class="route-balloon" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt="Pérez en su globo"><div class="route-home-marker">⌂</div><div class="route-destination-marker"><span>Tu casa</span><strong id="routeDestination">Destino preparado</strong></div><div class="route-villa-label">VILLA PÉREZ</div></div><div class="route-meta"><span>✦ Vista ilustrativa</span><span>☾ Esta noche</span><span>⌂ Tu casa</span></div><div class="screen-actions"><button class="main-action gold-action" id="routeStartButton" type="button">Iniciar vuelo ›</button><button class="text-action" type="button" data-screen="destination">Cambiar dirección</button></div></section>
     <section class="screen task-screen" id="screen-video" aria-labelledby="videoTitle">
       <div class="step-line"><span>02</span><b>EL GLOBO EN SU HABITACIÓN</b><i></i><small>2 / 4</small></div>
       <div class="screen-heading">
@@ -171,12 +171,12 @@
         <h1 id="letterTitle">Carta de Pérez</h1>
         <p>Crea un mensaje especial para tu hijo.</p>
       </div>
-      <form class="letter-form" id="letterForm">
-        <label class="field-card compact-field"><span class="field-icon">✦</span><span class="field-copy"><small>NOMBRE DEL PEQUE</small><input id="childName" type="text" maxlength="32" placeholder="¿Cómo se llama?" required></span></label>
-        <label class="field-card compact-field"><span class="field-icon">♢</span><span class="field-copy"><small>¿QUÉ DIENTE HA PERDIDO?</small><select id="toothName"><option value="un incisivo">Un incisivo</option><option value="un colmillo">Un colmillo</option><option value="un molar">Un molar</option><option value="su primer diente">Su primer diente</option></select></span></label>
-        <label class="field-card message-field"><span class="field-icon">✒</span><span class="field-copy"><small>MENSAJE DE PÉREZ</small><textarea id="letterMessage" maxlength="260" rows="3">Esta noche he pasado por tu habitación y he recogido tu diente. ¡Qué valiente has sido! Sigue cuidando tan bien de tu sonrisa.</textarea></span></label>
-        <div class="screen-actions">
-          <button class="main-action red-action" type="submit"><span class="action-icon">✉</span><span>Generar carta</span><span class="action-arrow">›</span></button>
+      <form class="letter-form" id="letterForm"><div class="letter-fields">
+        <label class="field-card compact-field"><span class="field-icon">✦</span><span class="field-copy"><small>Nombre del niño o niña</small><input id="childName" type="text" maxlength="32" placeholder="¿Cómo se llama?" required></span></label>
+        <label class="field-card compact-field"><span class="field-icon">♢</span><span class="field-copy"><small>¿Qué diente ha perdido?</small><select id="toothName"><option value="un incisivo">Un incisivo</option><option value="un colmillo">Un colmillo</option><option value="un molar">Un molar</option><option value="su primer diente">Su primer diente</option></select></span></label>
+        <label class="field-card message-field"><span class="field-icon">✒</span><span class="field-copy"><small>Mensaje de Pérez (opcional)</small><textarea id="letterMessage" maxlength="260" rows="3">Esta noche he pasado por tu habitación y he recogido tu diente. ¡Qué valiente has sido! Sigue cuidando tan bien de tu sonrisa.</textarea></span></label>
+        </div><div class="screen-actions">
+          <button class="main-action gold-action" type="submit"><span class="action-icon">✉</span><span>Generar carta</span><span class="action-arrow">›</span></button>
           <button class="text-action" type="button" data-screen="library">Ahora no, ir al Cofre</button>
         </div>
       </form>

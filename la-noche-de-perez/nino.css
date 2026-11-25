@@ -25,3 +25,21 @@
 #childPreviewContent .child-letter{background:linear-gradient(130deg,#fff0ce,#e8bd7a);border:3px double #c88c3d;border-radius:8px;color:#512e15;padding:22px 17px;text-align:left;font:17px/1.55 Georgia,serif;white-space:pre-wrap}
 #closeChildPreviewBottom{margin-top:12px}
 @media(max-height:670px){.child-page{padding-top:calc(12px + env(safe-area-inset-top,0px));gap:6px}.child-page h1{font-size:27px}.child-memory .tile{aspect-ratio:1.15}}
+
+/* Pantallas infantiles: la puerta y los recuerdos, sin menús de adulto. */
+.child-shell{background:radial-gradient(ellipse at 50% 24%,#163a60 0%,#06192f 42%,#03101e 78%)}
+.child-page{gap:12px;padding-inline:16px}
+.child-page h1{font-size:clamp(30px,8.4vw,40px);margin:7px 0 3px}
+.child-scene{border:0;border-radius:0;box-shadow:none;background:radial-gradient(ellipse at 60% 52%,#213e52,#041326 74%)}
+.child-door{inset:0 0 0 12%;background:url("../villa-tarjeta.webp") center/contain no-repeat;mask-image:radial-gradient(ellipse at 54% 50%,black 47%,#000c 62%,transparent 76%);filter:brightness(.86) saturate(1.15)}
+.child-mouse{left:-13%;bottom:1%;height:52%;width:54%;object-position:left bottom}
+.child-scene:after{background:linear-gradient(0deg,#03101e 0%,transparent 15%,transparent 90%,#03101e 100%)}
+.child-page .main-action{min-height:52px;font-size:18px}
+.child-page .secondary-action{min-height:42px}
+.child-memories{gap:10px;padding:4px 1px;align-content:start}
+.child-memory.video-tile{border:2px solid #f0b951;border-radius:13px;box-shadow:0 0 15px #e6a74155}
+.child-memory.video-tile .tile{aspect-ratio:1.9;max-height:38dvh}
+.child-memory.video-tile strong{font-size:18px;padding:11px 5px;background:linear-gradient(#ffe9b5,#f7b847 76%,#d78a19)}
+.child-memory:not(.video-tile){border-color:#34485e;background:linear-gradient(#122b44,#07182b)}
+.child-memory:not(.video-tile) strong{font:400 15px Georgia,serif}
+@media(max-height:740px){.child-page{gap:7px}.child-page h1{font-size:29px}.child-page .main-action{min-height:45px;font-size:16px}}
