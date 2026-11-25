@@ -47,3 +47,15 @@
 /* Isolate the original green door from the product photograph. */
 .child-door{inset:auto;top:51%;left:57%;transform:translate(-50%,-50%);width:min(82%,calc(65dvh * .816));height:auto;aspect-ratio:410/502;background-size:100% 100%;mask-image:none;clip-path:polygon(23% 14%,34% 6%,45% 2%,54% 2%,64% 6%,76% 13%,85% 23%,88% 39%,91% 85%,96% 97%,32% 100%,20% 95%,18% 80%,14% 45%,7% 35%,8% 25%,15% 18%)}
 .child-scene{background:radial-gradient(ellipse at 59% 45%,#d09b392d,transparent 62%),radial-gradient(ellipse at 50% 50%,#163650,#041326 74%)}
+
+/* Immersive child portal — the doorway dominates as in panel 15. */
+.child-shell{background:url("./assets/storyboard/stars.svg") center/cover,radial-gradient(ellipse at 52% 30%,#173c5d,#06192f 50%,#03101e 80%)}
+.child-page h1{position:relative;z-index:3}
+.child-scene{overflow:hidden;isolation:isolate;background:radial-gradient(ellipse at 60% 45%,#d09b3933,transparent 64%)}
+.child-door{top:48%;left:59%;width:min(99%,calc(76dvh * .816));filter:brightness(.91) saturate(1.11) drop-shadow(0 3px 12px #eeb45b55)}
+.child-mouse{left:-10%;bottom:0;width:54%;height:57%;object-fit:contain;filter:drop-shadow(0 4px 6px #0009)}
+#childStatus{font-size:12px;line-height:1.25;color:#ffe8bf}
+.child-memory.letter-tile .tile{background:linear-gradient(145deg,#ffecca,#dca55b);font-size:54px}
+.child-memory:not(.video-tile){min-height:115px}
+.child-page .main-action{width:86%}
+@media(max-height:670px){.child-door{width:min(94%,calc(72dvh * .816));top:48%}.child-mouse{height:50%}.child-memory:not(.video-tile){min-height:90px}}

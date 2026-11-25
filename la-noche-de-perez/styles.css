@@ -333,3 +333,36 @@
 .home-actions .shortcut-card{min-height:clamp(84px,14dvh,118px)}
 .home-actions .shortcut-card:first-child .shortcut-icon img{height:100%;width:100%;object-fit:contain}
 @media(max-height:740px){#screen-proofs .proof-thumb{height:60px}#screen-proofs .proof-card{min-height:78px}.home-actions .shortcut-card{min-height:67px}.home-art .home-character{width:94%;left:-4%;top:0}}
+
+/* v18: real capture audit — fill the scene, not the empty background. */
+.topbar{background:#051326;box-shadow:none}
+.screen-heading h1{text-shadow:0 1px 2px #0008}
+.splash-screen{background: url("./assets/storyboard/stars.svg") center/cover,radial-gradient(ellipse at 76% 14%,#183e69,#09223f 34%,#041326 69%,#020e1e)}
+.splash-screen:before{display:none}
+.splash-moon{background:url("./assets/storyboard/moon.svg") center/contain no-repeat;box-shadow:0 0 35px #9bcfff55;right:15%;top:9%;width:18%}
+.splash-villa{inset:48% -8% 10% 27%;background:linear-gradient(0deg,#03101f 0%,transparent 20%,transparent 82%,#03101f 100%),url("../villa-hero.webp") 66% 90%/auto 132% no-repeat;mask-image:radial-gradient(ellipse at 57% 59%,#000 38%,#000c 59%,transparent 84%);filter:brightness(.79) saturate(1.15)}
+.splash-balloon{top:3%;left:-9%;width:61%;height:80%;filter:drop-shadow(0 5px 13px #000a)}
+.splash-copy{top:30%;left:48%;right:4%}
+.home-art{background:linear-gradient(0deg,#041323 0%,transparent 33%),url("./assets/storyboard/stars.svg") center/cover,url("../modo-padres/assets/noche-villa-perez.webp") right top/180% auto no-repeat}
+.home-art .home-character{width:102%;top:2%;left:-9%;height:auto}
+#screen-destination .route-placeholder{min-height:100px;flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:0 0 8px;overflow:hidden}
+#screen-destination .map-art{position:relative;inset:auto;width:100%;height:auto;max-height:90%;object-fit:contain;filter:drop-shadow(0 5px 7px #0009);mask-image:linear-gradient(0deg,transparent 0%,black 8%,black 92%,transparent 100%)}
+#screen-destination .route-placeholder>div{align-self:center;background:none;padding:3px}
+#screen-destination .route-placeholder>div p{font-size:11px;color:#e2ca9f;margin:0}
+#screen-proofs .proof-options{justify-content:center;gap:13px}
+#screen-proofs .proof-card{min-height:clamp(105px,16dvh,140px)}
+#screen-proofs .proof-thumb{height:clamp(83px,13dvh,119px)}
+#screen-proofs .screen-actions .main-action{background:linear-gradient(#102d49,#06182b);color:#ffdf9a;border-color:#997443;box-shadow:none;font-size:15px;min-height:42px}
+#screen-proofs .screen-actions .main-action .action-arrow{color:#ffdf9a}
+#screen-letter .letter-form{justify-content:center;gap:12px}
+#screen-letter .letter-fields{margin-top:auto;margin-bottom:auto;padding:20px 14px;gap:13px;border-radius:9px;box-shadow:0 0 12px #e6a74966,inset 0 0 20px #bd792a88}
+#screen-letter .letter-fields .field-copy input,#screen-letter .letter-fields .field-copy select{min-height:44px}
+.letter-result-screen .letter-preview{background:radial-gradient(ellipse at 45% 45%,#fff2d1 22%,#f7dfaa 72%,#c2883a 100%);border:2px solid #edb85d;box-shadow:0 0 14px #dba23f66,inset 0 0 23px #97612577}
+.letter-result-screen .letter-preview #letterPreviewMessage{line-height:1.55}
+.letter-seal{background:radial-gradient(circle at 35% 28%,#cf5440,#8b231b 57%,#57100d 100%);border:3px double #d26a46;color:#f6d17e;box-shadow:0 2px 6px #6a351d}
+.ready-screen{background:url("./assets/storyboard/stars.svg") center/cover,radial-gradient(ellipse at 70% 22%,#1a3d62,#06182e 55%,#03101e)}
+.ready-art{isolation:isolate;background:none}
+.ready-villa{width:83%;height:95%;right:-12%;bottom:1%;object-fit:cover;object-position:50% 75%;mask-image:radial-gradient(ellipse at 62% 61%,black 37%,#000c 58%,transparent 84%)}
+.ready-character{height:96%;width:76%;left:-10%;bottom:0;object-position:left bottom}
+.toast{bottom:calc(78px + var(--safe-bottom));max-width:92%;margin-inline:auto}
+@media(max-height:740px){.home-art .home-character{width:94%;left:-4%;top:0}#screen-proofs .proof-card{min-height:81px}#screen-proofs .proof-thumb{height:63px}#screen-letter .letter-fields{padding:11px;gap:7px}#screen-letter .letter-fields .field-copy input,#screen-letter .letter-fields .field-copy select{min-height:34px}.letter-result-screen .letter-preview #letterPreviewMessage{line-height:1.3}}
