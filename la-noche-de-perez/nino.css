@@ -43,3 +43,7 @@
 .child-memory:not(.video-tile){border-color:#34485e;background:linear-gradient(#122b44,#07182b)}
 .child-memory:not(.video-tile) strong{font:400 15px Georgia,serif}
 @media(max-height:740px){.child-page{gap:7px}.child-page h1{font-size:29px}.child-page .main-action{min-height:45px;font-size:16px}}
+
+/* Isolate the original green door from the product photograph. */
+.child-door{inset:auto;top:51%;left:57%;transform:translate(-50%,-50%);width:min(82%,calc(65dvh * .816));height:auto;aspect-ratio:410/502;background-size:100% 100%;mask-image:none;clip-path:polygon(23% 14%,34% 6%,45% 2%,54% 2%,64% 6%,76% 13%,85% 23%,88% 39%,91% 85%,96% 97%,32% 100%,20% 95%,18% 80%,14% 45%,7% 35%,8% 25%,15% 18%)}
+.child-scene{background:radial-gradient(ellipse at 59% 45%,#d09b392d,transparent 62%),radial-gradient(ellipse at 50% 50%,#163650,#041326 74%)}
