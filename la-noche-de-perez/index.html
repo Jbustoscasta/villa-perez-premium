@@ -7,10 +7,10 @@
   <meta name="description" content="La noche de Pérez. Prepara su visita, crea recuerdos y activa la Cámara Mágica.">
   <title>La noche de Pérez · Modo padres</title>
   <link rel="icon" href="../vuelo-magico/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=13">
+  <link rel="stylesheet" href="./styles.css?v=14">
   <script src="../modo-padres/photo-store.js?v=2" defer></script>
   <script src="./memory-store.js?v=1" defer></script>
-  <script src="./app.js?v=9" defer></script>
+  <script src="./app.js?v=10" defer></script>
 </head>
 <body><svg class="art-symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
 <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff2bc"/><stop offset=".35" stop-color="#e6b35d"/><stop offset=".7" stop-color="#976024"/><stop offset="1" stop-color="#f7cc77"/></linearGradient>
@@ -103,7 +103,7 @@
         <img class="selected-photo" id="videoPhotoPreview" alt="Fotografía seleccionada" hidden>
       </div>
       <div class="video-controls">
-        <label class="secondary-action file-action" for="videoCameraInput">▧ &nbsp; Hacer foto<input id="videoCameraInput" type="file" accept="image/*" capture="environment"></label><label class="secondary-action file-action" for="videoPhotoInput">Elegir foto<input id="videoPhotoInput" type="file" accept="image/*,.heic,.heif"></label>
+        <a class="main-action gold-action" id="guidedPhotoLink" href="../vuelo-magico/?desde=padres&asistente=foto&volver=lnp">▧ &nbsp; Hacer foto</a><input id="videoCameraInput" type="file" accept="image/*" capture="environment" hidden><label class="secondary-action file-action" for="videoPhotoInput">Elegir foto<input id="videoPhotoInput" type="file" accept="image/*,.heic,.heif"></label>
         <p class="form-status" id="videoPhotoStatus" role="status"></p>
         
         <button class="main-action gold-action" id="openVideoEditor" type="button" disabled><span>Editar vídeo</span><span class="action-arrow">›</span></button>
@@ -111,7 +111,7 @@
       <button class="text-action" type="button" data-screen="proofs">Continuar sin vídeo</button>
     </section>
 
-    <section class="screen task-screen video-editor-screen" id="screen-video-editor" aria-labelledby="videoEditorTitle"><div class="screen-heading"><h1 id="videoEditorTitle">Edita tu vídeo</h1><p>Coloca el globo en la habitación antes de crear la escena.</p></div><div class="video-editor-stage" id="videoEditorStage"><img id="videoEditorPhoto" src="../modo-padres/assets/habitacion-ejemplo.webp" alt="Fotografía de la habitación"><div class="video-editor-shade"></div><img id="videoEditorBalloon" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt="Globo de Pérez"><svg id="videoEditorPath" viewBox="0 0 360 220" preserveAspectRatio="none" aria-hidden="true"><path d="M20 180 Q120 20 210 90 T350 35" fill="none" stroke="#ffd36d" stroke-width="2.5" stroke-dasharray="3 8"/></svg><span class="video-editor-hint" id="videoEditorHint">Arrastra el globo para colocarlo</span></div><div class="video-editor-tools"><button type="button" id="videoMoveButton">✥<small>Mover</small></button><button type="button" id="videoSizeButton">▣<small>Tamaño</small></button><button type="button" id="videoPathButton">✧<small>Recorrido</small></button></div><div class="screen-actions"><button class="main-action gold-action" id="createFlightVideo" type="button">Crear vídeo ›</button><button class="text-action" type="button" data-screen="video">Volver a la foto</button></div></section>
+    <section class="screen task-screen video-editor-screen" id="screen-video-editor" aria-labelledby="videoEditorTitle"><div class="screen-heading"><h1 id="videoEditorTitle">Edita tu vídeo</h1><p>Coloca el globo en la habitación antes de crear la escena.</p></div><div class="video-editor-stage" id="videoEditorStage"><div class="video-editor-frame" id="videoEditorFrame"><img id="videoEditorPhoto" src="../modo-padres/assets/habitacion-ejemplo.webp" alt="Fotografía de la habitación"><div class="video-editor-shade"></div><img id="videoEditorBalloon" src="../vuelo-magico/assets/perez-globo-iphone.webp" alt="Globo de Pérez"><svg id="videoEditorPath" viewBox="0 0 360 220" preserveAspectRatio="none" aria-hidden="true"><path id="videoRouteLine" d="" fill="none" stroke="#ffd36d" stroke-width="2.5" stroke-dasharray="3 8"/></svg></div><span class="video-editor-hint" id="videoEditorHint">Arrastra el globo para colocarlo</span></div><div class="video-timeline"><button id="videoPreviewPlay" type="button" aria-label="Previsualizar recorrido">▶</button><span id="videoPreviewTime">0:00 / 0:12</span><input id="videoPreviewSeek" type="range" min="0" max="120" value="0" aria-label="Posición del recorrido"></div><div class="video-editor-tools"><button type="button" id="videoMoveButton" aria-pressed="true">✥<small>Mover</small></button><button type="button" id="videoSizeButton" aria-pressed="false">▣<small>Tamaño</small></button><button type="button" id="videoPathButton" aria-pressed="false">✧<small>Recorrido</small></button></div><label class="video-size-control" id="videoSizePanel" hidden>Tamaño <input id="videoSizeRange" type="range" min="10" max="43" value="30" aria-label="Tamaño del globo"><output id="videoSizeValue">30%</output></label><div class="screen-actions"><button class="main-action gold-action" id="createFlightVideo" type="button">Crear vídeo ›</button><button class="text-action" type="button" data-screen="video">Volver a la foto</button></div></section>
 
     <section class="screen task-screen" id="screen-proofs" aria-labelledby="proofsTitle">
       <div class="step-line"><span>03</span><b>LAS PRUEBAS DE SU VISITA</b><i></i><small>3 / 4</small></div>

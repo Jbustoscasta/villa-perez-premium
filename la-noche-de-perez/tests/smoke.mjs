@@ -134,10 +134,17 @@ try{
         await page.locator('#screen-home [data-screen="video"]').click();
         await page.locator('#openVideoEditor').click();
         await noPageOrScreenScroll(page,'video editor '+browserName+' '+viewport.width+'x'+viewport.height);
+        assert.equal(await page.locator('#videoEditorBalloon').isVisible(),true);
+        await page.locator('#videoSizeButton').click();
+        await page.locator('#videoSizeRange').evaluate(el=>{el.value='34';el.dispatchEvent(new Event('input',{bubbles:true}));});
+        await page.locator('#videoPathButton').click();
+        const flightFrame=await page.locator('#videoEditorFrame').boundingBox();
+        await page.mouse.move(flightFrame.x+flightFrame.width*.25,flightFrame.y+flightFrame.height*.30);await page.mouse.down();await page.mouse.move(flightFrame.x+flightFrame.width*.75,flightFrame.y+flightFrame.height*.45,{steps:12});await page.mouse.up();
         await page.locator('#createFlightVideo').click();
         await page.waitForURL(/vuelo-magico/);
         await page.waitForFunction(()=>window.VillaPerezFlight?.getState().photoLoaded===true,{timeout:30000});
         assert.equal(await page.evaluate(()=>window.LNPMemoryStore!==undefined),true);
+        const handoff=await page.evaluate(()=>window.VillaPerezFlight.getState());assert.equal(handoff.size,.34);assert.equal(handoff.duration,12);assert.ok(handoff.path.length>2);assert.ok(Math.abs(handoff.path[0].x-.25)<.04);
         await page.goto(base+'la-noche-de-perez/?screen=cofre');
         await page.waitForSelector('#memoryList .memory-item');
         await page.locator('#screen-library [data-screen="ready"]').click();

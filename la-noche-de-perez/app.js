@@ -7,10 +7,12 @@
     destination:"",
     videoFile:null,
     videoPhotoUrl:null,
-    videoBalloonScale:1,
-    videoBalloonX:.55,
-    videoBalloonY:.32,
-    videoShowPath:true,
+    videoBalloonScale:.30,
+    videoBalloonX:.50,
+    videoBalloonY:.30,
+    videoMode:"move",
+    videoRoute:[{x:.50,y:.30},{x:.68,y:.23},{x:.85,y:.33},{x:1.10,y:.28}],
+    videoTime:0,
     proofType:"selfie",
     proofImage:null,
     proofScale:.18,
@@ -52,6 +54,7 @@
     $("menuButton").hidden=name!=="home";
     if(name==="library")renderLibrary();
     if(name==="letter")updateLetterPreview();
+    if(name==="video-editor")requestAnimationFrame(fitVideoFrame);
   }
 
   function goBack() {
@@ -134,26 +137,61 @@
     $("openVideoEditor").disabled=false;
   }).catch(error=>console.warn("No se pudo recuperar la foto de la sesión",error));
 
+
+  const clampVideo=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const routeKey="lnp-flight-draft-v1";
+  function fitVideoFrame(){
+    const stage=$("videoEditorStage"),frame=$("videoEditorFrame");
+    if(!stage.clientWidth||!stage.clientHeight)return;
+    const w=Math.min(stage.clientWidth,stage.clientHeight*9/16);
+    frame.style.width=w+"px";frame.style.height=w*16/9+"px";applyVideoEditor();
+  }
+  if(typeof ResizeObserver!=="undefined")new ResizeObserver(fitVideoFrame).observe($("videoEditorStage"));
   $("openVideoEditor").addEventListener("click",()=>{
     if(!state.videoFile){toast("Primero haz o elige una foto de la habitación.");return;}
-    showScreen("video-editor");applyVideoEditor();
+    showScreen("video-editor");fitVideoFrame();setVideoMode("move");
   });
   $("createFlightVideo").addEventListener("click",async()=>{
-    try{if(state.videoFile)await window.VPPhotoStore.access("put",state.videoFile);location.href="../vuelo-magico/?desde=padres&asistente=video";}
-    catch(error){console.warn(error);toast("No se ha podido preparar la foto. Inténtalo de nuevo.");}
+    try{
+      if(!state.videoFile)return;
+      await window.VPPhotoStore.access("put",state.videoFile);
+      sessionStorage.setItem(routeKey,JSON.stringify({size:state.videoBalloonScale,path:state.videoRoute,duration:12}));
+      location.href="../vuelo-magico/?desde=padres&asistente=video";
+    }catch(error){console.warn(error);toast("No se ha podido preparar la foto. Inténtalo de nuevo.");}
   });
-  function applyVideoEditor(){
-    const balloon=$("videoEditorBalloon");balloon.style.left=(state.videoBalloonX*100)+"%";balloon.style.top=(state.videoBalloonY*100)+"%";balloon.style.width=(36*state.videoBalloonScale)+"%";
-    $("videoEditorPath").hidden=!state.videoShowPath;
+  function routeAt(t){
+    const pts=state.videoRoute;if(pts.length<2)return pts[0]||{x:.5,y:.3};
+    const lengths=pts.slice(1).map((p,i)=>Math.hypot(p.x-pts[i].x,p.y-pts[i].y));
+    let left=lengths.reduce((a,b)=>a+b,0)*clampVideo(t,0,1);
+    for(let i=0;i<lengths.length;i++){if(left<=lengths[i]||i===lengths.length-1){const f=lengths[i]?clampVideo(left/lengths[i],0,1):0;return {x:pts[i].x+(pts[i+1].x-pts[i].x)*f,y:pts[i].y+(pts[i+1].y-pts[i].y)*f};}left-=lengths[i];}
+    return pts[0];
   }
-  $("videoMoveButton").addEventListener("click",()=>$("videoEditorHint").textContent="Arrastra el globo para colocarlo");
-  $("videoSizeButton").addEventListener("click",()=>{state.videoBalloonScale=state.videoBalloonScale>=1.25?.8:state.videoBalloonScale+.2;applyVideoEditor();});
-  $("videoPathButton").addEventListener("click",()=>{state.videoShowPath=!state.videoShowPath;applyVideoEditor();$("videoEditorHint").textContent=state.videoShowPath?"Recorrido mágico activado":"Recorrido oculto";});
-  let videoDrag=false;
-  $("videoEditorStage").addEventListener("pointerdown",event=>{if(event.target!==$("videoEditorBalloon"))return;videoDrag=true;$("videoEditorStage").setPointerCapture(event.pointerId);});
-  $("videoEditorStage").addEventListener("pointermove",event=>{if(!videoDrag)return;const rect=$("videoEditorStage").getBoundingClientRect();state.videoBalloonX=Math.max(.12,Math.min(.88,(event.clientX-rect.left)/rect.width));state.videoBalloonY=Math.max(.12,Math.min(.82,(event.clientY-rect.top)/rect.height));applyVideoEditor();});
-  $("videoEditorStage").addEventListener("pointerup",()=>{videoDrag=false;});
-  $("videoEditorStage").addEventListener("pointercancel",()=>{videoDrag=false;});
+  function applyVideoEditor(){
+    const balloon=$("videoEditorBalloon"),p=routeAt(state.videoTime/12);
+    balloon.style.left=(p.x*100)+"%";balloon.style.top=(p.y*100)+"%";balloon.style.height=(state.videoBalloonScale*100)+"%";
+    $("videoRouteLine").setAttribute("d",state.videoRoute.map((p,i)=>(i?"L":"M")+(p.x*360).toFixed(2)+" "+(p.y*220).toFixed(2)).join(" "));
+    $("videoSizeRange").value=Math.round(state.videoBalloonScale*100);$("videoSizeValue").textContent=Math.round(state.videoBalloonScale*100)+"%";
+    $("videoPreviewSeek").value=Math.round(state.videoTime*10);$("videoPreviewTime").textContent="0:"+String(Math.floor(state.videoTime)).padStart(2,"0")+" / 0:12";
+  }
+  let previewRaf=0;
+  function stopVideoPreview(){cancelAnimationFrame(previewRaf);previewRaf=0;$("videoPreviewPlay").textContent="▶";}
+  function setVideoMode(mode){stopVideoPreview();state.videoMode=mode;state.videoTime=0;
+    [["videoMoveButton","move"],["videoSizeButton","size"],["videoPathButton","path"]].forEach(([id,m])=>$(id).setAttribute("aria-pressed",String(m===mode)));
+    $("videoSizePanel").hidden=mode!=="size";$("videoEditorHint").textContent=mode==="path"?"Dibuja con el dedo el recorrido del globo":mode==="size"?"Ajusta el tamaño del globo":"Arrastra el globo para colocarlo";applyVideoEditor();
+  }
+  $("videoMoveButton").addEventListener("click",()=>setVideoMode("move"));
+  $("videoSizeButton").addEventListener("click",()=>setVideoMode("size"));
+  $("videoPathButton").addEventListener("click",()=>setVideoMode("path"));
+  $("videoSizeRange").addEventListener("input",e=>{state.videoBalloonScale=Number(e.target.value)/100;applyVideoEditor();});
+  $("videoPreviewSeek").addEventListener("input",e=>{stopVideoPreview();state.videoTime=Number(e.target.value)/10;applyVideoEditor();});
+  $("videoPreviewPlay").addEventListener("click",()=>{if(previewRaf){stopVideoPreview();return;}if(state.videoTime>=12)state.videoTime=0;const start=performance.now()-state.videoTime*1000;$("videoPreviewPlay").textContent="Ⅱ";const step=now=>{state.videoTime=Math.min(12,(now-start)/1000);applyVideoEditor();if(state.videoTime<12)previewRaf=requestAnimationFrame(step);else stopVideoPreview();};previewRaf=requestAnimationFrame(step);});
+  const frame=$("videoEditorFrame");
+  let videoGesture=null;
+  function videoPoint(e){const r=frame.getBoundingClientRect();return {x:clampVideo((e.clientX-r.left)/r.width,0,1),y:clampVideo((e.clientY-r.top)/r.height,0,1)};}
+  frame.addEventListener("pointerdown",e=>{if(state.videoMode==="size")return;e.preventDefault();stopVideoPreview();state.videoTime=0;const p=videoPoint(e);videoGesture={id:e.pointerId,origin:p,route:state.videoRoute.map(q=>({...q})),mode:state.videoMode};if(state.videoMode==="path")state.videoRoute=[p];try{frame.setPointerCapture(e.pointerId);}catch{}applyVideoEditor();});
+  frame.addEventListener("pointermove",e=>{if(!videoGesture||e.pointerId!==videoGesture.id)return;const p=videoPoint(e);if(videoGesture.mode==="path"){const last=state.videoRoute.at(-1);if(Math.hypot(p.x-last.x,p.y-last.y)>.008&&state.videoRoute.length<500)state.videoRoute.push(p);}else{const first=videoGesture.route[0];const dx=clampVideo(p.x,.14,.86)-first.x,dy=clampVideo(p.y,.15,.80)-first.y;state.videoRoute=videoGesture.route.map(q=>({x:clampVideo(q.x+dx,-.35,1.35),y:clampVideo(q.y+dy,-.2,1.2)}));}applyVideoEditor();});
+  function endVideoGesture(){if(!videoGesture)return;if(state.videoRoute.length<2)state.videoRoute=videoGesture.route;videoGesture=null;applyVideoEditor();}
+  frame.addEventListener("pointerup",endVideoGesture);frame.addEventListener("pointercancel",endVideoGesture);
 
   function openProofEditor(type) {
     state.proofType=type;
@@ -462,6 +500,7 @@
     state.history=["home","library"];
     showScreen("library",false);
   }else if(initialScreen==="home"){state.history=["home"];showScreen("home",false);}
+  else if(initialScreen==="video"){state.history=["home","video"];showScreen("video",false);}
   else{showScreen("splash",false);}
 
   window.addEventListener("pagehide",()=>{

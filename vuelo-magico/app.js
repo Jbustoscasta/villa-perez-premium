@@ -777,7 +777,9 @@
     state.pathName='sugerida';state.target=null;state.time=0;
     buildPath();setMode('draw');
     closeMagicCamera();
-    openPhoto(new File([blob],'cámara-mágica-villa-pérez.jpg',{type:'image/jpeg'}),{guided:true});
+    const file=new File([blob],'cámara-mágica-villa-pérez.jpg',{type:'image/jpeg'});
+    if(new URLSearchParams(location.search).get("volver")==="lnp"){window.VPPhotoStore.access("put",file).then(()=>location.href="../la-noche-de-perez/?screen=video").catch(()=>openPhoto(file,{guided:true}));return;}
+    openPhoto(file,{guided:true});
   }
   $('openCameraSidebar').addEventListener('click',openMagicCamera);
   $('openCameraMain').addEventListener('click',openMagicCamera);
@@ -792,6 +794,7 @@
     event.target.value='';
     if(!file)return;
     closeMagicCamera();
+    if(new URLSearchParams(location.search).get("volver")==="lnp"){window.VPPhotoStore.access("put",file).then(()=>location.href="../la-noche-de-perez/?screen=video").catch(()=>openPhoto(file));return;}
     openPhoto(file);
   });
   window.addEventListener('pagehide',()=>{
@@ -815,6 +818,7 @@
       state.photoUrl=img.src.startsWith('blob:')?url:null;
       if(img.src!==url)URL.revokeObjectURL(url);
       state.photo=img;state.photoZoom=1;state.panX=0;state.panY=0;
+      if(options.parentDraft){const d=options.parentDraft;state.path=d.path.map(p=>point(p.x,p.y));state.pathName="manual";state.target=null;state.time=0;state.hasDrawn=true;state.duration=CLAMP(d.duration,8,30);state.size=CLAMP(d.size,.1,.43);$("sizeControl").value=Math.round(state.size*100);$("sizeValue").textContent=Math.round(state.size*100)+"%";$("durationControl")&&($("durationControl").value=state.duration);buildPath();}
       window.VPPhotoStore?.access('put',file).catch(()=>{});
       ambienceDirty=true;lightSmoothed=null;
       status.textContent='Lista';status.classList.add('state-ready');
@@ -1186,6 +1190,6 @@
   buildPath();resizeCanvas(720);setMode('draw');loadDefaultVideo();
   const entryParams=new URLSearchParams(location.search);
   if(entryParams.get('asistente')==='foto') openMagicCamera();
-  else if(entryParams.get('desde')==='padres') window.VPPhotoStore?.access('get').then(file=>{if(file)openPhoto(file);}).catch(()=>{});
+  else if(entryParams.get('desde')==='padres') window.VPPhotoStore?.access('get').then(file=>{if(!file)return;let draft=null;try{const d=JSON.parse(sessionStorage.getItem('lnp-flight-draft-v1')||'null');if(d&&Array.isArray(d.path)&&d.path.length>=2&&d.path.length<=500&&d.path.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))&&Number.isFinite(d.size)&&Number.isFinite(d.duration))draft=d;sessionStorage.removeItem('lnp-flight-draft-v1');}catch{}openPhoto(file,{parentDraft:draft});}).catch(()=>{});
   window.VillaPerezFlight={ getDebug:()=>({videoReady:video.readyState,videoTime:video.currentTime,videoWidth:video.videoWidth,crop:keyer?.crop,renderMode:keyer?.cpuCtx?'canvas-2d':keyer?.gl?'webgl':'sprite',exposure:state.appliedExposure,lightMode:state.autoLight?'auto':'manual',soundReady:sound.readyState,soundTime:sound.currentTime}), getState:()=>({path:state.path,target:state.target,duration:state.duration,size:state.size,autoLight:state.autoLight,lightManual:state.lightManual,soundLevel:state.soundLevel,videoLoaded:state.loadedVideo,photoLoaded:!!state.photo}), sampleAt:(t)=>at(t), signalInterferenceAt:(t,duration)=>signalInterferenceAt(t,duration), version:'1.5.4' };
 })();
